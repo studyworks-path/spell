@@ -1,6 +1,6 @@
 {
- "name": "Pathology Spelling Practice",
- "short_name": "Path Spelling",
+ "name": "Name That Pathology",
+ "short_name": "Name That Path",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
