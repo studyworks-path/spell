@@ -1,0 +1,2423 @@
+<!DOCTYPE html>
+<html lang="en-NZ">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#4a2c82">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Path Spelling">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Pathology Spelling Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
+<style>
+/* Layout: one centred column; definition card on top, dash row is the hero. Palette borrows H&E stain colours. */
+:root {
+  --paper: #f5f4fa;
+  --surface: #ffffff;
+  --ink: #1d1a2e;
+  --muted: #5f5a75;
+  --line: #d9d5e6;
+  --haem: #4a2c82;
+  --on-haem: #ffffff;
+  --eosin: #c93d73;
+  --ok: #1f7a4d;
+  --ok-bg: #e3f4ea;
+  --bad: #b8322a;
+  --bad-bg: #fbe6e3;
+  --hint: #9a5d12;
+  --hint-bg: #fbefdc;
+  --sil: brightness(0) opacity(0.22);
+  --bronze: #a8652f;
+  --silver: #8a949e;
+  --gold: #c99a16;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #14121d; --surface: #1e1b2b; --ink: #ecebf5; --muted: #a6a1bd; --line: #36314a;
+    --haem: #b49cf0; --on-haem: #14121d; --eosin: #f07aa8;
+    --ok: #5fd29a; --ok-bg: #173a2a; --bad: #ff8a7d; --bad-bg: #42201d; --hint: #f0b45a; --hint-bg: #3d2c12;
+    --sil: brightness(0) invert(1) opacity(0.28);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #14121d; --surface: #1e1b2b; --ink: #ecebf5; --muted: #a6a1bd; --line: #36314a;
+  --haem: #b49cf0; --on-haem: #14121d; --eosin: #f07aa8;
+  --ok: #5fd29a; --ok-bg: #173a2a; --bad: #ff8a7d; --bad-bg: #42201d; --hint: #f0b45a; --hint-bg: #3d2c12;
+  --sil: brightness(0) invert(1) opacity(0.28);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.5;
+}
+.wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px 18px 48px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+}
+.wrap > *, .card > * { min-width: 0; }
+header { display: grid; gap: 6px; }
+.head-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.eyebrow {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--eosin);
+}
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.8rem, 5vw, 2.4rem);
+  line-height: 1.1;
+  text-wrap: balance;
+}
+.lede { margin: 0; color: var(--muted); max-width: 60ch; }
+
+.bar { display: grid; gap: 8px; }
+.bar-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.count { font-weight: 700; font-variant-numeric: tabular-nums; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  font-size: 0.82rem;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+.chip.ok { background: var(--ok-bg); color: var(--ok); }
+.chip.help { background: var(--hint-bg); color: var(--hint); }
+.chip.bad { background: var(--bad-bg); color: var(--bad); }
+.track { height: 6px; background: var(--line); border-radius: 999px; overflow: hidden; }
+.fill { height: 100%; width: 0; background: var(--haem); border-radius: 999px; transition: width 250ms ease; }
+
+.card {
+  grid-template-columns: minmax(0, 1fr);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 24px 20px;
+  display: grid;
+  gap: 18px;
+}
+.label {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.definition {
+  margin: -10px 0 0;
+  font-size: 1.22rem;
+  line-height: 1.45;
+  max-width: 62ch;
+}
+
+.slots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px 22px;
+  padding: 10px 0 4px;
+  --slot: 20px;
+  --gap: 6px;
+}
+.word { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 0; align-items: flex-end; }
+.seg { display: flex; gap: var(--gap); flex-wrap: nowrap; align-items: flex-end; }
+.slot {
+  width: var(--slot);
+  height: calc(var(--slot) * 1.35);
+  padding: 0;
+  border: 0;
+  border-bottom: 3px solid var(--ink);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: calc(var(--slot) * 0.72);
+  text-align: center;
+  text-transform: uppercase;
+  caret-color: var(--haem);
+  outline: none;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.slot:focus { border-bottom-color: var(--haem); background: color-mix(in srgb, var(--haem) 12%, transparent); }
+.slot:focus-visible { box-shadow: 0 3px 0 0 var(--haem); }
+.slot.correct { color: var(--ok); border-bottom-color: var(--ok); }
+.slot.wrong { color: var(--bad); border-bottom-color: var(--bad); background: var(--bad-bg); }
+.slot.hinted { color: var(--hint); border-bottom-color: var(--hint); }
+.slot.revealed { color: var(--muted); border-bottom-color: var(--muted); }
+.sep {
+  font-family: var(--font-mono);
+  font-size: calc(var(--slot) * 0.72);
+  color: var(--muted);
+  padding: 0 2px 4px;
+}
+.free { display: flex; justify-content: center; padding: 6px 0 2px; }
+.free-input {
+  width: 100%; max-width: 520px;
+  font-family: var(--font-mono); font-weight: 600; font-size: 1.3rem; letter-spacing: 0.06em;
+  text-transform: uppercase; text-align: center;
+  padding: 12px 14px; border-radius: 10px;
+  border: 2px solid var(--line); background: var(--paper); color: var(--ink);
+  caret-color: var(--haem);
+}
+.free-input::placeholder { text-transform: none; letter-spacing: 0; font-family: var(--font-body); font-weight: 400; font-size: 1rem; color: var(--muted); }
+.free-input:focus { outline: none; border-color: var(--haem); }
+.free-input:focus-visible { box-shadow: 0 0 0 3px color-mix(in srgb, var(--haem) 30%, transparent); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.meta { margin: -6px 0 0; text-align: center; color: var(--muted); font-size: 0.92rem; }
+.feedback {
+  margin: 0;
+  min-height: 1.5em;
+  text-align: center;
+  font-weight: 700;
+}
+.feedback.ok { color: var(--ok); }
+.feedback.bad { color: var(--bad); }
+.feedback.info { color: var(--muted); font-weight: 400; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+button {
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+button:hover { border-color: var(--haem); }
+button:focus-visible { outline: 3px solid var(--haem); outline-offset: 2px; }
+button.primary { background: var(--haem); border-color: var(--haem); color: var(--on-haem); }
+button.primary:hover { filter: brightness(1.08); }
+button[hidden] { display: none; }
+
+.summary-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.stat {
+  flex: 1 1 140px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: grid;
+  gap: 2px;
+}
+.stat b { font-family: var(--font-display); font-size: 1.8rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 0.9rem; }
+.stat.ok b { color: var(--ok); }
+.stat.help b { color: var(--hint); }
+.stat.bad b { color: var(--bad); }
+.missed { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.missed li { border-left: 4px solid var(--hint); padding: 2px 0 2px 12px; }
+.missed li.revealed { border-left-color: var(--bad); }
+.missed strong { font-family: var(--font-mono); letter-spacing: 0.04em; }
+.missed p { margin: 2px 0 0; color: var(--muted); font-size: 0.95rem; }
+h2 { margin: 0; font-family: var(--font-display); font-size: 1.5rem; }
+
+.options {
+  display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; justify-content: space-between;
+  color: var(--muted); font-size: 0.95rem;
+}
+.toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.toggle input { width: 18px; height: 18px; accent-color: var(--haem); }
+.card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.lec-tag { font-size: 0.85rem; color: var(--muted); font-weight: 700; }
+.answer-note { margin: -10px 0 0; text-align: center; color: var(--muted); }
+.answer-note b { color: var(--ink); }
+.menu h2 { font-size: 1.35rem; }
+.greet-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: -6px; }
+.greet { display: grid; gap: 2px; min-width: 0; }
+.rank { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 12px; align-items: center; padding: 12px 14px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--paper); }
+.rank-art { width: 72px; height: 72px; display: block; }
+.bubble { position: relative; padding: 10px 14px; border-radius: 16px; background: var(--surface); border: 1.5px solid var(--line); }
+.bubble::before {
+  content: ""; position: absolute; left: -8px; top: 24px; width: 14px; height: 14px;
+  background: var(--surface); border-left: 1.5px solid var(--line); border-bottom: 1.5px solid var(--line);
+  transform: rotate(45deg);
+}
+.bubble .greet-main { font-size: clamp(1.1rem, 4.6vw, 1.35rem); }
+.bubble .greet-sub { font-size: 0.9rem; }
+.rank-row { grid-column: 1 / -1; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.rank-prog { display: grid; gap: 4px; min-width: 0; }
+.rank-prog .meter { margin-top: 0; height: 5px; }
+.rank-prog .small-note { margin: 0; }
+.next-wrap { display: grid; justify-items: center; gap: 1px; }
+.next-art { width: 38px; height: 38px; display: block; }
+.next-lbl { font-size: 0.66rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.sil svg { filter: var(--sil); }
+.sil svg > circle:first-of-type, .rank-levels li.locked .lv-art svg > circle:first-of-type { display: none; }
+.rank-foot { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+.share-btn { padding: 5px 12px; font-size: 0.82rem; border-radius: 999px; color: var(--haem); border-color: var(--haem); }
+.rank-art svg, .lv-art svg, .lu-art svg { width: 100%; height: 100%; display: block; }
+.rank-body { display: grid; gap: 5px; min-width: 0; justify-items: start; }
+.rank-body .meter { width: 100%; }
+.rank-body .small-note { margin: 0; }
+.rank-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 999px; font-family: var(--font-display); font-weight: 700; font-size: 1rem;
+  background: var(--line); color: var(--ink);
+}
+.rank-badge { padding: 3px 12px; font-size: 1rem; }
+.rank-badge[data-lv="1"] { background: color-mix(in srgb, var(--eosin) 18%, var(--surface)); color: var(--eosin); }
+.rank-badge[data-lv="2"] { background: color-mix(in srgb, var(--haem) 18%, var(--surface)); color: var(--haem); }
+.rank-badge[data-lv="3"] { background: var(--haem); color: var(--on-haem); }
+.rank-badge[data-lv="4"] { background: color-mix(in srgb, var(--gold) 35%, var(--surface)); color: color-mix(in srgb, var(--gold) 45%, var(--ink)); }
+.rank-badge[data-lv="5"] { background: var(--gold); color: #1d1a2e; box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 30%, transparent); }
+.rank .meter { margin-top: 0; height: 5px; }
+.rank .meter .k { background: var(--haem); }
+.rank-levels { font-size: 0.8rem; color: var(--muted); }
+.rank-levels summary { font-weight: 700; color: var(--haem); cursor: pointer; }
+.rank-levels ol { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.rank-levels li { display: flex; align-items: center; gap: 10px; }
+.rank-levels li.here { color: var(--ink); font-weight: 700; }
+.rank-levels li.locked .lv-art svg { filter: var(--sil); }
+.lv-art { width: 32px; height: 32px; flex: none; }
+.levelup {
+  position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 20px;
+  background: color-mix(in srgb, var(--ink) 45%, transparent);
+}
+.lu-card {
+  display: grid; justify-items: center; gap: 6px; text-align: center;
+  width: min(340px, 100%); padding: 26px 22px 22px; border-radius: 22px;
+  background: var(--surface); border: 2px solid var(--gold);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  animation: luIn 500ms cubic-bezier(.2,.9,.3,1.25) both;
+}
+.lu-art { width: 160px; height: 160px; animation: luSpin 900ms ease-out both; }
+.lu-kicker { margin: 6px 0 0; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--eosin); }
+.lu-name { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 2.2rem; line-height: 1.1; color: var(--haem); }
+.lu-sub { margin: 0 0 8px; color: var(--muted); }
+.lu-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.share-face {
+  display: grid; justify-items: center; gap: 4px; text-align: center; width: 100%;
+  padding: 22px 18px 18px; border-radius: 18px; color: #ffffff;
+  background: linear-gradient(150deg, #4a2c82 0%, #7a3a9e 55%, #c93d73 100%);
+}
+.share-face .sc-art { width: 150px; height: 150px; padding: 6px; border-radius: 50%; background: rgba(255,255,255,0.95); }
+.share-face .sc-art svg { width: 100%; height: 100%; display: block; }
+.sc-kicker { margin: 8px 0 0; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.85; }
+.sc-name { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 2rem; line-height: 1.1; }
+.sc-stats { margin: 4px 0 0; font-size: 0.92rem; opacity: 0.92; }
+.sc-date { margin: 0; font-size: 0.8rem; opacity: 0.75; }
+.sc-tip { margin: 4px 0 0; color: var(--muted); font-size: 0.85rem; }
+.sum-level { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; background: var(--paper); border: 1.5px solid var(--line); }
+.sum-art { width: 60px; height: 60px; display: block; }
+.sum-art svg { width: 100%; height: 100%; display: block; }
+.sum-body { display: grid; gap: 4px; }
+.sum-main { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; }
+.sum-body .meter { margin-top: 0; height: 5px; }
+.sum-body .small-note { margin: 0; }
+@keyframes luIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
+@keyframes luSpin { from { transform: rotate(-25deg) scale(0.6); } to { transform: rotate(0) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .lu-card, .lu-art { animation: none; } }
+.music-btn { flex: none; padding: 6px 12px; font-size: 0.85rem; border-radius: 999px; color: var(--muted); }
+.music-btn[aria-pressed="true"] { color: var(--haem); border-color: var(--haem); background: color-mix(in srgb, var(--haem) 10%, var(--surface)); }
+.greet-main { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: clamp(1.5rem, 6vw, 1.9rem); line-height: 1.15; color: var(--haem); text-wrap: balance; }
+.greet-sub { margin: 0; color: var(--eosin); font-weight: 700; }
+.menu-sub { margin: -10px 0 0; color: var(--muted); }
+.review {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; align-items: center;
+  padding: 10px 14px; border-radius: 12px;
+  border: 1.5px solid var(--line); border-left: 5px solid var(--eosin);
+  background: var(--paper);
+}
+.review .label { margin: 0; color: var(--eosin); font-size: 0.7rem; }
+.review-main { margin: 0; font-family: var(--font-display); font-size: 1.05rem; line-height: 1.2; font-weight: 700; font-variant-numeric: tabular-nums; }
+.review-sub { margin: 1px 0 0; color: var(--muted); font-size: 0.8rem; line-height: 1.3; }
+.review > button { padding: 8px 12px; font-size: 0.88rem; }
+.lec .due { color: var(--eosin); font-weight: 700; }
+.fq-row { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: flex-end; gap: 8px 10px; flex-wrap: wrap; }
+.fq { display: grid; gap: 2px; }
+.fq-title { margin: 0; font-size: 0.7rem; font-weight: 700; color: var(--muted); }
+.fq-days { display: flex; gap: 4px; align-items: flex-end; }
+.fq-day { display: grid; justify-items: center; gap: 1px; width: 18px; font-size: 0.66rem; color: var(--muted); }
+.fq-day.today { color: var(--ink); font-weight: 700; }
+.fq-num { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); }
+.fq-track { height: 18px; width: 10px; display: flex; align-items: flex-end; }
+.fq-bar { width: 100%; min-height: 2px; border-radius: 3px 3px 0 0; background: color-mix(in srgb, var(--eosin) 55%, var(--surface)); }
+.fq-day.today .fq-bar { background: var(--eosin); }
+.srs-note { margin: 0; color: var(--muted); }
+.all-btn {
+  display: grid; gap: 2px; text-align: left; padding: 16px 18px;
+  border: 1.5px solid var(--haem); background: color-mix(in srgb, var(--haem) 10%, var(--surface));
+}
+.all-btn .big { font-family: var(--font-display); font-size: 1.2rem; color: var(--haem); }
+.all-btn .small { font-weight: 400; color: var(--muted); font-size: 0.92rem; }
+.lec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.lec { position: relative; display: grid; gap: 2px; text-align: left; padding: 12px 14px; }
+.lec .medal { position: absolute; top: 10px; right: 12px; }
+.lec.gold {
+  border-color: var(--gold);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--gold) 30%, var(--surface)), color-mix(in srgb, var(--gold) 12%, var(--surface)));
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--gold) 25%, transparent);
+}
+.lec.gold .num { color: color-mix(in srgb, var(--gold) 55%, var(--ink)); }
+.lec.gold .meter { background: color-mix(in srgb, var(--gold) 30%, var(--surface)); }
+.lec.gold .meter .k { background: var(--gold); }
+.medal { display: inline-flex; width: 26px; height: 26px; }
+.medal svg { width: 100%; height: 100%; }
+.medal[data-level="1"] { color: var(--bronze); }
+.medal[data-level="2"] { color: var(--silver); }
+.medal[data-level="3"] { color: var(--gold); }
+.medal[data-level="0"] { display: none; }
+.badge-key { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: -8px 0 -4px; font-size: 0.85rem; color: var(--muted); align-items: center; }
+.badge-key .medal { width: 18px; height: 18px; vertical-align: -4px; margin-right: 4px; }
+.badge-key span { display: inline-flex; align-items: center; }
+
+.daily {
+  display: grid; gap: 8px;
+  padding: 10px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--paper);
+}
+.daily-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.streak { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.flame { width: 22px; height: 26px; flex: none; color: var(--line); }
+.flame.on { color: #e0662a; }
+.big-num { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.05rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.small-note { margin: 0; color: var(--muted); font-size: 0.8rem; line-height: 1.3; }
+.today-box { text-align: right; flex: none; white-space: nowrap; }
+.daily > .meter { margin-top: 0; height: 5px; }
+.daily-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.goal-row { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--muted); }
+.goal-row select { width: auto; padding: 2px 6px; font-size: 0.8rem; border-radius: 8px; }
+.goal-row.stack { flex-direction: column; align-items: flex-end; gap: 2px; font-size: 0.7rem; font-weight: 700; }
+.week { display: flex; gap: 6px; }
+.day { display: grid; justify-items: center; gap: 2px; font-size: 0.66rem; color: var(--muted); font-weight: 700; }
+.dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); }
+.dot.met { background: var(--haem); border-color: var(--haem); }
+.dot.part { border-color: var(--haem); }
+.day.today { color: var(--ink); }
+
+.toast {
+  position: fixed; left: 50%; bottom: 20px; z-index: 60; transform: translate(-50%, 20px);
+  max-width: min(92vw, 440px); padding: 12px 18px; border-radius: 12px;
+  background: var(--ink); color: var(--paper); font-weight: 700; text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  opacity: 0; pointer-events: none; transition: opacity 200ms ease, transform 200ms ease;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.lec .num { font-family: var(--font-body); font-weight: 700; font-size: 0.88rem; color: var(--eosin); }
+.lec .t { font-size: 1rem; }
+.lec .n { font-size: 0.85rem; color: var(--muted); font-weight: 400; font-variant-numeric: tabular-nums; }
+.round-head {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; gap: 12px;
+  margin: -8px -18px 0; padding: 10px 18px;
+  background: var(--paper); border-bottom: 1px solid var(--line);
+}
+.round-name { font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.back-btn { flex: none; padding: 8px 14px; font-size: 0.92rem; }
+.meter { display: flex; height: 7px; margin-top: 8px; border-radius: 999px; overflow: hidden; background: var(--line); }
+.meter .k { background: var(--haem); }
+.meter .l { background: color-mix(in srgb, var(--haem) 38%, var(--surface)); }
+.meter span { transition: width 300ms ease; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: -4px 0 -6px; font-size: 0.85rem; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.legend .k { background: var(--haem); }
+.legend .l { background: color-mix(in srgb, var(--haem) 38%, var(--surface)); }
+.legend .u { background: var(--line); }
+.missed .tag { color: var(--muted); font-size: 0.82rem; font-weight: 700; margin-left: 6px; }
+/* Ka pai pop-up */
+.kapai {
+  position: fixed; left: 50%; top: 42%; z-index: 70; pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.6); opacity: 0;
+  padding: 18px 34px; border-radius: 999px;
+  background: var(--ok); color: var(--surface);
+  font-family: var(--font-display); font-weight: 700; font-size: clamp(2.2rem, 10vw, 3.6rem); line-height: 1;
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--ok) 35%, transparent);
+  white-space: nowrap;
+}
+.kapai { display: inline-flex; align-items: center; gap: 12px; padding-left: 14px; }
+.kapai .kp-art { width: 1.5em; height: 1.5em; flex: none; display: block; }
+.kapai .kp-art svg { width: 100%; height: 100%; display: block; }
+.kapai.kaha { background: var(--eosin); color: #ffffff; box-shadow: 0 12px 32px color-mix(in srgb, var(--eosin) 35%, transparent); }
+.kapai.tino { background: var(--haem); color: var(--on-haem); box-shadow: 0 12px 32px color-mix(in srgb, var(--haem) 40%, transparent); }
+.kapai.whetu { background: var(--gold); color: #1d1a2e; box-shadow: 0 12px 36px color-mix(in srgb, var(--gold) 55%, transparent); }
+
+.kapai.show { animation: kapai 1.3s cubic-bezier(.2,.9,.3,1.2) forwards; }
+.kapai.whetu.show { animation-duration: 2s; }
+@keyframes kapai {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+  18% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+  30% { transform: translate(-50%, -50%) scale(1); }
+  75% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -60%) scale(0.96); }
+}
+@media (prefers-reduced-motion: reduce) {
+  @keyframes kapai { 0% { opacity: 0; } 15% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }
+  .kapai { transform: translate(-50%, -50%); }
+}
+
+/* Flashcards */
+.fc-btn {
+  display: grid; gap: 2px; text-align: left; padding: 16px 18px;
+  border: 1.5px solid var(--ok); background: color-mix(in srgb, var(--ok) 8%, var(--surface));
+}
+.fc-btn .big { font-family: var(--font-display); font-size: 1.2rem; color: var(--ok); }
+.fc-btn .small { font-weight: 400; color: var(--muted); font-size: 0.92rem; }
+.fc-progress { display: grid; gap: 8px; }
+.fc-stage { perspective: 1400px; }
+.fc-card {
+  display: block; width: 100%; padding: 0; border: 0; background: transparent; text-align: center;
+  cursor: pointer; touch-action: pan-y;
+}
+.fc-card:hover { border: 0; }
+.fc-card:focus-visible { outline: 3px solid var(--haem); outline-offset: 4px; border-radius: 16px; }
+.fc-inner { display: grid; transition: transform 450ms cubic-bezier(.2,.7,.2,1); transform-style: preserve-3d; }
+.fc-card.flipped .fc-inner { transform: rotateY(180deg); }
+.fc-face {
+  grid-area: 1 / 1; min-height: 280px; padding: 28px 22px;
+  display: grid; align-content: center; justify-items: center; gap: 14px;
+  border-radius: 16px; border: 1.5px solid var(--line); background: var(--surface);
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--ink) 8%, transparent);
+}
+.fc-face.back { transform: rotateY(180deg); border-color: var(--haem); background: color-mix(in srgb, var(--haem) 7%, var(--surface)); }
+.fc-kind { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.fc-text { margin: 0; max-width: 56ch; font-size: 1.15rem; line-height: 1.45; color: var(--ink); font-weight: 400; }
+.fc-text.term { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.6rem, 6vw, 2.4rem); line-height: 1.1; text-wrap: balance; }
+.fc-hint { font-size: 0.85rem; color: var(--muted); font-weight: 400; }
+.fc-card.swipe-got .fc-face.back { border-color: var(--ok); }
+.fc-card.swipe-again .fc-face.back { border-color: var(--hint); }
+.fc-rate { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fc-rate .again { border-color: var(--hint); color: var(--hint); }
+.fc-rate .got { border-color: var(--ok); background: var(--ok); color: var(--surface); }
+@media (prefers-reduced-motion: reduce) { .fc-inner { transition: none; } }
+
+/* Hot Seat */
+.hs-btn {
+  display: grid; gap: 2px; text-align: left; padding: 16px 18px;
+  border: 1.5px solid var(--eosin); background: color-mix(in srgb, var(--eosin) 9%, var(--surface));
+}
+.hs-btn .big { font-family: var(--font-display); font-size: 1.2rem; color: var(--eosin); }
+.hs-btn .small { font-weight: 400; color: var(--muted); font-size: 0.92rem; }
+.hs-head { display: flex; align-items: center; gap: 12px; }
+.hs-head h2 { margin: 0; }
+.hs-steps { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; max-width: 62ch; }
+.field { display: grid; gap: 6px; }
+.field > span, .field legend { font-weight: 700; font-size: 0.95rem; }
+fieldset.field { border: 0; margin: 0; padding: 0; }
+select {
+  font: inherit; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--line);
+  background: var(--surface); color: var(--ink); width: 100%; min-width: 0; text-overflow: ellipsis;
+}
+select:focus-visible { outline: 3px solid var(--haem); outline-offset: 1px; }
+.seg-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg-row label { cursor: pointer; }
+.seg-row input { position: absolute; opacity: 0; pointer-events: none; }
+.seg-row span {
+  display: inline-block; padding: 8px 14px; border-radius: 10px; border: 1.5px solid var(--line);
+  font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.seg-row input:checked + span { border-color: var(--haem); background: color-mix(in srgb, var(--haem) 12%, var(--surface)); color: var(--haem); }
+.seg-row input:focus-visible + span { outline: 3px solid var(--haem); outline-offset: 2px; }
+.hs-score { font-family: var(--font-display); font-weight: 700; font-size: 3rem; line-height: 1; margin: 0; color: var(--haem); font-variant-numeric: tabular-nums; }
+.hs-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.hs-list li { display: flex; gap: 10px; align-items: baseline; }
+.hs-list .mk { flex: none; width: 1.4em; font-weight: 700; text-align: center; }
+.hs-list li.got .mk { color: var(--ok); }
+.hs-list li.pass { color: var(--muted); }
+.hs-list li.pass .mk { color: var(--hint); }
+
+.hs-play {
+  position: fixed; inset: 0; z-index: 50;
+  background: #2a1652; color: #ffffff;
+  display: grid; grid-template-rows: 1fr 1fr;
+  font-family: var(--font-body);
+  user-select: none; -webkit-user-select: none; touch-action: manipulation;
+  transition: background 150ms ease;
+}
+.hs-play.flash-got { background: #13744a; }
+.hs-play.flash-pass { background: #a35f0c; }
+.hs-zone { border: 0; border-radius: 0; background: transparent; color: rgba(255,255,255,0.55); font: inherit; font-weight: 700; font-size: 0.95rem; letter-spacing: 0.06em; text-transform: uppercase; display: flex; justify-content: center; padding: 14px; cursor: pointer; }
+.hs-zone:hover { border: 0; }
+.hs-zone.top { align-items: flex-start; border-bottom: 1px dashed rgba(255,255,255,0.18); }
+.hs-zone.bottom { align-items: flex-end; }
+.hs-zone:focus-visible { outline: 3px solid #ffffff; outline-offset: -6px; }
+.hs-center {
+  position: absolute; inset: 0; pointer-events: none;
+  display: grid; place-items: center; align-content: center; gap: 2vh;
+  padding: 56px max(20px, 5vw); text-align: center;
+}
+.hs-timer { font-family: var(--font-mono); font-weight: 600; font-size: clamp(1.2rem, 4vh, 2rem); color: rgba(255,255,255,0.85); font-variant-numeric: tabular-nums; }
+.hs-timer.low { color: #ffb4c8; }
+.hs-term {
+  margin: 0; font-family: var(--font-display); font-weight: 700; line-height: 1.05;
+  font-size: clamp(2rem, min(9vw, 13vh), 6.5rem); text-wrap: balance; overflow-wrap: anywhere;
+  max-width: 22ch;
+}
+.hs-desc { margin: 0; max-width: 60ch; font-size: clamp(0.95rem, min(2.4vw, 3vh), 1.25rem); line-height: 1.4; color: rgba(255,255,255,0.78); }
+.hs-sub { margin: 0; font-size: clamp(1rem, 3vh, 1.4rem); color: rgba(255,255,255,0.8); }
+.hs-end {
+  position: absolute; top: 10px; left: 10px; z-index: 2;
+  background: rgba(255,255,255,0.12); color: #ffffff; border: 1px solid rgba(255,255,255,0.3);
+  padding: 6px 12px; font-size: 0.85rem;
+}
+.hs-end:hover { border-color: #ffffff; }
+.hs-count { position: absolute; top: 14px; right: 16px; z-index: 2; font-weight: 700; color: rgba(255,255,255,0.85); font-variant-numeric: tabular-nums; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header id="appHeader">
+    <div class="head-top">
+      <h1>Spell the pathology term</h1>
+      <button type="button" class="music-btn" id="musicBtn" aria-pressed="true">♪ Music on</button>
+    </div>
+    <p class="lede">Read the description and spell the pathology into the dashes, one letter per dash. Hyphens and apostrophes are filled in for you. Use NZ spelling (oedema, haemorrhage).</p>
+  </header>
+
+  <section class="card menu" id="menu">
+    <div class="rank" id="rankBox">
+      <span class="rank-art" id="rankArt" role="img" aria-label="Level picture"></span>
+      <div class="bubble">
+        <p class="greet-main" id="greetMain">Kia ora! Nau mai, haere mai.</p>
+        <p class="greet-sub" id="greetSub">Welcome. Happy studying.</p>
+      </div>
+      <div class="rank-row">
+        <span class="rank-badge" id="rankName" data-lv="0"><span id="rankText">Pathbaby</span></span>
+        <div class="rank-prog">
+          <span class="meter" id="rankMeter"><span class="k"></span><span class="l"></span></span>
+          <p class="small-note" id="rankNext"></p>
+        </div>
+        <span class="next-wrap" title="Next level"><span class="next-art sil" id="nextArt" aria-hidden="true"></span><span class="next-lbl">Next</span></span>
+      </div>
+      <div class="rank-foot">
+        <details class="rank-levels">
+          <summary>All levels</summary>
+          <ol id="rankList"></ol>
+        </details>
+        <button type="button" class="share-btn" id="shareBtn">Share my level</button>
+      </div>
+    </div>
+    <h2>What do you want to practise?</h2>
+    <p class="menu-sub">Pick one lecture, mix questions from every lecture, or review the terms that are due.</p>
+    <div class="daily" id="dailyBox">
+      <div class="daily-top">
+        <div class="streak">
+          <svg class="flame" id="flame" viewBox="0 0 24 28" aria-hidden="true"><path fill="currentColor" d="M12 1c1 4.5 6.5 7.5 6.5 14.2A6.5 6.5 0 0 1 12 22a6.5 6.5 0 0 1-6.5-6.8c0-3 1.5-4.9 3-6.3.3 2 1.2 3.3 2.4 3.9C10.4 9 10.6 4.6 12 1z"/></svg>
+          <div>
+            <p class="big-num" id="streakNum">0 days</p>
+            <p class="small-note" id="streakBest"></p>
+          </div>
+        </div>
+        <div class="today-box">
+          <p class="big-num" id="todayNum">0 of 10</p>
+          <p class="small-note" id="todaySub"></p>
+        </div>
+      </div>
+      <span class="meter" id="todayMeter"><span class="k"></span><span class="l"></span></span>
+      <div class="daily-bottom">
+        <div class="week" id="week" aria-label="Last 7 days"></div>
+        <label class="goal-row" for="goalSel">Goal
+          <select id="goalSel"><option value="5">5</option><option value="10">10</option><option value="20">20</option><option value="30">30</option></select>
+        </label>
+      </div>
+    </div>
+    <div class="review" id="reviewBox">
+      <div>
+        <p class="label">Spaced review</p>
+        <p class="review-main" id="reviewMain"></p>
+        <p class="review-sub" id="reviewSub"></p>
+      </div>
+      <button type="button" class="primary" id="reviewBtn">Start review</button>
+      <div class="fq-row">
+        <div class="fq">
+          <p class="fq-title">Due this week</p>
+          <div class="fq-days" id="fqDays" role="img"></div>
+        </div>
+        <label class="goal-row stack" for="newSel">New a day
+          <select id="newSel"><option value="0">None</option><option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="20">20</option><option value="25">25</option><option value="30">30</option></select>
+        </label>
+      </div>
+    </div>
+    <div class="legend" aria-hidden="true"><span><i class="k"></i>Learned</span><span><i class="l"></i>Still learning</span><span><i class="u"></i>Not started</span></div>
+    <div class="badge-key">
+      <span><span class="medal" data-level="1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h4l1.5 5-3 1.5L7 2zm10 0h-4l-1.5 5 3 1.5L17 2z" fill="currentColor" opacity="0.55"/><circle cx="12" cy="15" r="7" fill="currentColor"/><circle cx="12" cy="15" r="4.6" fill="none" stroke="#fff" stroke-opacity="0.6" stroke-width="1.3"/></svg></span>Bronze: half the terms learned</span>
+      <span><span class="medal" data-level="2"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h4l1.5 5-3 1.5L7 2zm10 0h-4l-1.5 5 3 1.5L17 2z" fill="currentColor" opacity="0.55"/><circle cx="12" cy="15" r="7" fill="currentColor"/><circle cx="12" cy="15" r="4.6" fill="none" stroke="#fff" stroke-opacity="0.6" stroke-width="1.3"/></svg></span>Silver: every term learned</span>
+      <span><span class="medal" data-level="3"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h4l1.5 5-3 1.5L7 2zm10 0h-4l-1.5 5 3 1.5L17 2z" fill="currentColor" opacity="0.55"/><circle cx="12" cy="15" r="7" fill="currentColor"/><circle cx="12" cy="15" r="4.6" fill="none" stroke="#fff" stroke-opacity="0.6" stroke-width="1.3"/></svg></span>Gold: every term passed a 3-day review</span>
+    </div>
+    <div class="lec-grid" id="lecGrid"></div>
+    <button type="button" class="all-btn" id="allBtn">
+      <span class="big">Random from all lectures</span>
+      <span class="small" id="allCount">189 terms in random order</span>
+      <span class="meter" id="allMeter"><span class="k"></span><span class="l"></span></span>
+    </button>
+    <button type="button" class="fc-btn" id="fcBtn">
+      <span class="big">Flashcards</span>
+      <span class="small">Flip through descriptions and terms. Cards you're unsure of come back until you know them.</span>
+    </button>
+    <button type="button" class="hs-btn" id="hsBtn">
+      <span class="big">Hot Seat: group game</span>
+      <span class="small">One player holds the phone to their forehead. The group gives clues until they name the term.</span>
+    </button>
+  </section>
+
+  <div class="round-head" id="roundHead" hidden>
+    <button type="button" class="back-btn" id="backBtn">← Home</button>
+    <span class="round-name" id="roundName"></span>
+  </div>
+
+  <div class="bar" id="bar" hidden>
+    <div class="bar-row">
+      <span class="count" id="count">Term 1 of 189</span>
+      <div class="chips">
+        <span class="chip ok" id="chipOk">0 first try</span>
+        <span class="chip help" id="chipHelp">0 with help</span>
+        <span class="chip bad" id="chipBad">0 shown</span>
+      </div>
+    </div>
+    <div class="track"><div class="fill" id="fill"></div></div>
+  </div>
+
+  <section class="card" id="card" hidden>
+    <div class="card-head"><p class="label">Description</p><span class="lec-tag" id="lecTag"></span></div>
+    <p class="definition" id="definition"></p>
+    <div class="slots" id="slots" role="group" aria-label="Answer, one box per letter"></div>
+    <div class="free" id="freeWrap" hidden>
+      <label for="freeAnswer" class="sr">Your answer</label>
+      <input id="freeAnswer" class="free-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type the term, then check">
+    </div>
+    <p class="meta" id="meta"></p>
+    <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
+    <p class="answer-note" id="answerNote" hidden></p>
+    <div class="actions">
+      <button type="button" class="primary" id="checkBtn">Check spelling</button>
+      <button type="button" id="hintBtn">Give me a letter</button>
+      <button type="button" id="revealBtn">Show answer</button>
+      <button type="button" class="primary" id="nextBtn" hidden>Next term</button>
+    </div>
+  </section>
+
+  <section class="card" id="summaryCard" hidden>
+    <h2 id="summaryTitle">Round complete</h2>
+    <p class="srs-note" id="srsNote"></p>
+    <div class="sum-level">
+      <span class="sum-art" id="sumArt" aria-hidden="true"></span>
+      <div class="sum-body">
+        <p class="sum-main" id="sumMain"></p>
+        <span class="meter" id="sumMeter"><span class="k"></span><span class="l"></span></span>
+        <p class="small-note" id="sumNext"></p>
+      </div>
+    </div>
+    <div class="summary-stats">
+      <div class="stat ok"><b id="sOk">0</b><span>spelled first try</span></div>
+      <div class="stat help"><b id="sHelp">0</b><span>needed a hint or retry</span></div>
+      <div class="stat bad"><b id="sBad">0</b><span>answer shown</span></div>
+    </div>
+    <div id="missedWrap">
+      <p class="label" style="margin-bottom:10px">Terms to revisit</p>
+      <ul class="missed" id="missedList"></ul>
+    </div>
+    <div class="actions" style="justify-content:flex-start">
+      <button type="button" class="primary" id="practiseBtn">Practise these again</button>
+      <button type="button" id="againBtn">Play this set again</button>
+      <button type="button" id="menuBtn">← Back to home</button>
+    </div>
+  </section>
+
+  <section class="card" id="fcSetup" hidden>
+    <div class="hs-head">
+      <button type="button" class="back-btn" id="fcHome1">← Home</button>
+      <h2>Flashcards</h2>
+    </div>
+    <p class="srs-note">Tap a card to flip it, then mark it. Cards marked "Still learning" come back a few cards later. The deck is done when you've marked every card "Got it".</p>
+    <label class="field" for="fcLecture">
+      <span>Cards from</span>
+      <select id="fcLecture"></select>
+    </label>
+    <fieldset class="field">
+      <legend>Show first</legend>
+      <div class="seg-row">
+        <label><input type="radio" name="fcDir" value="desc" id="fcDirDesc" checked><span>Description</span></label>
+        <label><input type="radio" name="fcDir" value="term" id="fcDirTerm"><span>Term</span></label>
+      </div>
+    </fieldset>
+    <div class="actions" style="justify-content:flex-start">
+      <button type="button" class="primary" id="fcStart">Start</button>
+    </div>
+  </section>
+
+  <section id="fcPlay" hidden style="display:grid;gap:18px">
+    <div class="round-head">
+      <button type="button" class="back-btn" id="fcHome2">← Home</button>
+      <span class="round-name" id="fcName"></span>
+    </div>
+    <div class="fc-progress">
+      <div class="bar-row">
+        <span class="count" id="fcCount"></span>
+        <div class="chips"><span class="chip ok" id="fcKnown"></span><span class="chip help" id="fcLeft"></span></div>
+      </div>
+      <div class="track"><div class="fill" id="fcFill"></div></div>
+    </div>
+    <div class="fc-stage">
+      <button type="button" class="fc-card" id="fcCard" aria-label="Flip card">
+        <span class="fc-inner">
+          <span class="fc-face front"><span class="fc-kind" id="fcFrontKind">Description</span><span class="fc-text" id="fcFront"></span><span class="fc-hint">Tap to flip</span></span>
+          <span class="fc-face back"><span class="fc-kind" id="fcBackKind">Term</span><span class="fc-text term" id="fcBack"></span><span class="fc-hint" id="fcLecHint"></span></span>
+        </span>
+      </button>
+    </div>
+    <div class="actions" id="fcFlipRow"><button type="button" class="primary" id="fcFlip">Flip card</button></div>
+    <div class="fc-rate" id="fcRateRow" hidden>
+      <button type="button" class="again" id="fcAgain">← Still learning</button>
+      <button type="button" class="got" id="fcGot">Got it →</button>
+    </div>
+  </section>
+
+  <section class="card" id="fcDone" hidden>
+    <div class="hs-head">
+      <button type="button" class="back-btn" id="fcHome3">← Home</button>
+      <h2 id="fcTitle">Deck complete</h2>
+    </div>
+    <p class="srs-note" id="fcDoneNote"></p>
+    <div id="fcToughWrap">
+      <p class="label" style="margin-bottom:10px">Took more than one go</p>
+      <ul class="missed" id="fcTough"></ul>
+    </div>
+    <div class="actions" style="justify-content:flex-start">
+      <button type="button" class="primary" id="fcSpell">Spell these terms</button>
+      <button type="button" id="fcRedo">Shuffle and go again</button>
+      <button type="button" id="fcSettings">Change cards</button>
+    </div>
+  </section>
+
+  <section class="card" id="hsSetup" hidden>
+    <div class="hs-head">
+      <button type="button" class="back-btn" id="hsHome1">← Home</button>
+      <h2>Hot Seat</h2>
+    </div>
+    <ol class="hs-steps">
+      <li>One player holds the phone to their forehead with the screen facing the group.</li>
+      <li>The group describes the term on screen without saying it, or any part of it.</li>
+      <li>The player taps the <b>top half</b> of the screen when they name it, or the <b>bottom half</b> to pass.</li>
+    </ol>
+    <label class="field" for="hsLecture">
+      <span>Terms from</span>
+      <select id="hsLecture"></select>
+    </label>
+    <fieldset class="field">
+      <legend>Time per player</legend>
+      <div class="seg-row">
+        <label><input type="radio" name="hsTime" value="60" id="hsT60"><span>60 s</span></label>
+        <label><input type="radio" name="hsTime" value="90" id="hsT90" checked><span>90 s</span></label>
+        <label><input type="radio" name="hsTime" value="120" id="hsT120"><span>2 min</span></label>
+      </div>
+    </fieldset>
+    <label class="toggle" for="hsShowDesc"><input type="checkbox" id="hsShowDesc" checked> Show the description under the term to help the clue-givers</label>
+    <label class="toggle" for="hsSound"><input type="checkbox" id="hsSound" checked> Sound effects</label>
+    <div class="actions" style="justify-content:flex-start">
+      <button type="button" class="primary" id="hsStart">Start</button>
+    </div>
+  </section>
+
+  <section class="card" id="hsResults" hidden>
+    <div class="hs-head">
+      <button type="button" class="back-btn" id="hsHome2">← Home</button>
+      <h2 id="hsTitle">Time's up</h2>
+    </div>
+    <p class="hs-score" id="hsScore">0</p>
+    <p class="srs-note" id="hsScoreNote"></p>
+    <ul class="hs-list" id="hsList"></ul>
+    <div class="actions" style="justify-content:flex-start">
+      <button type="button" class="primary" id="hsAgain">Next player</button>
+      <button type="button" id="hsSettings">Change settings</button>
+    </div>
+  </section>
+
+  <div class="options" id="options">
+    <label class="toggle" for="firstLetter">
+      <input type="checkbox" id="firstLetter">
+      Start with the first letter filled in
+    </label>
+    <label class="toggle" for="hideDashes">
+      <input type="checkbox" id="hideDashes">
+      Hide the dashes until I check
+    </label>
+    <button type="button" id="restartBtn" hidden>Shuffle and restart</button>
+    <button type="button" id="resetSrsBtn">Reset review progress</button>
+  </div>
+
+</main>
+
+<audio id="lobbyMusic" src="lobby.mp3" loop preload="auto"></audio>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="levelup" id="levelUp" hidden>
+  <div class="lu-card" role="dialog" aria-labelledby="luName" aria-modal="true">
+    <div class="lu-art" id="luArt" aria-hidden="true"></div>
+    <p class="lu-kicker">Level up!</p>
+    <p class="lu-name" id="luName"></p>
+    <p class="lu-sub">Whetū nui! Keep going.</p>
+    <div class="lu-actions">
+      <button type="button" class="primary" id="luOk">Ka pai!</button>
+      <button type="button" id="luShare">Share my level</button>
+    </div>
+  </div>
+</div>
+<div class="levelup" id="shareCard" hidden>
+  <div class="lu-card" role="dialog" aria-labelledby="scName" aria-modal="true">
+    <div class="share-face">
+      <div class="sc-art" id="scArt" aria-hidden="true"></div>
+      <p class="sc-kicker">Pathology Spelling Practice</p>
+      <p class="sc-name" id="scName"></p>
+      <p class="sc-stats" id="scStats"></p>
+      <p class="sc-date" id="scDate"></p>
+    </div>
+    <p class="sc-tip">Take a screenshot to share it.</p>
+    <button type="button" class="primary" id="scClose">Done</button>
+  </div>
+</div>
+<div class="kapai" id="kapai" aria-hidden="true"><span class="kp-art" id="kpArt"></span><span id="kapaiText">Ka pai!</span></div>
+
+<div class="hs-play" id="hsPlay" hidden>
+  <button type="button" class="hs-zone top" id="hsGot">▲ Got it</button>
+  <button type="button" class="hs-zone bottom" id="hsPass">Pass ▼</button>
+  <div class="hs-center" aria-live="polite">
+    <div class="hs-timer" id="hsTimer"></div>
+    <p class="hs-term" id="hsTerm"></p>
+    <p class="hs-desc" id="hsDesc"></p>
+  </div>
+  <button type="button" class="hs-end" id="hsEnd">End</button>
+  <div class="hs-count" id="hsCount"></div>
+</div>
+
+<script>
+const LECTURES = [{"n":1,"topic":"Trauma Conditions of the Head","items":[{"d":"Brain damage that occurs at the moment of impact due to direct mechanical forces such as acceleration–deceleration or penetrating trauma. This injury represents the initial insult and may be focal or diffuse.","a":"Primary traumatic brain injury","s":"Primary traumatic brain injury"},{"d":"Brain injury that develops as a consequence of complications following the initial traumatic insult, commonly involving ischaemia, hypoxia, hypotension, cerebral oedema, or raised intracranial pressure.","a":"Secondary brain injury","s":"Secondary brain injury"},{"d":"A focal brain injury caused by blunt trauma resulting in capillary bleeding into brain tissue, often associated with prolonged confusion or neurological deficits and commonly occurring via a coup–contrecoup mechanism.","a":"Cerebral contusion","s":"Cerebral contusion"},{"d":"A pattern of traumatic brain injury in which a contusion occurs at the site of impact and a second contusion occurs on the opposite side of the brain due to rebound within the skull.","a":"Coup–contrecoup injury","s":"Coup-contrecoup injury"},{"d":"A rapidly expanding intracranial haemorrhage caused by arterial bleeding between the dura mater and the skull, commonly associated with temporal bone fracture and rupture of the middle meningeal artery.","a":"Epidural (extradural) haematoma","s":"Epidural haematoma"},{"d":"An intracranial haemorrhage occurring between the dura mater and the arachnoid membrane, usually caused by tearing of bridging veins and often presenting slowly, particularly in elderly patients.","a":"Subdural haematoma","s":"Subdural haematoma"},{"d":"Bleeding into the space between the arachnoid membrane and the pia mater, commonly arterial in origin and associated with deterioration in level of consciousness and poor prognosis.","a":"Subarachnoid haemorrhage","s":"Subarachnoid haemorrhage"},{"d":"Bleeding occurring within the brain tissue itself due to rupture of blood vessels, causing significant tissue damage through oedema and increased intracranial pressure.","a":"Intracerebral haemorrhage","s":"Intracerebral haemorrhage"},{"d":"A diffuse traumatic brain injury characterised by transient neurological dysfunction following mechanical force to the head, with no detectable injury on CT imaging and possible post-concussive symptoms.","a":"Concussion","s":"Concussion"},{"d":"A severe diffuse brain injury caused by rotational and shearing forces that stretch and rupture axonal fibres, leading to widespread impairment of communication between brain regions and often prolonged coma.","a":"Diffuse axonal injury","s":"Diffuse axonal injury"},{"d":"A principle stating that the skull is a fixed space containing brain tissue, blood, and cerebrospinal fluid, such that an increase in one component must be compensated by a decrease in another.","a":"Monro–Kellie hypothesis","s":"Monro-Kellie hypothesis"},{"d":"A physiological response to increased intracranial pressure characterised by hypertension, bradycardia, and irregular respirations due to brainstem compression.","a":"Cushing reflex","s":"Cushing reflex"},{"d":"A last-ditch sympathetic response triggered by severe cerebral ischaemia that aims to preserve blood flow to vital brain centres by increasing blood pressure.","a":"Central nervous system ischaemic response","s":"Central nervous system ischaemic response"}]},{"n":2,"topic":"Medical Conditions of the Head","items":[{"d":"A diffuse brain injury that occurs when the brain receives inadequate oxygenated blood flow, resulting in cerebral hypoxia, rapid depletion of glucose and ATP, ionic imbalance, neuronal oedema, and eventual cell death if circulation is not restored.","a":"Hypoxic brain injury","s":"Hypoxic brain injury"},{"d":"A sudden impairment of cerebral circulation causing an acute focal neurological disorder that results in injury or death of brain tissue, commonly referred to as a brain attack.","a":"Stroke","s":"Stroke"},{"d":"A type of stroke caused by obstruction of cerebral blood flow due to thrombosis or embolism, resulting in cerebral ischaemia and infarction of brain tissue.","a":"Ischaemic stroke","s":"Ischaemic stroke"},{"d":"An ischaemic stroke caused by acute local thrombosis at the site of atherosclerotic narrowing within a cerebral artery, often occurring at arterial bifurcations.","a":"Thrombotic stroke","s":"Thrombotic stroke"},{"d":"An ischaemic stroke caused by a thrombus that forms outside the brain, commonly in the heart during atrial fibrillation, travels to the cerebral circulation, and lodges in a smaller artery.","a":"Embolic stroke","s":"Embolic stroke"},{"d":"A stroke caused by spontaneous rupture of a cerebral blood vessel, resulting in bleeding, rapid rise in intracranial pressure, and compression of brain tissue.","a":"Haemorrhagic stroke","s":"Haemorrhagic stroke"},{"d":"A haemorrhagic stroke caused by rupture of a blood vessel within the brain tissue itself, commonly associated with chronic hypertension.","a":"Intracerebral haemorrhage","s":"Intracerebral haemorrhage"},{"d":"A haemorrhagic stroke caused by rupture of a cerebral aneurysm, resulting in bleeding into the subarachnoid space and severe headache.","a":"Subarachnoid haemorrhage","s":"Subarachnoid haemorrhage"},{"d":"A transient episode of neurological dysfunction caused by focal cerebral ischaemia that resolves completely before infarction of brain tissue occurs.","a":"Transient ischaemic attack (TIA)","s":"Transient ischaemic attack"},{"d":"An area of minimally perfused brain tissue surrounding the core of infarction during a stroke, where cells are functionally impaired but potentially salvageable.","a":"Ischaemic penumbra","s":"Ischaemic penumbra"},{"d":"An inflammatory condition affecting the facial nerve (cranial nerve VII) that causes acute facial weakness, impaired blinking, and upwards deviation of the eye on lid closure.","a":"Bell’s palsy","s":"Bell's palsy"},{"d":"Inflammation of the meninges surrounding the brain and spinal cord, commonly caused by viral or bacterial infection.","a":"Meningitis","s":"Meningitis"},{"d":"A temporary episode of abnormal behaviour or neurological activity caused by abnormal electrical discharge from neurons in the cerebral cortex.","a":"Seizure","s":"Seizure"},{"d":"A chronic neurological condition characterised by a tendency to have recurrent seizures due to hyper-excitable neurons.","a":"Epilepsy","s":"Epilepsy"},{"d":"A seizure that begins simultaneously in both cerebral hemispheres and is associated with loss of consciousness.","a":"Generalised seizure","s":"Generalised seizure"},{"d":"A seizure that begins in a specific area of one cerebral hemisphere and may occur with or without impairment of consciousness.","a":"Focal seizure","s":"Focal seizure"},{"d":"A generalised motor seizure characterised by tonic muscle rigidity followed by clonic rhythmic muscle contractions.","a":"Tonic–clonic seizure","s":"Tonic-clonic seizure"},{"d":"A medical emergency in which seizures do not stop spontaneously or occur repeatedly without recovery of consciousness.","a":"Status epilepticus","s":"Status epilepticus"},{"d":"The period following a seizure characterised by altered level of consciousness, confusion, fatigue, and amnesia.","a":"Post-ictal state","s":"Post-ictal state"}]},{"n":3,"topic":"Shock 1","items":[{"d":"A state of inadequate oxygen delivery and utilisation at a cellular level, resulting in tissue hypoxia, cellular dysfunction, and potential organ failure.","a":"Shock","s":"Shock"},{"d":"During prolonged shock, reduced tissue perfusion results in cellular energy production that leads to lactic acid accumulation and metabolic acidosis. Which process is responsible for this change?","a":"Anaerobic metabolism","s":"Anaerobic metabolism"},{"d":"A systemic response to shock involving activation of the sympathetic nervous system, release of catecholamines, increased heart rate, increased myocardial contractility, and peripheral vasoconstriction to maintain blood pressure.","a":"Sympathetic response","s":"Sympathetic response"},{"d":"A hormonal mechanism activated during shock in which reduced renal perfusion triggers hormone release, leading to vasoconstriction and sodium and water retention.","a":"Renin–angiotensin–aldosterone system","s":"Renin-angiotensin-aldosterone system"},{"d":"A stage of shock in which compensatory mechanisms are activated to maintain perfusion, characterised by tachycardia, vasoconstriction, oliguria, and anxiety.","a":"Compensated shock","s":"Compensated shock"},{"d":"A stage of shock in which compensatory mechanisms begin to fail, anaerobic metabolism predominates, acidosis develops, and tissue hypoperfusion worsens.","a":"Decompensated shock","s":"Decompensated shock"},{"d":"The final stage of shock characterised by irreversible cellular damage, circulatory and respiratory failure, and death.","a":"Irreversible shock","s":"Irreversible shock"},{"d":"A type of shock caused by a reduction in circulating blood volume due to haemorrhage, plasma loss, or severe dehydration, resulting in inadequate vascular filling.","a":"Hypovolaemic shock","s":"Hypovolaemic shock"},{"d":"A life-threatening complication of severe haemorrhagic shock characterised by metabolic acidosis, hypothermia, and coagulopathy.","a":"Trauma triad of death","s":"Trauma triad of death"},{"d":"A type of shock in which the heart is unable to pump sufficient blood to meet metabolic demands, resulting in reduced cardiac output despite adequate intravascular volume.","a":"Cardiogenic shock","s":"Cardiogenic shock"},{"d":"A type of shock caused by mechanical obstruction to blood flow through the cardiopulmonary circulation, such as pulmonary embolism or tension pneumothorax.","a":"Obstructive shock","s":"Obstructive shock"},{"d":"A type of shock in which blood volume is normal but widespread vasodilation and loss of vascular tone cause relative hypovolaemia and maldistribution of blood flow.","a":"Distributive shock","s":"Distributive shock"}]},{"n":4,"topic":"Shock 2","items":[{"d":"A form of distributive shock caused by parasympathetic overstimulation and sympathetic understimulation following a central nervous system injury, resulting in hypotension and warm, dry skin.","a":"Neurogenic shock","s":"Neurogenic shock"},{"d":"A severe, life-threatening systemic hypersensitivity reaction mediated by immunoglobulin E, resulting in airway obstruction, vasodilation, increased vascular permeability, hypotension, and hypoxia.","a":"Anaphylactic shock","s":"Anaphylactic shock"},{"d":"A progressive and life-threatening form of distributive shock caused by a systemic response to infection, characterised by widespread inflammation, endothelial damage, vasodilation, hypotension, and organ dysfunction.","a":"Septic shock","s":"Septic shock"},{"d":"The initial phase of allergy development in which first exposure to an allergen leads to production of IgE antibodies that bind to mast cells and basophils without causing symptoms.","a":"Sensitisation","s":"Sensitisation"},{"d":"The immediate phase of anaphylaxis occurring minutes after re-exposure to an allergen, characterised by mast cell degranulation and mediator release, particularly histamine.","a":"Primary response","s":"Primary response"},{"d":"A delayed inflammatory phase of anaphylaxis occurring hours after the initial reaction, mediated mainly by eosinophils and associated with tissue damage.","a":"Secondary response","s":"Secondary response"},{"d":"A chemical released from mast cells and basophils that causes vasodilation, increased capillary permeability, and bronchoconstriction in allergic reactions.","a":"Histamine","s":"Histamine"},{"d":"The non-specific, immediate immune defence system involving phagocytic cells, mast cells, basophils, and natural killer cells.","a":"Innate immune response","s":"Innate immune response"},{"d":"The antigen-specific immune response involving B lymphocytes and T lymphocytes, capable of producing immunological memory.","a":"Adaptive immune response","s":"Adaptive immune response"},{"d":"A severe complication of sepsis defined by dysfunction of two or more organ systems due to prolonged inflammation and hypoxia.","a":"Multiple organ dysfunction syndrome","s":"Multiple organ dysfunction syndrome"},{"d":"An acute, diffuse, inflammatory lung injury caused by factors such as pneumonia, trauma, transfusion, burn, aspiration, or shock, leading to increased pulmonary vascular and epithelial permeability, pulmonary oedema, and atelectasis, all of which contribute to impaired gas exchange.","a":"Acute respiratory distress syndrome","s":"Acute respiratory distress syndrome"}]},{"n":5,"topic":"Respiratory Complaints 1","items":[{"d":"An imbalance between alveolar ventilation and pulmonary perfusion that determines the efficiency of gas exchange and contributes to hypoxaemia when ventilation and perfusion are not appropriately matched.","a":"Ventilation–perfusion (V/Q) mismatch","s":"Ventilation-perfusion mismatch"},{"d":"A decrease in blood pH caused by retention of carbon dioxide due to impaired alveolar ventilation, leading to increased carbonic acid levels.","a":"Respiratory acidosis","s":"Respiratory acidosis"},{"d":"An increase in blood pH caused by excessive ventilation resulting in reduced carbon dioxide levels, commonly seen during anxiety or panic attacks.","a":"Respiratory alkalosis","s":"Respiratory alkalosis"},{"d":"A chronic lung condition characterised by permanent dilation of bronchi and bronchioles due to recurrent infection and inflammation, leading to mucus accumulation and impaired gas exchange.","a":"Bronchiectasis","s":"Bronchiectasis"},{"d":"An obstruction of a pulmonary artery or its branches by a blood-borne substance such as a thrombus, fat, air, or amniotic fluid, impairing pulmonary perfusion.","a":"Pulmonary embolism","s":"Pulmonary embolism"},{"d":"Inflammation of the lung parenchyma, most commonly due to bacterial infection, resulting in alveolar exudate, reduced surface area for gas exchange, and hypoxaemia.","a":"Pneumonia","s":"Pneumonia"},{"d":"Inflammation of the pleural membranes causing sharp, stabbing chest pain that worsens with inspiration due to friction between inflamed pleural layers.","a":"Pleurisy","s":"Pleurisy"},{"d":"An abnormal accumulation of fluid within the pleural cavity that restricts lung expansion and impairs ventilation.","a":"Pleural effusion","s":"Pleural effusion"},{"d":"A collection of blood within the pleural cavity, often due to trauma or vascular injury, which can compress the lung and reduce cardiac output.","a":"Haemothorax","s":"Haemothorax"},{"d":"The presence of air in the pleural space causing partial or complete lung collapse due to loss of negative intrapleural pressure.","a":"Pneumothorax","s":"Pneumothorax"},{"d":"A life-threatening form of pneumothorax in which air enters the pleural space but cannot escape, causing increasing intrapleural pressure, mediastinal shift, and reduced venous return to the heart.","a":"Tension pneumothorax","s":"Tension pneumothorax"}]},{"n":6,"topic":"Respiratory Complaints 2","items":[{"d":"A chronic respiratory disorder characterised by progressive, recurrent obstruction of pulmonary airways with inflammatory changes, most commonly caused by long-term smoking, and encompassing conditions such as emphysema and chronic bronchitis.","a":"Chronic obstructive pulmonary disease","s":"Chronic obstructive pulmonary disease"},{"d":"A form of COPD characterised by destruction of alveolar walls and capillaries, leading to enlarged airspaces, gas trapping, reduced surface area for gas exchange, and increased risk of airway collapse.","a":"Emphysema","s":"Emphysema"},{"d":"A form of COPD characterised by chronic productive cough, excessive mucus production, and small airway obstruction, diagnosed by cough lasting at least three months in two consecutive years.","a":"Chronic bronchitis","s":"Chronic bronchitis"},{"d":"An inherited or acquired deficiency of a protease inhibitor that normally protects lung tissue from enzymatic destruction, predisposing individuals to early-onset emphysema.","a":"Alpha-1 antitrypsin deficiency","s":"Alpha-1 antitrypsin deficiency"},{"d":"A chronic inflammatory airway disorder characterised by episodic bronchospasm, mucosal oedema, and excess mucus production, resulting in reversible airflow obstruction.","a":"Asthma","s":"Asthma"},{"d":"The immediate phase of allergic asthma occurring within hours of allergen exposure, mediated by mast cell degranulation and release of histamine, cytokines, and leukotrienes.","a":"Early-phase asthma response","s":"Early-phase asthma response"},{"d":"A delayed inflammatory phase of asthma occurring hours after the initial response, characterised by eosinophil recruitment, prolonged inflammation, airway oedema, and epithelial damage.","a":"Late-phase asthma response","s":"Late-phase asthma response"},{"d":"A type of ventilation–perfusion mismatch in which obstructed airways result in alveoli that are perfused but not ventilated, causing poor ventilation relative to perfusion and leading to hypoxaemia and hypercapnia.","a":"Shunt","s":"Shunt"},{"d":"A chronic lung change seen in severe asthma or emphysema characterised by increased lung volumes due to air trapping, leading to increased intrathoracic pressure and cardiovascular compromise.","a":"Lung hyperinflation","s":"Lung hyperinflation"},{"d":"A severe, life-threatening asthma exacerbation that does not respond to standard therapy, resulting in progressive airway obstruction, hypoxia, and risk of respiratory failure.","a":"Status asthmaticus","s":"Status asthmaticus"},{"d":"A pathological mechanism in COPD patients receiving excessive supplemental oxygen where carbon dioxide levels rise due to loss of hypoxic pulmonary vasoconstriction.","a":"Oxygen-induced hypercapnia","s":"Oxygen-induced hypercapnia"},{"d":"A type of ventilation–perfusion mismatch in which alveoli are ventilated but not perfused, resulting in wasted ventilation and impaired gas exchange.","a":"Dead space","s":"Dead space"}]},{"n":7,"topic":"Cardiovascular Disorders","items":[{"d":"Inflammation of the pericardium, the double-layered serous membrane surrounding the heart, often resulting in friction between layers and chest pain.","a":"Pericarditis","s":"Pericarditis"},{"d":"A chronic condition in which repeated pericardial inflammation leads to fibrotic thickening and stiffening of the pericardium, restricting ventricular filling and reducing cardiac output.","a":"Chronic constrictive pericarditis","s":"Chronic constrictive pericarditis"},{"d":"An abnormal accumulation of fluid within the pericardial cavity that may impair cardiac filling depending on the volume and rate of accumulation.","a":"Pericardial effusion","s":"Pericardial effusion"},{"d":"A life-threatening condition caused by rapid accumulation of fluid in the pericardial sac, leading to compression of the heart, impaired ventricular filling, and reduced cardiac output.","a":"Cardiac tamponade","s":"Cardiac tamponade"},{"d":"A constellation of clinical findings consisting of hypotension, jugular venous distension, and muffled heart sounds that indicates cardiac tamponade.","a":"Beck’s triad","s":"Beck's triad"},{"d":"An abnormal, localised dilation of a blood vessel caused by degeneration and weakening of the vessel wall.","a":"Aneurysm","s":"Aneurysm"},{"d":"A life-threatening condition in which a tear in the intimal layer of a blood vessel allows blood to dissect through the vessel wall, forming a false lumen and risking rupture.","a":"Dissecting aneurysm","s":"Dissecting aneurysm"},{"d":"A condition in which the heart is unable to pump sufficient blood to meet the body’s metabolic needs due to structural or functional impairment.","a":"Heart failure","s":"Heart failure"},{"d":"A form of heart failure caused by impaired ventricular contraction, resulting in reduced ejection fraction and decreased cardiac output.","a":"Systolic heart failure","s":"Systolic heart failure"},{"d":"A form of heart failure characterised by impaired ventricular relaxation and filling despite a normal ejection fraction, leading to reduced stroke volume and symptoms of heart failure.","a":"Diastolic heart failure","s":"Diastolic heart failure"},{"d":"A complication of left-sided heart failure in which increased pulmonary capillary pressure causes fluid to accumulate in the alveoli, impairing gas exchange.","a":"Cardiogenic pulmonary oedema","s":"Cardiogenic pulmonary oedema"},{"d":"A form of heart failure in which ineffective right ventricular pumping leads to systemic venous congestion and peripheral oedema.","a":"Right-sided heart failure","s":"Right-sided heart failure"},{"d":"A form of heart failure in which ineffective left ventricular pumping leads to reduced cardiac output and increased pulmonary venous pressure, resulting in pulmonary congestion and dyspnoea.","a":"Left-sided heart failure","s":"Left-sided heart failure"},{"d":"A form of right-sided heart failure caused by chronic pulmonary hypertension resulting from diseases of the lungs or pulmonary vasculature, leading to right ventricular hypertrophy and failure.","a":"Cor pulmonale","s":"Cor pulmonale"},{"d":"A structural disease of the coronary arteries characterised by atherosclerotic plaque formation and fixed narrowing of the vessel lumen, forming the underlying anatomical cause of most myocardial ischaemia and acute coronary syndromes.","a":"Coronary artery disease","s":"Coronary artery disease"},{"d":"A group of chronic clinical conditions caused by insufficient myocardial blood supply, excluding acute coronary syndromes.","a":"Ischaemic heart disease","s":"Ischaemic heart disease"},{"d":"A spectrum of acute clinical syndromes caused by sudden reduction in coronary blood flow due to plaque rupture and thrombus formation.","a":"Acute coronary syndrome","s":"Acute coronary syndrome"},{"d":"Predictable chest discomfort caused by transient myocardial ischaemia during exertion or stress due to a fixed atherosclerotic coronary obstruction, relieved by rest or nitrates.","a":"Stable angina","s":"Stable angina"},{"d":"Chest pain caused by partial coronary artery occlusion from thrombus formation, occurring at rest or with minimal exertion, without myocardial necrosis, and classified as an acute coronary syndrome.","a":"Unstable angina","s":"Unstable angina"},{"d":"Death of myocardial tissue caused by prolonged ischaemia due to near-total or complete coronary artery occlusion.","a":"Myocardial infarction","s":"Myocardial infarction"},{"d":"A form of chest pain caused by transient coronary artery spasm leading to episodic myocardial ischaemia, often occurring at rest and not dependent on atherosclerotic plaque.","a":"Vasospastic (Prinzmetal) angina","s":"Vasospastic angina"},{"d":"An acute myocardial infarction caused by complete and sustained occlusion of a coronary artery, resulting in transmural myocardial necrosis and ST-segment elevation on the electrocardiogram.","a":"ST-elevation myocardial infarction (STEMI)","s":"ST-elevation myocardial infarction"},{"d":"An acute myocardial infarction caused by partial or transient coronary artery occlusion, resulting in subendocardial myocardial necrosis without ST-segment elevation on the electrocardiogram.","a":"Non-ST-elevation myocardial infarction (NSTEMI)","s":"Non-ST-elevation myocardial infarction"}]},{"n":8,"topic":"Gastrointestinal & Abdominal Disorders","items":[{"d":"Backflow of gastric contents into the oesophagus due to transient relaxation or weakness of the lower oesophageal sphincter, causing heartburn and possible oesophageal mucosal injury.","a":"Gastroesophageal reflux disease (GORD)","s":"Gastroesophageal reflux disease"},{"d":"Inflammation of the oesophageal mucosa resulting from prolonged exposure to gastric acid, commonly secondary to gastroesophageal reflux disease.","a":"Reflux oesophagitis","s":"Reflux oesophagitis"},{"d":"A premalignant condition caused by chronic gastroesophageal reflux in which normal squamous epithelium of the oesophagus is replaced by columnar epithelium with goblet cells, increasing the risk of oesophageal adenocarcinoma.","a":"Barrett’s oesophagus","s":"Barrett's oesophagus"},{"d":"Protrusion of the stomach through the oesophageal hiatus of the diaphragm, which may be asymptomatic or clinically significant depending on the type.","a":"Hiatus hernia","s":"Hiatus hernia"},{"d":"Inflammation of the gastric mucosa that may be acute or chronic, caused by factors such as infection, alcohol, NSAIDs, or stress.","a":"Gastritis","s":"Gastritis"},{"d":"A defect in the gastric or duodenal mucosal lining caused by acid-pepsin injury, which may erode blood vessels or perforate the gastrointestinal wall.","a":"Peptic ulcer","s":"Peptic ulcer"},{"d":"An acute illness characterised by diarrhoea and/or vomiting, often accompanied by nausea, fever, abdominal pain, and fluid loss.","a":"Gastroenteritis","s":"Gastroenteritis"},{"d":"A functional gastrointestinal disorder characterised by recurrent abdominal pain associated with altered bowel habits, without identifiable structural disease.","a":"Irritable bowel syndrome","s":"Irritable bowel syndrome"},{"d":"A chronic inflammatory condition of the gastrointestinal tract that may affect any region from mouth to anus, involving transmural inflammation and periods of remission and relapse.","a":"Crohn’s disease","s":"Crohn's disease"},{"d":"A chronic inflammatory disease limited to the colon and rectum, characterised by continuous mucosal inflammation, ulceration, and impaired absorption.","a":"Ulcerative colitis","s":"Ulcerative colitis"},{"d":"The presence of sac-like outpouchings in the colon without inflammation or symptoms.","a":"Diverticulosis","s":"Diverticulosis"},{"d":"Inflammation and possible perforation of sac-like outpouchings in the colon due to infection and obstruction, potentially leading to haemorrhage or peritonitis.","a":"Diverticulitis","s":"Diverticulitis"},{"d":"Inflammation of the appendix caused by luminal obstruction, leading to ischaemia, bacterial invasion, and risk of rupture.","a":"Appendicitis","s":"Appendicitis"},{"d":"A condition in which intestinal contents fail to move through the bowel due to mechanical blockage or functional impairment.","a":"Bowel (intestinal) obstruction","s":"Bowel obstruction"},{"d":"Inflammation of the membrane lining the abdominopelvic cavity and its organs, caused by chemical irritation or bacterial infection, leading to fluid shifts, hypovolaemia, and sepsis.","a":"Peritonitis","s":"Peritonitis"},{"d":"Formation of gallstones due to abnormalities in bile composition or stasis, which may be asymptomatic or cause biliary colic.","a":"Cholelithiasis","s":"Cholelithiasis"},{"d":"Inflammation of the gallbladder, most commonly due to obstruction by gallstones, which may be acute or chronic.","a":"Cholecystitis","s":"Cholecystitis"},{"d":"Inflammation of the pancreas caused by premature activation of pancreatic enzymes, leading to autodigestion, severe inflammation, and possible systemic complications.","a":"Pancreatitis","s":"Pancreatitis"},{"d":"A chronic condition in which progressive loss of hepatic function occurs due to impaired metabolic, synthetic, and detoxification processes.","a":"Liver failure","s":"Liver failure"},{"d":"Protrusion of an internal organ through a weakness in the abdominal wall, which may become incarcerated or strangulated.","a":"Hernia","s":"Hernia"},{"d":"Implantation of an embryo outside the uterus, most commonly in the fallopian tube, with risk of rupture and life-threatening haemorrhage.","a":"Ectopic pregnancy","s":"Ectopic pregnancy"}]},{"n":9,"topic":"Renal Disorders","items":[{"d":"The functional unit of the kidney responsible for filtering blood, reabsorbing essential substances, secreting waste products, and forming urine.","a":"Nephron","s":"Nephron"},{"d":"Inflammation of the glomeruli, often following streptococcal infection, caused by immune complex deposition leading to reduced glomerular filtration.","a":"Glomerulonephritis","s":"Glomerulonephritis"},{"d":"An infection of the urinary tract most commonly caused by ascending Escherichia coli bacteria, typically affecting the urethra or bladder.","a":"Urinary tract infection","s":"Urinary tract infection"},{"d":"Inflammation of the renal pelvis and kidney tissue caused by ascending bacterial infection from the urinary tract, which may result in acute kidney injury.","a":"Pyelonephritis","s":"Pyelonephritis"},{"d":"Formation of solid crystalline deposits within the kidney or urinary tract due to supersaturation of urine with insoluble salts.","a":"Renal calculi (kidney stones)","s":"Renal calculi"},{"d":"Dilation of the renal pelvis and calyces caused by obstruction of urine outflow, leading to back pressure and potential renal damage.","a":"Hydronephrosis","s":"Hydronephrosis"},{"d":"A rapid decline in kidney function characterised by reduced glomerular filtration rate, with or without oliguria, impaired waste excretion, and altered fluid and electrolyte balance, which is often reversible.","a":"Acute kidney injury (AKI)","s":"Acute kidney injury"},{"d":"Acute kidney injury caused by reduced renal blood flow without intrinsic kidney damage, often due to hypovolaemia or shock.","a":"Pre-renal acute kidney injury","s":"Pre-renal acute kidney injury"},{"d":"Acute kidney injury caused by damage to the renal parenchyma, particularly the tubular cells, commonly due to ischaemia or nephrotoxins.","a":"Intrinsic (intra-renal) acute kidney injury","s":"Intrinsic acute kidney injury"},{"d":"Acute kidney injury caused by bilateral obstruction of urine outflow in the ureters, bladder, or urethra.","a":"Post-renal acute kidney injury","s":"Post-renal acute kidney injury"},{"d":"The most common cause of intrinsic acute kidney injury, involving ischaemic injury and necrosis of tubular epithelial cells.","a":"Acute tubular necrosis","s":"Acute tubular necrosis"},{"d":"A gradual and irreversible loss of kidney function due to progressive destruction of nephrons over months to years.","a":"Chronic renal failure","s":"Chronic renal failure"},{"d":"Elevated potassium levels in the blood resulting from impaired renal excretion, which can affect cardiac conduction.","a":"Hyperkalaemia","s":"Hyperkalaemia"},{"d":"The accumulation of nitrogenous waste products in the blood due to reduced renal clearance.","a":"Uraemia","s":"Uraemia"},{"d":"A renal replacement therapy in which blood is filtered through an external \"artificial kidney\" to remove waste products and excess fluid.","a":"Haemodialysis","s":"Haemodialysis"},{"d":"A renal replacement therapy that uses the peritoneal membrane as a semi-permeable barrier for the exchange of waste products and electrolytes.","a":"Peritoneal dialysis","s":"Peritoneal dialysis"}]},{"n":10,"topic":"Endocrine Disorders","items":[{"d":"Deficient secretion of one or more hormones from the pituitary gland, leading to loss of function in target endocrine glands and resulting in metabolic dysfunction, sexual immaturity, or growth retardation.","a":"Hypopituitarism","s":"Hypopituitarism"},{"d":"Enlargement of the thyroid gland caused by increased thyroid-stimulating hormone secretion in response to insufficient thyroid hormone levels.","a":"Simple goitre","s":"Simple goitre"},{"d":"Enlargement of the thyroid gland occurring in populations with dietary iodine deficiency, leading to reduced synthesis of thyroid hormones and compensatory gland enlargement.","a":"Endemic goitre","s":"Endemic goitre"},{"d":"A metabolic disorder caused by excessive secretion of thyroid hormones, resulting in increased metabolism, heat intolerance, weight loss, and tachycardia.","a":"Hyperthyroidism","s":"Hyperthyroidism"},{"d":"An autoimmune disorder in which antibodies stimulate the thyroid-stimulating hormone receptor, causing excessive thyroid hormone production, toxic goitre, and exophthalmos.","a":"Graves’ disease","s":"Graves' disease"},{"d":"A life-threatening exacerbation of hyperthyroidism characterised by severe hyperthermia, tachycardia, delirium, and heart failure.","a":"Thyroid storm (thyrotoxic crisis)","s":"Thyroid storm"},{"d":"A disorder caused by insufficient thyroid hormone production due to hypothalamic, pituitary, or thyroid dysfunction, leading to reduced metabolic activity.","a":"Hypothyroidism","s":"Hypothyroidism"},{"d":"An autoimmune disorder in which antibodies destroy thyroid gland tissue, leading to chronic hypothyroidism and possible goitre formation.","a":"Hashimoto’s thyroiditis","s":"Hashimoto's thyroiditis"},{"d":"A severe form of adult hypothyroidism characterised by non-pitting oedema, facial puffiness, hypothermia, and slowed metabolism.","a":"Myxedema","s":"Myxedema"},{"d":"An acute, life-threatening complication of severe hypothyroidism causing hypothermia, hypotension, hypoglycaemia, and altered consciousness.","a":"Myxedema coma","s":"Myxedema coma"},{"d":"A condition caused by prolonged exposure to excessive glucocorticoids (cortisol) eg. exogenous steroids, adrenal tumour, ectopic ACTH, pituitary cause, leading to hyperglycaemia, muscle wasting, immunosuppression, and characteristic fat redistribution.","a":"Cushing’s syndrome","s":"Cushing's syndrome"},{"d":"A disorder caused by insufficient secretion of adrenal cortical hormones, particularly cortisol and aldosterone, resulting in hypotension, electrolyte imbalance, and increased infection risk.","a":"Addison’s disease (adrenal insufficiency)","s":"Addison's disease"},{"d":"A metabolic disorder caused by autoimmune destruction of pancreatic beta cells, resulting in absolute insulin deficiency and hyperglycaemia.","a":"Type 1 diabetes mellitus","s":"Type 1 diabetes mellitus"},{"d":"A metabolic disorder characterised by insulin resistance and relative insulin deficiency, leading to chronic hyperglycaemia, commonly associated with obesity.","a":"Type 2 diabetes mellitus","s":"Type 2 diabetes mellitus"},{"d":"Glucose intolerance that develops during pregnancy in women without prior diabetes, caused by insulin resistance and inadequate beta-cell compensation.","a":"Gestational diabetes mellitus","s":"Gestational diabetes mellitus"},{"d":"A metabolic emergency in diabetes characterised by insulin deficiency, hyperglycaemia, ketone production, and metabolic acidosis.","a":"Diabetic ketoacidosis (DKA)","s":"Diabetic ketoacidosis"},{"d":"A hyperglycaemic emergency characterised by severe hyperglycaemia, dehydration, and hyperosmolarity without significant ketosis.","a":"Hyperglycaemic hyperosmolar state (HHS)","s":"Hyperglycaemic hyperosmolar state"},{"d":"A condition characterised by excessive production of dilute urine and intense thirst due to deficiency of antidiuretic hormone secretion.","a":"Neurogenic diabetes insipidus","s":"Neurogenic diabetes insipidus"},{"d":"A condition characterised by excessive dilute urine output caused by renal resistance to antidiuretic hormone.","a":"Nephrogenic diabetes insipidus","s":"Nephrogenic diabetes insipidus"}]},{"n":11,"topic":"Burns","items":[{"d":"Burns caused by direct exposure to flame or fire, resulting in tissue damage due to intense heat.","a":"Flame (thermal) burns","s":"Flame burns"},{"d":"Burn injuries caused by hot liquids or steam coming into contact with the skin.","a":"Scald burns","s":"Scald burns"},{"d":"Burns caused by exposure to acids, alkalis, or organic chemicals, which may continue to cause tissue damage until neutralised.","a":"Chemical burns","s":"Chemical burns"},{"d":"Burn injuries caused by the passage of electrical current through the body, often resulting in extensive internal damage with minimal external injury.","a":"Electrical burns","s":"Electrical burns"},{"d":"Burns caused by exposure to radiant energy, commonly due to ultraviolet radiation or radiation therapy.","a":"Radiation burns","s":"Radiation burns"},{"d":"A burn injury involving only the outer layers of the epidermis, characterised by erythema, blanching, mild swelling, and tenderness, usually without blistering.","a":"Superficial partial thickness burn","s":"Superficial partial thickness burn"},{"d":"A burn injury involving the epidermis and upper layers of the dermis, characterised by blistering, red or shiny skin, and severe pain.","a":"Partial thickness burn","s":"Partial thickness burn"},{"d":"A deeper burn involving destruction of the epidermis and more extensive dermal damage, with severe pain, reduced tactile sensation, and mottled or waxy skin.","a":"Deep partial thickness burn","s":"Deep partial thickness burn"},{"d":"A burn injury involving destruction of the epidermis, dermis, and subcutaneous tissue, often appearing dry, waxy, or leathery, with little or no pain due to nerve destruction.","a":"Full thickness burn","s":"Full thickness burn"},{"d":"A method used to estimate the total body surface area affected by burns by dividing the body into sections based on percentages.","a":"Rule of Nines","s":"Rule of Nines"},{"d":"A quick method of estimating burn size in which the patient’s palm (including fingers) represents approximately 1% of total body surface area.","a":"Palmar method","s":"Palmar method"},{"d":"A zone of burn injury characterised by irreversible tissue necrosis and loss of circulation.","a":"Zone of coagulation","s":"Zone of coagulation"},{"d":"A zone of burn injury surrounding the central burn area where circulation is reduced and tissue may be salvageable.","a":"Zone of stasis","s":"Zone of stasis"},{"d":"The outermost zone of burn injury characterised by increased blood flow and inflammation, which usually recovers.","a":"Zone of hyperaemia","s":"Zone of hyperaemia"},{"d":"The systemic response to major burn injury (≥20% TBSA) involving inflammatory mediator release, increased vascular permeability, fluid shifts, and haemoconcentration.","a":"Systemic inflammatory response syndrome","s":"Systemic inflammatory response syndrome"},{"d":"A life-threatening complication of severe burns caused by plasma loss, reduced circulating volume, and decreased cardiac output.","a":"Hypovolaemic shock","s":"Hypovolaemic shock"},{"d":"A formula used to calculate fluid resuscitation requirements in burn patients during the first 24 hours following injury.","a":"Parkland formula","s":"Parkland formula"}]},{"n":12,"topic":"Spinal Trauma","items":[{"d":"Damage to the spinal cord resulting in temporary or permanent loss of motor, sensory, or autonomic function below the level of injury.","a":"Spinal cord injury","s":"Spinal cord injury"},{"d":"Excessive forward movement of the neck causing compression, stretching, or tearing of the spinal cord and supporting structures.","a":"Hyperflexion injury","s":"Hyperflexion injury"},{"d":"Excessive backward movement of the neck resulting in compression or stretching of the spinal cord and ligaments.","a":"Hyperextension injury","s":"Hyperextension injury"},{"d":"Axial loading injury where force is transmitted vertically through the spine, leading to collapse of vertebral bodies and potential spinal cord compression.","a":"Compression fracture","s":"Compression fracture"},{"d":"A spinal injury caused by simultaneous forward bending and rotational forces, resulting in vertebral instability and spinal cord damage.","a":"Flexion–rotation injury","s":"Flexion-rotation injury"},{"d":"A temporary condition following spinal cord injury characterised by loss or reduction of all spinal reflex activity below the level of injury.","a":"Spinal cord shock","s":"Spinal cord shock"},{"d":"A form of distributive shock occurring after spinal cord injury above T6, characterised by loss of sympathetic tone, hypotension, bradycardia, and vasodilation.","a":"Neurogenic shock","s":"Neurogenic shock"},{"d":"The immediate mechanical damage to the spinal cord occurring at the moment of injury, including transection, compression, or contusion.","a":"Primary spinal cord injury","s":"Primary spinal cord injury"},{"d":"Progressive cellular and biochemical injury following the initial trauma, involving inflammation, oedema, ischaemia, and excitotoxicity.","a":"Secondary spinal cord injury","s":"Secondary spinal cord injury"},{"d":"Loss of motor and/or sensory function involving all four limbs and trunk due to cervical spinal cord injury.","a":"Tetraplegia (quadriplegia)","s":"Tetraplegia"},{"d":"Loss of motor and/or sensory function affecting the trunk, legs, and pelvic organs with sparing of the upper limbs due to thoracic, lumbar, or sacral spinal cord injury.","a":"Paraplegia","s":"Paraplegia"},{"d":"An incomplete spinal cord injury predominantly affecting the central portion of the cord, resulting in greater motor impairment of the upper limbs than lower limbs.","a":"Central cord syndrome","s":"Central cord syndrome"},{"d":"An incomplete spinal cord injury involving damage to the anterior two-thirds of the spinal cord, causing loss of motor function and pain and temperature sensation with preservation of proprioception.","a":"Anterior cord syndrome","s":"Anterior cord syndrome"},{"d":"An incomplete spinal cord injury caused by hemisection of the spinal cord, resulting in ipsilateral motor and proprioceptive loss with contralateral pain and temperature loss.","a":"Brown-Sequard syndrome","s":"Brown-Sequard syndrome"},{"d":"A potentially life-threatening condition occurring after resolution of spinal shock, where a noxious stimulus below the level of injury triggers uncontrolled sympathetic discharge and severe hypertension.","a":"Autonomic dysreflexia","s":"Autonomic dysreflexia"},{"d":"Paralysis or severe weakness affecting one side of the body (the arm and leg on the same side), most commonly caused by damage to the motor pathways in the brain, such as from stroke or traumatic brain injury.","a":"Hemiplegia","s":"Hemiplegia"}]}];
+
+const REO = ["", "Tahi", "Rua", "Toru", "Whā", "Rima", "Ono", "Whitu", "Waru", "Iwa", "Tekau", "Tekau mā tahi", "Tekau mā rua"];
+const lecName = n => REO[n] || String(n);
+const ALL = [];
+LECTURES.forEach(L => L.items.forEach(it => ALL.push({ lec: L.n, topic: L.topic, d: it.d, a: it.a, s: it.s })));
+
+const STORE_FIRST = "pathSpell.firstLetter.v2";
+const STORE_HIDE = "pathSpell.hideDashes.v1";
+function store(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+function load(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+
+const $ = id => document.getElementById(id);
+const els = {
+  count: $("count"), fill: $("fill"), chipOk: $("chipOk"), chipHelp: $("chipHelp"), chipBad: $("chipBad"),
+  card: $("card"), definition: $("definition"), slots: $("slots"), meta: $("meta"), feedback: $("feedback"),
+  answerNote: $("answerNote"), lecTag: $("lecTag"),
+  checkBtn: $("checkBtn"), hintBtn: $("hintBtn"), revealBtn: $("revealBtn"), nextBtn: $("nextBtn"),
+  summaryCard: $("summaryCard"), sOk: $("sOk"), sHelp: $("sHelp"), sBad: $("sBad"),
+  missedWrap: $("missedWrap"), missedList: $("missedList"), practiseBtn: $("practiseBtn"), againBtn: $("againBtn"),
+  firstLetter: $("firstLetter"), restartBtn: $("restartBtn"),
+  reviewMain: $("reviewMain"), reviewSub: $("reviewSub"), reviewBtn: $("reviewBtn"), resetSrsBtn: $("resetSrsBtn"), srsNote: $("srsNote"),
+  fcBtn: $("fcBtn"), fcSetup: $("fcSetup"), fcPlay: $("fcPlay"), fcDone: $("fcDone"),
+  hsBtn: $("hsBtn"), hsSetup: $("hsSetup"), hsResults: $("hsResults"), hsPlay: $("hsPlay"), appHeader: $("appHeader"), options: $("options"),
+  menu: $("menu"), allBtn: $("allBtn"), allCount: $("allCount"), lecGrid: $("lecGrid"),
+  freeWrap: $("freeWrap"), freeAnswer: $("freeAnswer"), hideDashes: $("hideDashes"),
+  roundHead: $("roundHead"), roundName: $("roundName"), backBtn: $("backBtn"), bar: $("bar"), menuBtn: $("menuBtn")
+};
+
+let order = [], pos = 0, results = [], cur = null;
+let orderRetry = [], retryCount = {};
+
+/* ---------- spaced repetition ---------- */
+// Each term keeps its own interval (days) and ease. Progress lives in this browser only.
+const STORE_SRS = "pathSpell.srs.v1";
+const REVIEW_CAP = 40;   // most due reviews offered in one day
+const MAX_IV = 120;      // longest gap between reviews, in days
+const MAX_RETRIES = 3;   // times a missed term comes back within one review
+let srs = {};
+try { srs = JSON.parse(load(STORE_SRS) || "{}") || {}; } catch (e) { srs = {}; }
+function saveSrs() { store(STORE_SRS, JSON.stringify(srs)); }
+// Convert records from the earlier fixed-step version.
+(function migrateSrs() {
+  const OLD = [0, 1, 3, 7, 16, 35];
+  let changed = false;
+  for (const k in srs) {
+    const r = srs[k];
+    if (r && r.iv === undefined && r.b !== undefined) {
+      srs[k] = {
+        iv: OLD[r.b] || 0, ef: 2.5, due: r.due, reps: r.b >= 2 ? r.b - 1 : 0, lapses: 0,
+        last: r.b >= 2 ? "good" : (r.b === 1 ? "hard" : "again"), n: r.n || 1
+      };
+      if (r.b === 0) srs[k].post = 1;
+      changed = true;
+    }
+  }
+  if (changed) saveSrs();
+})();
+const keyOf = i => ALL[i].lec + "|" + ALL[i].s;
+function today() {
+  const d = new Date();
+  return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+}
+const isLearned = r => !!r && r.last === "good" && r.iv >= 3;
+const isStrong = r => !!r && r.last === "good" && r.iv >= 7;
+// Spread longer intervals by about 10% so reviews don't bunch up on one day.
+function fuzz(iv) { return iv < 4 ? iv : Math.max(1, Math.round(iv * (0.9 + Math.random() * 0.2))); }
+
+// status: "ok" (first try), "help" (hint or retry), "bad" (answer shown)
+function srsGrade(i, status, retry) {
+  const k = keyOf(i), t = today();
+  let r = srs[k];
+  const isNew = !r;
+  const wasDue = !isNew && r.due <= t;
+  if (isNew) r = { iv: 0, ef: 2.5, due: t, reps: 0, lapses: 0, last: null, n: 0 };
+  r.n = (r.n || 0) + 1;
+
+  if (retry) {
+    // a missed term coming back later in the same review
+    if (status === "ok") { r.iv = Math.max(1, r.post || 1); r.due = t + r.iv; r.last = "relearned"; delete r.post; }
+  } else if (isNew) {
+    if (status === "ok") { r.iv = 3; r.reps = 1; r.last = "good"; }
+    else if (status === "help") { r.iv = 1; r.ef = 2.35; r.last = "hard"; }
+    else { r.iv = 0; r.ef = 2.3; r.last = "again"; r.post = 1; }
+    r.due = t + r.iv;
+  } else if (status === "ok") {
+    if (wasDue) {
+      r.reps++;
+      r.iv = r.iv < 1 ? 1 : r.iv < 3 ? 3 : Math.min(MAX_IV, fuzz(Math.round(r.iv * r.ef)));
+      r.ef = Math.min(2.8, r.ef + 0.05);
+      r.last = "good";
+      r.due = t + r.iv;
+    }
+    // spelled right before it was due: keep the schedule as it is
+  } else if (status === "help") {
+    r.ef = Math.max(1.3, r.ef - 0.15);
+    r.iv = Math.max(1, Math.round(r.iv * 0.5));
+    r.last = "hard";
+    r.due = t + r.iv;
+  } else {
+    r.lapses++;
+    r.ef = Math.max(1.3, r.ef - 0.2);
+    r.post = Math.max(1, Math.round(r.iv * 0.3));   // a slip shortens the gap instead of restarting it
+    r.iv = 0;
+    r.last = "again";
+    r.due = t;
+  }
+  srs[k] = r;
+  saveSrs();
+  return { isNew, wasDue };
+}
+// After the last retry still isn't right: bring it back tomorrow.
+function srsGiveUp(i) {
+  const r = srs[keyOf(i)];
+  if (!r) return;
+  r.iv = 1; r.due = today() + 1; r.last = "hard"; delete r.post;
+  saveSrs();
+}
+
+function dueAll() {
+  const t = today();
+  return ALL.map((x, i) => i)
+    .filter(i => { const r = srs[keyOf(i)]; return r && r.due <= t; })
+    .sort((a, b2) => srs[keyOf(a)].due - srs[keyOf(b2)].due);
+}
+function reviewQueue() {
+  const d = dayRec(today());
+  const all = dueAll();
+  const due = all.slice(0, Math.max(0, REVIEW_CAP - (d.rv || 0)));
+  const newLeft = Math.max(0, daily.newPerDay - (d.nw || 0));
+  const fresh = newLeft ? ALL.map((x, i) => i).filter(i => !srs[keyOf(i)]).slice(0, newLeft) : [];
+  return { due, fresh, held: all.length - due.length, total: due.length + fresh.length };
+}
+function nextDue() {
+  const t = today();
+  let day = Infinity, count = 0;
+  ALL.forEach((x, i) => {
+    const r = srs[keyOf(i)];
+    if (!r || r.due <= t) return;
+    if (r.due < day) { day = r.due; count = 1; } else if (r.due === day) count++;
+  });
+  return day === Infinity ? null : { inDays: day - t, count };
+}
+function forecast() {
+  const t = today(), out = [];
+  const q = reviewQueue();
+  out.push(q.due.length);
+  for (let k = 1; k <= 6; k++) out.push(ALL.filter((x, i) => { const r = srs[keyOf(i)]; return r && r.due === t + k; }).length);
+  return out;
+}
+function whenText(n) { return n === 1 ? "tomorrow" : "in " + n + " days"; }
+const plural = (n, word) => n + " " + word + (n === 1 ? "" : "s");
+
+function paintMenu() {
+  const q = reviewQueue();
+  const seen = ALL.filter((x, i) => srs[keyOf(i)]).length;
+  const nd = nextDue();
+  if (q.total) {
+    els.reviewMain.textContent = q.total + " ready today";
+    const parts = [];
+    if (q.due.length) parts.push(plural(q.due.length, "review"));
+    if (q.fresh.length) parts.push(q.fresh.length + " new");
+    els.reviewSub.textContent = parts.join(" · ") + (q.held ? " · " + q.held + " held over" : "");
+    els.reviewBtn.hidden = false;
+  } else if (seen) {
+    els.reviewMain.textContent = "All done for today";
+    els.reviewSub.textContent = q.held
+      ? "Today's limit of " + REVIEW_CAP + " reached. The rest carry over."
+      : nd ? "Next review " + whenText(nd.inDays) + ": " + plural(nd.count, "term") + "." : "";
+    els.reviewBtn.hidden = true;
+  } else {
+    els.reviewMain.textContent = "No terms yet";
+    els.reviewSub.textContent = "Practise a lecture to start your reviews.";
+    els.reviewBtn.hidden = true;
+  }
+  paintForecast();
+  const t = today();
+  LECTURES.forEach(L => {
+    const b = document.getElementById("lec-" + L.n);
+    const keys = L.items.map(it => L.n + "|" + it.s);
+    const seenL = keys.filter(k => srs[k]).length;
+    const dueL = keys.filter(k => srs[k] && srs[k].due <= t).length;
+    const n = b.querySelector(".n");
+    const learnedL = keys.filter(k => isLearned(srs[k])).length;
+    n.textContent = seenL ? learnedL + " of " + L.items.length + " learned" : L.items.length + " terms";
+    paintMeter(b.querySelector(".meter"), learnedL, seenL - learnedL, L.items.length);
+    if (dueL) {
+      const d = document.createElement("span");
+      d.className = "due";
+      d.textContent = " · " + dueL + " due";
+      n.appendChild(d);
+    }
+  });
+  const learnedAll = ALL.filter((x, i) => isLearned(srs[keyOf(i)])).length;
+  paintMeter(document.getElementById("allMeter"), learnedAll, seen - learnedAll, ALL.length);
+  els.allCount.textContent = ALL.length + " terms in random order" + (seen ? " · " + learnedAll + " learned" : "");
+  els.resetSrsBtn.hidden = !seen;
+  LECTURES.forEach(L => {
+    const m = document.getElementById("lec-" + L.n).querySelector(".medal");
+    const lvl = badges[L.n] || 0;
+    m.dataset.level = String(lvl);
+    m.parentElement.classList.toggle("gold", lvl === 3);
+    m.setAttribute("aria-label", lvl ? BADGE_NAMES[lvl] + " badge" : "");
+  });
+  paintDaily();
+  paintLevel();
+}
+
+function paintForecast() {
+  const f = forecast(), t = today(), max = Math.max(1, ...f);
+  const wrap = document.getElementById("fqDays");
+  wrap.innerHTML = "";
+  f.forEach((n, k) => {
+    const day = document.createElement("div");
+    day.className = "fq-day" + (k === 0 ? " today" : "");
+    const num = document.createElement("span"); num.className = "fq-num"; num.textContent = n;
+    const track = document.createElement("span"); track.className = "fq-track";
+    const bar = document.createElement("span"); bar.className = "fq-bar"; bar.style.height = (n / max * 100) + "%";
+    track.appendChild(bar);
+    const lbl = document.createElement("span");
+    lbl.textContent = DAY_LETTERS[new Date((t + k) * 86400000).getUTCDay()];
+    day.append(num, track, lbl);
+    wrap.appendChild(day);
+  });
+  wrap.setAttribute("aria-label", "Reviews due: " + f.map((n, k) => (k === 0 ? "today " : "in " + k + (k === 1 ? " day " : " days ")) + n).join(", "));
+  document.getElementById("newSel").value = String(daily.newPerDay);
+}
+document.getElementById("newSel").addEventListener("change", e => {
+  daily.newPerDay = Number(e.target.value) || 0;
+  saveDaily();
+  paintMenu();
+});
+
+function paintMeter(m, learned, learning, total) {
+  m.querySelector(".k").style.width = (total ? learned / total * 100 : 0) + "%";
+  m.querySelector(".l").style.width = (total ? learning / total * 100 : 0) + "%";
+  m.setAttribute("role", "img");
+  m.setAttribute("aria-label", learned + " learned, " + learning + " still learning, " + (total - learned - learning) + " not started");
+}
+
+let resetArmed = null;
+els.resetSrsBtn.addEventListener("click", () => {
+  if (!resetArmed) {
+    els.resetSrsBtn.textContent = "Tap again to delete your review progress, badges and level";
+    resetArmed = setTimeout(() => { resetArmed = null; els.resetSrsBtn.textContent = "Reset review progress"; }, 4000);
+    return;
+  }
+  clearTimeout(resetArmed); resetArmed = null;
+  srs = {}; saveSrs();
+  badges = {}; saveBadges();
+  levelBest = 0; store(STORE_LEVEL, "0");
+  els.resetSrsBtn.textContent = "Reset review progress";
+  paintMenu();
+});
+
+/* ---------- daily goal, streak, badges ---------- */
+const MEDAL_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h4l1.5 5-3 1.5L7 2zm10 0h-4l-1.5 5 3 1.5L17 2z" fill="currentColor" opacity="0.55"/><circle cx="12" cy="15" r="7" fill="currentColor"/><circle cx="12" cy="15" r="4.6" fill="none" stroke="#fff" stroke-opacity="0.6" stroke-width="1.3"/></svg>';
+const STORE_DAILY = "pathSpell.daily.v1";
+const STORE_BADGES = "pathSpell.badges.v1";
+let daily = { goal: 10, days: {}, best: 0, newPerDay: 5 };
+try { const d = JSON.parse(load(STORE_DAILY) || "null"); if (d && typeof d === "object") daily = Object.assign(daily, d); } catch (e) {}
+let badges = {};
+try { badges = JSON.parse(load(STORE_BADGES) || "{}") || {}; } catch (e) { badges = {}; }
+function saveDaily() { store(STORE_DAILY, JSON.stringify(daily)); }
+function saveBadges() { store(STORE_BADGES, JSON.stringify(badges)); }
+
+function dayRec(d) { return daily.days[d] || { n: 0, met: false }; }
+function currentStreak() {
+  const t = today();
+  let d = dayRec(t).met ? t : t - 1, n = 0;
+  while (dayRec(d).met) { n++; d--; }
+  return n;
+}
+function recordDaily(isNew, reviewed) {
+  const t = today();
+  const r = dayRec(t);
+  r.n++;
+  if (isNew) r.nw = (r.nw || 0) + 1;
+  if (reviewed) r.rv = (r.rv || 0) + 1;
+  let justMet = false;
+  if (!r.met && r.n >= daily.goal) { r.met = true; justMet = true; }
+  daily.days[t] = r;
+  // keep about a year of history
+  Object.keys(daily.days).forEach(k => { if (Number(k) < t - 400) delete daily.days[k]; });
+  const st = currentStreak();
+  const prevBest = daily.best;
+  if (st > daily.best) daily.best = st;
+  saveDaily();
+  const newBest = st > prevBest && st >= 2;
+  if (justMet) toast("Daily goal reached. Streak: " + plural(st, "day") + ". Kia pai te rā!");
+  if (newBest) toast("New best streak: " + plural(st, "day") + ".");
+  return { justMet, newBest };
+}
+
+const BADGE_NAMES = ["", "Bronze", "Silver", "Gold"];
+function badgeLevel(L) {
+  const recs = L.items.map(it => srs[L.n + "|" + it.s]);
+  const total = recs.length;
+  const learned = recs.filter(isLearned).length;
+  const strong = recs.filter(isStrong).length;
+  if (strong === total) return 3;
+  if (learned === total) return 2;
+  if (learned * 2 >= total) return 1;
+  return 0;
+}
+function checkBadge(lecN) {
+  const L = LECTURES.find(x => x.n === lecN);
+  const lvl = badgeLevel(L);
+  if (lvl > (badges[lecN] || 0)) {
+    badges[lecN] = lvl;
+    saveBadges();
+    toast(BADGE_NAMES[lvl] + " badge: " + lecName(L.n) + ", " + L.topic);
+    return lvl;
+  }
+  return 0;
+}
+
+/* Levels: Pathbaby -> Pathophreak. Once reached, a level is kept. */
+const LEVEL_ART = ["<svg viewBox=\"0 0 120 120\"><circle cx=\"60\" cy=\"60\" r=\"58\" fill=\"#fde2ec\"/><path d=\"M92.5 77.6 C90.5 83.3 84.6 89.0 79.3 92.5 C74.0 96.0 67.0 98.5 60.5 98.8 C54.0 99.1 45.6 98.0 40.3 94.5 C35.1 91.0 30.7 84.0 28.9 78.1 C27.1 72.2 27.7 65.0 29.5 59.0 C31.3 53.1 34.8 46.1 39.8 42.3 C44.8 38.5 53.1 36.0 59.5 36.1 C66.0 36.3 73.1 39.6 78.4 43.3 C83.7 46.9 89.0 52.1 91.4 57.9 C93.7 63.6 94.5 71.8 92.5 77.6 Z\" fill=\"#ffc7d9\" stroke=\"#2a1652\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M60 36 C55 28 62 22 67 27 C70 31 64 34 62 31\" fill=\"none\" stroke=\"#2a1652\" stroke-width=\"3\" stroke-linecap=\"round\"/><ellipse cx=\"49\" cy=\"64\" rx=\"4.6\" ry=\"5.3999999999999995\" fill=\"#2a1652\"/><ellipse cx=\"71\" cy=\"64\" rx=\"4.6\" ry=\"5.3999999999999995\" fill=\"#2a1652\"/><circle cx=\"50.4\" cy=\"62.2\" r=\"1.4\" fill=\"#fff\"/><circle cx=\"72.4\" cy=\"62.2\" r=\"1.4\" fill=\"#fff\"/><ellipse cx=\"41\" cy=\"73\" rx=\"5\" ry=\"3\" fill=\"#ff7aa2\" opacity=\"0.55\"/><ellipse cx=\"79\" cy=\"73\" rx=\"5\" ry=\"3\" fill=\"#ff7aa2\" opacity=\"0.55\"/><ellipse cx=\"60\" cy=\"80\" rx=\"9\" ry=\"5\" fill=\"#7fd3e6\" stroke=\"#2a1652\" stroke-width=\"2.5\"/><circle cx=\"60\" cy=\"80\" r=\"3\" fill=\"#fff\" stroke=\"#2a1652\" stroke-width=\"2\"/><circle cx=\"60\" cy=\"88\" r=\"4\" fill=\"none\" stroke=\"#7fd3e6\" stroke-width=\"2.5\"/></svg>", "<svg viewBox=\"0 0 120 120\"><circle cx=\"60\" cy=\"60\" r=\"58\" fill=\"#e1f4ea\"/><path d=\"M80.7 90.8 C75.3 94.5 68.1 97.1 61.4 97.6 C54.7 98.1 46.1 97.2 40.6 93.8 C35.0 90.4 30.2 83.3 28.2 77.3 C26.1 71.2 26.6 63.8 28.3 57.6 C30.0 51.4 33.4 44.2 38.4 40.2 C43.4 36.1 51.9 33.1 58.5 33.1 C65.2 33.1 72.6 36.4 78.2 40.0 C83.7 43.6 89.3 48.9 91.9 54.7 C94.5 60.5 95.7 68.9 93.8 75.0 C92.0 81.0 86.1 87.0 80.7 90.8 Z\" fill=\"#8fdcb4\" stroke=\"#2a1652\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M34 70 C30 92 46 98 56 92\" fill=\"none\" stroke=\"#2a1652\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M86 70 C90 90 78 96 70 96\" fill=\"none\" stroke=\"#2a1652\" stroke-width=\"3\" stroke-linecap=\"round\"/><circle cx=\"62\" cy=\"95\" r=\"6.5\" fill=\"#cfd6dd\" stroke=\"#2a1652\" stroke-width=\"2.5\"/><circle cx=\"62\" cy=\"95\" r=\"2.5\" fill=\"#8a949e\"/><ellipse cx=\"49\" cy=\"60\" rx=\"4.2\" ry=\"5.0\" fill=\"#2a1652\"/><ellipse cx=\"71\" cy=\"60\" rx=\"4.2\" ry=\"5.0\" fill=\"#2a1652\"/><circle cx=\"50.4\" cy=\"58.2\" r=\"1.4\" fill=\"#fff\"/><circle cx=\"72.4\" cy=\"58.2\" r=\"1.4\" fill=\"#fff\"/><ellipse cx=\"41\" cy=\"69\" rx=\"5\" ry=\"3\" fill=\"#ff7aa2\" opacity=\"0.55\"/><ellipse cx=\"79\" cy=\"69\" rx=\"5\" ry=\"3\" fill=\"#ff7aa2\" opacity=\"0.55\"/><path d=\"M52 70 Q60 79 68 70\" fill=\"none\" stroke=\"#2a1652\" stroke-width=\"3.4\" stroke-linecap=\"round\"/><circle cx=\"49\" cy=\"60\" r=\"8\" fill=\"none\" stroke=\"#2a1652\" stroke-width=\"2.8\"/><circle cx=\"71\" cy=\"60\" r=\"8\" fill=\"none\" stroke=\"#2a1652\" stroke-width=\"2.8\"/><path d=\"M57 59 Q60 56 63 59\" fill=\"none\" stroke=\"#2a1652\" stroke-width=\"2.8\"/></svg>", "<svg viewBox=\"0 0 120 120\"><circle cx=\"60\" cy=\"60\" r=\"58\" fill=\"#ece6fb\"/><path d=\"M90.4 79.8 C87.0 85.2 80.2 89.5 74.1 92.2 C67.9 94.9 60.3 96.7 53.7 95.8 C47.1 95.0 38.9 91.5 34.5 86.9 C30.0 82.3 27.7 74.4 27.1 68.0 C26.4 61.7 27.7 54.5 30.7 48.8 C33.7 43.1 39.0 36.6 44.9 33.8 C50.9 31.1 59.8 30.9 66.3 32.4 C72.8 33.8 79.2 38.0 83.9 42.5 C88.6 47.1 93.4 53.6 94.5 59.8 C95.6 66.0 93.8 74.4 90.4 79.8 Z\" fill=\"#b49cf0\" stroke=\"#2a1652\" stroke-width=\"3\" stroke-linejoin=\"round\"/><ellipse cx=\"49\" cy=\"58\" rx=\"4.2\" ry=\"5.0\" fill=\"#2a1652\"/><ellipse cx=\"71\" cy=\"58\" rx=\"4.2\" ry=\"5.0\" fill=\"#2a1652\"/><circle cx=\"50.4\" cy=\"56.2\" r=\"1.4\" fill=\"#fff\"/><circle cx=\"72.4\" cy=\"56.2\" r=\"1.4\" fill=\"#fff\"/><ellipse cx=\"41\" cy=\"67\" rx=\"5\" ry=\"3\" fill=\"#ff7aa2\" opacity=\"0.55\"/><ellipse cx=\"79\" cy=\"67\" rx=\"5\" ry=\"3\" fill=\"#ff7aa2\" opacity=\"0.55\"/><path d=\"M52 68 Q60 77 68 68\" fill=\"none\" stroke=\"#2a1652\" stroke-width=\"3.4\" stroke-linecap=\"round\"/><path d=\"M44 48 L54 51\" stroke=\"#2a1652\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M76 48 L66 51\" stroke=\"#2a1652\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M50 78 L60 92 L70 78\" fill=\"none\" stroke=\"#e05a5a\" stroke-width=\"6\" stroke-linejoin=\"round\"/><path d=\"M53 78 L60 88 L67 78\" fill=\"none\" stroke=\"#4d7fe0\" stroke-width=\"2.5\"/><circle cx=\"60\" cy=\"96\" r=\"10\" fill=\"#f2c230\" stroke=\"#2a1652\" stroke-width=\"2.5\"/><path d=\"M60 89.5 L62 94 L66.8 94.3 L63.1 97.3 L64.4 101.9 L60 99.3 L55.6 101.9 L56.9 97.3 L53.2 94.3 L58 94 Z\" fill=\"#fff6c8\"/></svg>", "<svg viewBox=\"0 0 120 120\"><circle cx=\"60\" cy=\"60\" r=\"58\" fill=\"#fbe3ef\"/><path d=\"M30 60 L18 104 Q60 112 102 104 L90 60 Z\" fill=\"#6b3fb8\" stroke=\"#2a1652\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M92.5 72.2 C91.2 78.0 86.1 84.2 81.3 88.1 C76.5 91.9 69.8 94.6 63.6 95.4 C57.3 96.3 49.3 96.1 43.8 93.3 C38.3 90.5 33.0 84.2 30.7 78.7 C28.4 73.2 28.5 66.1 29.7 60.2 C30.9 54.3 33.6 47.5 38.0 43.3 C42.5 39.1 50.1 35.5 56.3 35.0 C62.5 34.5 69.8 37.3 75.3 40.3 C80.7 43.4 86.1 48.1 88.9 53.5 C91.8 58.8 93.7 66.5 92.5 72.2 Z\" fill=\"#f07aa8\" stroke=\"#2a1652\" stroke-width=\"3\" stroke-linejoin=\"round\"/><ellipse cx=\"30.9\" cy=\"38.5\" rx=\"3.2\" ry=\"6.5\" transform=\"rotate(290 30.9 38.5)\" fill=\"#5fae4a\" stroke=\"#2a1652\" stroke-width=\"1.8\"/><ellipse cx=\"37.0\" cy=\"33.3\" rx=\"3.2\" ry=\"6.5\" transform=\"rotate(312 37.0 33.3)\" fill=\"#5fae4a\" stroke=\"#2a1652\" stroke-width=\"1.8\"/><ellipse cx=\"46.4\" cy=\"29.6\" rx=\"3.2\" ry=\"6.5\" transform=\"rotate(334 46.4 29.6)\" fill=\"#5fae4a\" stroke=\"#2a1652\" stroke-width=\"1.8\"/><ellipse cx=\"57.8\" cy=\"28.0\" rx=\"3.2\" ry=\"6.5\" transform=\"rotate(356 57.8 28.0)\" fill=\"#5fae4a\" stroke=\"#2a1652\" stroke-width=\"1.8\"/><ellipse cx=\"69.6\" cy=\"28.8\" rx=\"3.2\" ry=\"6.5\" transform=\"rotate(378 69.6 28.8)\" fill=\"#5fae4a\" stroke=\"#2a1652\" stroke-width=\"1.8\"/><ellipse cx=\"89.1\" cy=\"38.5\" rx=\"3.2\" ry=\"6.5\" transform=\"rotate(70 89.1 38.5)\" fill=\"#5fae4a\" stroke=\"#2a1652\" stroke-width=\"1.8\"/><ellipse cx=\"83.0\" cy=\"33.3\" rx=\"3.2\" ry=\"6.5\" transform=\"rotate(48 83.0 33.3)\" fill=\"#5fae4a\" stroke=\"#2a1652\" stroke-width=\"1.8\"/><ellipse cx=\"73.6\" cy=\"29.6\" rx=\"3.2\" ry=\"6.5\" transform=\"rotate(26 73.6 29.6)\" fill=\"#5fae4a\" stroke=\"#2a1652\" stroke-width=\"1.8\"/><ellipse cx=\"62.2\" cy=\"28.0\" rx=\"3.2\" ry=\"6.5\" transform=\"rotate(4 62.2 28.0)\" fill=\"#5fae4a\" stroke=\"#2a1652\" stroke-width=\"1.8\"/><ellipse cx=\"50.4\" cy=\"28.8\" rx=\"3.2\" ry=\"6.5\" transform=\"rotate(-18 50.4 28.8)\" fill=\"#5fae4a\" stroke=\"#2a1652\" stroke-width=\"1.8\"/><ellipse cx=\"49\" cy=\"64\" rx=\"4.2\" ry=\"5.0\" fill=\"#2a1652\"/><ellipse cx=\"71\" cy=\"64\" rx=\"4.2\" ry=\"5.0\" fill=\"#2a1652\"/><circle cx=\"50.4\" cy=\"62.2\" r=\"1.4\" fill=\"#fff\"/><circle cx=\"72.4\" cy=\"62.2\" r=\"1.4\" fill=\"#fff\"/><ellipse cx=\"41\" cy=\"73\" rx=\"5\" ry=\"3\" fill=\"#ff7aa2\" opacity=\"0.55\"/><ellipse cx=\"79\" cy=\"73\" rx=\"5\" ry=\"3\" fill=\"#ff7aa2\" opacity=\"0.55\"/><path d=\"M52 74 Q60 83 68 74\" fill=\"none\" stroke=\"#2a1652\" stroke-width=\"3.4\" stroke-linecap=\"round\"/><path d=\"M88 30 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z\" fill=\"#fff6c8\"/><path d=\"M26 36 l1.5 3.5 3.5 1.5 -3.5 1.5 -1.5 3.5 -1.5 -3.5 -3.5 -1.5 3.5 -1.5z\" fill=\"#fff6c8\"/></svg>", "<svg viewBox=\"0 0 120 120\"><circle cx=\"60\" cy=\"60\" r=\"58\" fill=\"#fff1c9\"/><path d=\"M44 42 C30 30 22 40 28 48\" fill=\"none\" stroke=\"#c99a16\" stroke-width=\"6\" stroke-linecap=\"round\"/><path d=\"M76 42 C90 30 98 40 92 48\" fill=\"none\" stroke=\"#c99a16\" stroke-width=\"6\" stroke-linecap=\"round\"/><ellipse cx=\"30\" cy=\"62\" rx=\"12\" ry=\"6\" transform=\"rotate(-18 30 62)\" fill=\"#f3e6d0\" stroke=\"#2a1652\" stroke-width=\"2.5\"/><ellipse cx=\"90\" cy=\"62\" rx=\"12\" ry=\"6\" transform=\"rotate(18 90 62)\" fill=\"#f3e6d0\" stroke=\"#2a1652\" stroke-width=\"2.5\"/><path d=\"M60 38 C80 38 84 58 80 76 C77 92 70 100 60 100 C50 100 43 92 40 76 C36 58 40 38 60 38 Z\" fill=\"#fffaf0\" stroke=\"#2a1652\" stroke-width=\"3\"/><path d=\"M54 100 L60 112 L66 100\" fill=\"#f3e6d0\" stroke=\"#2a1652\" stroke-width=\"2.5\" stroke-linejoin=\"round\"/><ellipse cx=\"49\" cy=\"62\" rx=\"6\" ry=\"5\" fill=\"#f2c230\" stroke=\"#2a1652\" stroke-width=\"2.2\"/><rect x=\"45\" y=\"60.8\" width=\"8\" height=\"2.6\" rx=\"1.3\" fill=\"#2a1652\"/><ellipse cx=\"71\" cy=\"62\" rx=\"6\" ry=\"5\" fill=\"#f2c230\" stroke=\"#2a1652\" stroke-width=\"2.2\"/><rect x=\"67\" y=\"60.8\" width=\"8\" height=\"2.6\" rx=\"1.3\" fill=\"#2a1652\"/><ellipse cx=\"60\" cy=\"86\" rx=\"9\" ry=\"6\" fill=\"#ffc7d9\" stroke=\"#2a1652\" stroke-width=\"2.2\"/><circle cx=\"56.5\" cy=\"86\" r=\"1.6\" fill=\"#2a1652\"/><circle cx=\"63.5\" cy=\"86\" r=\"1.6\" fill=\"#2a1652\"/><path d=\"M55 94 Q60 97 65 94\" fill=\"none\" stroke=\"#2a1652\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><path d=\"M44 38 L46 22 L53 31 L60 18 L67 31 L74 22 L76 38 Z\" fill=\"#f2c230\" stroke=\"#2a1652\" stroke-width=\"2.5\" stroke-linejoin=\"round\"/><circle cx=\"60\" cy=\"30\" r=\"2.6\" fill=\"#e05a5a\"/></svg>", "<svg viewBox=\"0 0 120 120\"><defs><radialGradient id=\"pfGlow\" cx=\"50%\" cy=\"50%\" r=\"50%\"><stop offset=\"0\" stop-color=\"#ffe680\"/><stop offset=\"1\" stop-color=\"#d4a017\"/></radialGradient></defs><circle cx=\"60\" cy=\"60\" r=\"58\" fill=\"url(#pfGlow)\"/><line x1=\"100.0\" y1=\"60.0\" x2=\"116.0\" y2=\"60.0\" stroke=\"#fff6c8\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0.8\"/><line x1=\"94.6\" y1=\"80.0\" x2=\"108.5\" y2=\"88.0\" stroke=\"#fff6c8\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0.8\"/><line x1=\"80.0\" y1=\"94.6\" x2=\"88.0\" y2=\"108.5\" stroke=\"#fff6c8\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0.8\"/><line x1=\"60.0\" y1=\"100.0\" x2=\"60.0\" y2=\"116.0\" stroke=\"#fff6c8\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0.8\"/><line x1=\"40.0\" y1=\"94.6\" x2=\"32.0\" y2=\"108.5\" stroke=\"#fff6c8\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0.8\"/><line x1=\"25.4\" y1=\"80.0\" x2=\"11.5\" y2=\"88.0\" stroke=\"#fff6c8\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0.8\"/><line x1=\"20.0\" y1=\"60.0\" x2=\"4.0\" y2=\"60.0\" stroke=\"#fff6c8\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0.8\"/><line x1=\"25.4\" y1=\"40.0\" x2=\"11.5\" y2=\"32.0\" stroke=\"#fff6c8\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0.8\"/><line x1=\"40.0\" y1=\"25.4\" x2=\"32.0\" y2=\"11.5\" stroke=\"#fff6c8\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0.8\"/><line x1=\"60.0\" y1=\"20.0\" x2=\"60.0\" y2=\"4.0\" stroke=\"#fff6c8\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0.8\"/><line x1=\"80.0\" y1=\"25.4\" x2=\"88.0\" y2=\"11.5\" stroke=\"#fff6c8\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0.8\"/><line x1=\"94.6\" y1=\"40.0\" x2=\"108.5\" y2=\"32.0\" stroke=\"#fff6c8\" stroke-width=\"5\" stroke-linecap=\"round\" opacity=\"0.8\"/><polygon points=\"60.0,22.0 66.9,31.8 77.4,26.0 79.3,37.8 91.3,37.1 87.9,48.5 99.0,53.1 91.0,62.0 99.0,70.9 87.9,75.5 91.3,86.9 79.3,86.2 77.4,98.0 66.9,92.2 60.0,102.0 53.1,92.2 42.6,98.0 40.7,86.2 28.7,86.9 32.1,75.5 21.0,70.9 29.0,62.0 21.0,53.1 32.1,48.5 28.7,37.1 40.7,37.8 42.6,26.0 53.1,31.8\" fill=\"#ff8a3d\" stroke=\"#2a1652\" stroke-width=\"3\" stroke-linejoin=\"round\"/><circle cx=\"60\" cy=\"62\" r=\"29\" fill=\"#ffb347\"/><path d=\"M38 54 H82 L80 60 C78 68 68 68 64 61 H56 C52 68 42 68 40 60 Z\" fill=\"#2a1652\"/><path d=\"M44 57 L50 57\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\"/><path d=\"M68 57 L74 57\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\"/><path d=\"M46 74 Q60 90 74 74 Z\" fill=\"#fff\" stroke=\"#2a1652\" stroke-width=\"3\" stroke-linejoin=\"round\"/><path d=\"M53 76 V81 M60 76 V84 M67 76 V81\" stroke=\"#2a1652\" stroke-width=\"1.6\"/><path d=\"M14 40 L24 38 L18 52 L28 50 L14 70 L18 55 L10 57 Z\" fill=\"#fff6c8\" stroke=\"#2a1652\" stroke-width=\"2\" stroke-linejoin=\"round\"/><path d=\"M106 40 L96 38 L102 52 L92 50 L106 70 L102 55 L110 57 Z\" fill=\"#fff6c8\" stroke=\"#2a1652\" stroke-width=\"2\" stroke-linejoin=\"round\"/></svg>"];
+const STORE_LEVEL = "pathSpell.level.v1";
+const LEVELS = [
+  { name: "Pathbaby", rule: "Where everyone starts" },
+  { name: "Pathpro", need: 20 },
+  { name: "Pathchamp", need: 60 },
+  { name: "Pathlegend", need: 120 },
+  { name: "Pathgoat", need: 0 },        // every term learned (set below)
+  { name: "Pathophreak", gold: true }   // every lecture gold
+];
+LEVELS[4].need = ALL.length;
+LEVELS.forEach(L => { if (L.need) L.rule = L.need + " terms learned" + (L.need === ALL.length ? " (all of them)" : ""); });
+LEVELS[5].rule = "Every lecture gold";
+let levelBest = Number(load(STORE_LEVEL)) || 0;
+function levelStats() {
+  const learned = ALL.filter((x, i) => isLearned(srs[keyOf(i)])).length;
+  const golds = LECTURES.filter(L => badges[L.n] === 3).length;
+  let lv = 0;
+  for (let k = 1; k <= 4; k++) if (learned >= LEVELS[k].need) lv = k;
+  if (golds === LECTURES.length) lv = 5;
+  return { lv: Math.max(lv, levelBest), learned, golds };
+}
+// Returns the new level's name if this answer moved the student up, otherwise "".
+function checkLevel() {
+  const st = levelStats();
+  if (st.lv > levelBest) {
+    levelBest = st.lv;
+    store(STORE_LEVEL, String(levelBest));
+    toast("Level up! You're now a " + LEVELS[levelBest].name + ".");
+    return LEVELS[levelBest].name;
+  }
+  return "";
+}
+function levelProgress(st) {
+  const next = LEVELS[st.lv + 1];
+  if (!next) return { have: 1, need: 1, txt: "Top level reached. Whetū nui!" };
+  if (next.gold) {
+    const left = LECTURES.length - st.golds;
+    return { have: st.golds, need: LECTURES.length, txt: left + " more gold " + (left === 1 ? "lecture" : "lectures") + " to reach " + next.name };
+  }
+  const left = Math.max(0, next.need - st.learned);
+  return { have: Math.min(st.learned, next.need), need: next.need, txt: left + " more " + (left === 1 ? "term" : "terms") + " learned to reach " + next.name };
+}
+function paintLevel() {
+  const st = levelStats();
+  const box = document.getElementById("rankName");
+  box.dataset.lv = String(st.lv);
+  document.getElementById("rankText").textContent = LEVELS[st.lv].name;
+  const art = document.getElementById("rankArt");
+  art.innerHTML = LEVEL_ART[st.lv];
+  art.setAttribute("aria-label", LEVELS[st.lv].name + " picture");
+  const pr = levelProgress(st);
+  paintMeter(document.getElementById("rankMeter"), pr.have, 0, pr.need);
+  document.getElementById("rankNext").textContent = pr.txt;
+  const nextArt = document.getElementById("nextArt");
+  nextArt.parentElement.hidden = !LEVELS[st.lv + 1];
+  nextArt.innerHTML = LEVELS[st.lv + 1] ? LEVEL_ART[st.lv + 1] : "";
+  const list = document.getElementById("rankList");
+  list.innerHTML = "";
+  LEVELS.forEach((L, k) => {
+    const li = document.createElement("li");
+    const pic = document.createElement("span");
+    pic.className = "lv-art"; pic.setAttribute("aria-hidden", "true"); pic.innerHTML = LEVEL_ART[k];
+    const txt = document.createElement("span");
+    txt.textContent = L.name + ": " + L.rule;
+    li.append(pic, txt);
+    li.className = k === st.lv ? "here" : k > st.lv ? "locked" : "";
+    list.appendChild(li);
+  });
+}
+
+let luTimer = null, luReturn = null;
+function showLevelUp(name) {
+  const k = LEVELS.findIndex(L => L.name === name);
+  document.getElementById("luArt").innerHTML = LEVEL_ART[Math.max(0, k)];
+  document.getElementById("luName").textContent = name;
+  const box = document.getElementById("levelUp");
+  luReturn = document.activeElement;
+  box.hidden = false;
+  document.getElementById("luOk").focus();
+  clearTimeout(luTimer);
+  luTimer = setTimeout(hideLevelUp, 6000);
+}
+function hideLevelUp() {
+  clearTimeout(luTimer);
+  const box = document.getElementById("levelUp");
+  if (box.hidden) return;
+  box.hidden = true;
+  if (luReturn && luReturn.focus) luReturn.focus();
+}
+document.getElementById("luOk").addEventListener("click", hideLevelUp);
+document.getElementById("luShare").addEventListener("click", () => { hideLevelUp(); openShare(); });
+
+let scReturn = null;
+function openShare() {
+  const st = levelStats();
+  document.getElementById("scArt").innerHTML = LEVEL_ART[st.lv];
+  document.getElementById("scName").textContent = "I'm a " + LEVELS[st.lv].name + "!";
+  const bits = [plural(st.learned, "term") + " learned"];
+  if (st.golds) bits.push(st.golds + " gold " + (st.golds === 1 ? "lecture" : "lectures"));
+  if (daily.best) bits.push("best streak " + plural(daily.best, "day"));
+  document.getElementById("scStats").textContent = bits.join(" · ");
+  let dateTxt = "";
+  try { dateTxt = new Date().toLocaleDateString("en-NZ", { day: "numeric", month: "long", year: "numeric" }); } catch (e) { dateTxt = new Date().toDateString(); }
+  document.getElementById("scDate").textContent = dateTxt;
+  scReturn = document.activeElement;
+  document.getElementById("shareCard").hidden = false;
+  document.getElementById("scClose").focus();
+}
+function closeShare() {
+  const box = document.getElementById("shareCard");
+  if (box.hidden) return;
+  box.hidden = true;
+  if (scReturn && scReturn.focus) scReturn.focus();
+}
+document.getElementById("scClose").addEventListener("click", closeShare);
+document.getElementById("shareCard").addEventListener("click", e => { if (e.target.id === "shareCard") closeShare(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeShare(); });
+document.getElementById("shareBtn").addEventListener("click", openShare);
+document.getElementById("levelUp").addEventListener("click", e => { if (e.target.id === "levelUp") hideLevelUp(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") hideLevelUp(); });
+
+let toastTimer = null, toastAt = 0;
+function toast(msg) {
+  const el = document.getElementById("toast");
+  const now = Date.now();
+  // messages from the same answer are shown together; anything newer replaces the old one
+  el.textContent = (el.classList.contains("show") && now - toastAt < 400) ? el.textContent + " " + msg : msg;
+  toastAt = now;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 3200);
+}
+
+const DAY_LETTERS = ["S", "M", "T", "W", "T", "F", "S"];
+function paintDaily() {
+  const t = today(), r = dayRec(t), st = currentStreak();
+  document.getElementById("streakNum").textContent = plural(st, "day");
+  document.getElementById("flame").classList.toggle("on", st > 0);
+  document.getElementById("streakBest").textContent = daily.best ? "Streak · best " + plural(daily.best, "day") : "Day streak";
+  const met = r.n >= daily.goal;
+  document.getElementById("todayNum").textContent = met ? "Goal reached" : r.n + " of " + daily.goal;
+  const sub = document.getElementById("todaySub");
+  sub.textContent = met ? plural(r.n, "term") + " · Kia pai te rā!" : "terms today";
+  const returning = Object.keys(srs).length > 0 || Object.keys(daily.days).length > 0;
+  document.getElementById("greetSub").textContent = returning ? "Happy studying." : "Welcome. Happy studying.";
+  paintMeter(document.getElementById("todayMeter"), Math.min(r.n, daily.goal), 0, daily.goal);
+  document.getElementById("goalSel").value = String(daily.goal);
+  const week = document.getElementById("week");
+  week.innerHTML = "";
+  for (let d = t - 6; d <= t; d++) {
+    const rec = dayRec(d);
+    const wrap = document.createElement("div");
+    wrap.className = "day" + (d === t ? " today" : "");
+    const dot = document.createElement("span");
+    dot.className = "dot" + (rec.met ? " met" : rec.n ? " part" : "");
+    const lbl = document.createElement("span");
+    lbl.textContent = DAY_LETTERS[new Date(d * 86400000).getUTCDay()];
+    wrap.title = (d === t ? "Today" : "") + ": " + rec.n + " terms" + (rec.met ? ", goal met" : "");
+    wrap.append(dot, lbl);
+    week.appendChild(wrap);
+  }
+}
+document.getElementById("goalSel").addEventListener("change", e => {
+  daily.goal = Number(e.target.value) || 10;
+  const t = today(), r = dayRec(t);
+  if (!r.met && r.n >= daily.goal) { r.met = true; daily.days[t] = r; const st = currentStreak(); if (st > daily.best) daily.best = st; }
+  saveDaily();
+  paintDaily();
+});
+
+/* ---------- lobby music ---------- */
+// Plays on the home and setup screens. Browsers only allow sound after a tap, so it fades in on the first one.
+const STORE_MUSIC = "pathSpell.music.v1";
+const MUSIC_VOL = 0.3;
+const music = document.getElementById("lobbyMusic");
+const musicBtn = document.getElementById("musicBtn");
+let musicOn = load(STORE_MUSIC) !== "0";
+let inLobby = false;
+let mCtx = null, mGain = null;
+
+function ensureMusicGraph() {
+  if (mCtx) return;
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    mCtx = new AC();
+    const src = mCtx.createMediaElementSource(music);
+    mGain = mCtx.createGain();
+    mGain.gain.value = 0;
+    src.connect(mGain).connect(mCtx.destination);
+  } catch (e) { mCtx = null; mGain = null; }
+}
+function musicWanted() { return musicOn && inLobby && !document.hidden; }
+function startMusic() {
+  ensureMusicGraph();
+  try { if (mCtx && mCtx.state === "suspended") mCtx.resume(); } catch (e) {}
+  if (mGain) {
+    const t = mCtx.currentTime;
+    mGain.gain.cancelScheduledValues(t);
+    mGain.gain.setValueAtTime(0, t);
+    mGain.gain.linearRampToValueAtTime(MUSIC_VOL, t + 1.5);
+  } else {
+    try { music.volume = MUSIC_VOL; } catch (e) {}
+  }
+  try { const p = music.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+}
+function stopMusic() { try { music.pause(); } catch (e) {} }
+function paintMusicBtn() {
+  musicBtn.setAttribute("aria-pressed", musicOn ? "true" : "false");
+  musicBtn.textContent = musicOn ? "♪ Music on" : "♪ Music off";
+}
+function syncMusic() {
+  if (musicWanted()) { if (music.paused) startMusic(); }
+  else if (!music.paused) stopMusic();
+  paintMusicBtn();
+}
+function setLobby(v) { inLobby = v; syncMusic(); }
+musicBtn.addEventListener("click", () => {
+  musicOn = !musicOn;
+  store(STORE_MUSIC, musicOn ? "1" : "0");
+  syncMusic();
+});
+function unlockMusic() {
+  try { if (mCtx && mCtx.state === "suspended") mCtx.resume(); } catch (e) {}
+  if (musicWanted() && music.paused) startMusic();
+}
+document.addEventListener("pointerdown", unlockMusic, true);
+document.addEventListener("keydown", unlockMusic, true);
+document.addEventListener("visibilitychange", syncMusic);
+paintMusicBtn();
+
+/* ---------- start screen ---------- */
+let currentSet = null; // { kind: "all" } or { kind: "lec", n }
+
+function setIndices(set) {
+  if (set.kind === "review") { const q = reviewQueue(); return q.due.concat(q.fresh); }
+  if (set.kind === "custom") return set.indices.slice();
+  return ALL.map((x, i) => i).filter(i => set.kind === "all" || ALL[i].lec === set.n);
+}
+function setName(set) {
+  if (set.kind === "review") return "Spaced review";
+  if (set.kind === "custom") return set.name;
+  if (set.kind === "all") return "All lectures, random order";
+  const L = LECTURES.find(x => x.n === set.n);
+  return lecName(L.n) + ": " + L.topic;
+}
+
+els.allCount.textContent = ALL.length + " terms in random order";
+LECTURES.forEach(L => {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "lec";
+  b.id = "lec-" + L.n;
+  b.innerHTML = '<span class="num"></span><span class="t"></span><span class="n"></span><span class="meter"><span class="k"></span><span class="l"></span></span><span class="medal" data-level="0" role="img"></span>';
+  b.querySelector(".medal").innerHTML = MEDAL_SVG;
+  b.querySelector(".num").textContent = lecName(L.n);
+  b.querySelector(".t").textContent = L.topic;
+  b.querySelector(".n").textContent = L.items.length + " terms";
+  b.addEventListener("click", () => go("lecture-" + L.n));
+  els.lecGrid.appendChild(b);
+});
+els.allBtn.addEventListener("click", () => go("all"));
+els.reviewBtn.addEventListener("click", () => go("review"));
+els.hsBtn.addEventListener("click", () => go("hot-seat"));
+els.fcBtn.addEventListener("click", () => go("flashcards"));
+
+function go(hash) {
+  if (location.hash.slice(1) === hash) route(); else location.hash = hash;
+}
+
+function showMenu() {
+  setLobby(true);
+  currentSet = null;
+  cur = null;
+  els.menu.hidden = false;
+  els.roundHead.hidden = true;
+  els.bar.hidden = true;
+  els.card.hidden = true;
+  els.summaryCard.hidden = true;
+  els.restartBtn.hidden = true;
+  hideHotSeat();
+  hideFlashcards();
+  paintMenu();
+}
+
+function route() {
+  hsStop(false);
+  const h = location.hash.slice(1);
+  if (h === "hot-seat") { showHotSeatSetup(); return; }
+  if (h === "flashcards") { showFcSetup(); return; }
+  const m = h.match(/^lecture-(\d+)$/);
+  if (h === "all") openSet({ kind: "all" });
+  else if (h === "review") { if (reviewQueue().total) openSet({ kind: "review" }); else showMenu(); }
+  else if (m && LECTURES.some(L => L.n === Number(m[1]))) openSet({ kind: "lec", n: Number(m[1]) });
+  else showMenu();
+}
+
+function openSet(set) {
+  setLobby(false);
+  currentSet = set;
+  els.menu.hidden = true;
+  els.roundHead.hidden = false;
+  els.bar.hidden = false;
+  els.restartBtn.hidden = false;
+  hideHotSeat();
+  hideFlashcards();
+  els.roundName.textContent = setName(set);
+  startRound();
+  window.scrollTo(0, 0);
+}
+
+function toMenu() {
+  if (location.hash) {
+    try { history.pushState(null, "", location.pathname + location.search); } catch (e) { location.hash = ""; }
+  }
+  showMenu();
+  window.scrollTo(0, 0);
+}
+
+els.backBtn.addEventListener("click", toMenu);
+els.menuBtn.addEventListener("click", toMenu);
+window.addEventListener("hashchange", route);
+
+/* ---------- round ---------- */
+els.firstLetter.checked = load(STORE_FIRST) === "1";
+els.hideDashes.checked = load(STORE_HIDE) === "1";
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+let roundRun = 0, roundStartLearned = 0;
+function startRound(indices) {
+  roundRun = 0;
+  roundStartLearned = levelStats().learned;
+  const base = indices || setIndices(currentSet);
+  if (!base.length) { toMenu(); return; }
+  order = shuffle(base.slice());
+  orderRetry = order.map(() => false);
+  retryCount = {};
+  pos = 0;
+  results = [];
+  els.summaryCard.hidden = true;
+  els.card.hidden = false;
+  showTerm();
+}
+
+function setFeedback(text, kind) {
+  els.feedback.textContent = text;
+  els.feedback.className = "feedback" + (kind ? " " + kind : "");
+}
+
+const isSlotChar = ch => /[a-z0-9]/i.test(ch);
+
+function sizeSlots() {
+  if (!cur) return;
+  const longest = cur.longestSeg;
+  const width = els.slots.clientWidth || 600;
+  const gap = width < 420 ? 6 : 7;
+  const size = Math.max(14, Math.min(40, Math.floor((width - 8 - (longest - 1) * gap - 6) / longest)));
+  els.slots.style.setProperty("--slot", size + "px");
+  els.slots.style.setProperty("--gap", gap + "px");
+}
+
+function showTerm() {
+  const item = ALL[order[pos]];
+  els.definition.textContent = item.d;
+  els.lecTag.textContent = currentSet && currentSet.kind === "lec" ? "" : lecName(item.lec) + " · " + item.topic;
+  els.slots.innerHTML = "";
+  els.answerNote.hidden = true;
+  const inputs = [], answer = [];
+  let longestSeg = 1;
+  const words = item.s.trim().split(/\s+/);
+  words.forEach(word => {
+    const w = document.createElement("div");
+    w.className = "word";
+    // split after each hyphen so long hyphenated terms can wrap
+    const segs = word.match(/[^-]+-?|-/g) || [word];
+    segs.forEach(segText => {
+      const seg = document.createElement("div");
+      seg.className = "seg";
+      let units = 0;
+      for (const ch of segText) {
+        units++;
+        if (isSlotChar(ch)) {
+          const inp = document.createElement("input");
+          const n = inputs.length;
+          inp.className = "slot";
+          inp.id = "slot-" + n;
+          inp.type = "text";
+          inp.setAttribute("inputmode", "text");
+          inp.setAttribute("autocomplete", "off");
+          inp.setAttribute("autocorrect", "off");
+          inp.setAttribute("autocapitalize", "off");
+          inp.setAttribute("spellcheck", "false");
+          inp.setAttribute("aria-label", "Character " + (n + 1));
+          inp.dataset.i = n;
+          seg.appendChild(inp);
+          inputs.push(inp);
+          answer.push(ch.toLowerCase());
+        } else {
+          const s = document.createElement("span");
+          s.className = "sep";
+          s.textContent = ch === "'" ? "’" : ch;
+          s.setAttribute("aria-hidden", "true");
+          seg.appendChild(s);
+        }
+      }
+      longestSeg = Math.max(longestSeg, units);
+      w.appendChild(seg);
+    });
+    els.slots.appendChild(w);
+  });
+
+  cur = { item, inputs, answer, hints: 0, wrongTries: 0, done: false, longestSeg, retry: !!orderRetry[pos] };
+  inputs.forEach(wireInput);
+  sizeSlots();
+
+  const lens = item.s.split(/[ -]+/).map(w => (w.match(/[a-z0-9]/gi) || []).length).filter(Boolean);
+  cur.lensText = lens.join(" + ") + (lens.length === 1 && lens[0] === 1 ? " letter" : " letters");
+  els.freeAnswer.value = "";
+
+  if (els.hideDashes.checked) {
+    cur.mode = "free";
+    els.slots.hidden = true;
+    els.freeWrap.hidden = false;
+    els.hintBtn.textContent = "Show the dashes";
+    paintFreeMeta();
+  } else {
+    showDashes();
+  }
+
+  setFeedback("", "");
+  els.checkBtn.hidden = false;
+  els.hintBtn.hidden = false;
+  els.revealBtn.hidden = false;
+  els.nextBtn.hidden = true;
+  updateBar();
+  if (cur.mode === "free") els.freeAnswer.focus({ preventScroll: true }); else focusFirstOpen();
+}
+
+function paintFreeMeta() {
+  els.meta.textContent = "Starts with " + cur.answer[0].toUpperCase();
+  els.meta.hidden = !els.firstLetter.checked;
+}
+
+function showDashes() {
+  cur.mode = "dash";
+  els.freeWrap.hidden = true;
+  els.slots.hidden = false;
+  els.meta.hidden = false;
+  els.meta.textContent = cur.lensText;
+  els.hintBtn.textContent = "Give me a letter";
+  sizeSlots();
+  if (els.firstLetter.checked && cur.inputs.length && editable(0)) lockLetter(0, "hinted");
+}
+
+const norm = t => t.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+// Keep the letters of a typed attempt that line up with the answer (edit-distance alignment).
+function keepAligned(typed) {
+  const a = cur.answer, b = typed.split("");
+  const n = a.length, m = b.length;
+  const D = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = 0; i <= n; i++) D[i][0] = i;
+  for (let j = 0; j <= m; j++) D[0][j] = j;
+  for (let i = 1; i <= n; i++) for (let j = 1; j <= m; j++) {
+    D[i][j] = Math.min(D[i - 1][j] + 1, D[i][j - 1] + 1, D[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  }
+  let i = n, j = m, kept = 0;
+  while (i > 0 && j > 0) {
+    if (a[i - 1] === b[j - 1] && D[i][j] === D[i - 1][j - 1]) {
+      const inp = cur.inputs[i - 1];
+      inp.value = a[i - 1]; inp.readOnly = true; inp.classList.add("correct");
+      kept++; i--; j--;
+    } else if (D[i][j] === D[i - 1][j - 1] + 1) { i--; j--; }
+    else if (D[i][j] === D[i - 1][j] + 1) { i--; }
+    else { j--; }
+  }
+  return kept;
+}
+
+function allLocked() { return cur.inputs.every(inp => inp.readOnly); }
+
+function checkFree() {
+  const typed = norm(els.freeAnswer.value);
+  if (!typed) { setFeedback("Type your answer first, then check.", "info"); els.freeAnswer.focus(); return; }
+  if (typed === cur.answer.join("") || typed === norm(cur.item.a)) {
+    cur.inputs.forEach((inp, i) => { inp.value = cur.answer[i]; inp.readOnly = true; inp.classList.add("correct"); });
+    showDashes();
+    const clean = cur.hints === 0 && cur.wrongTries === 0;
+    finish(clean ? "ok" : "help");
+    setFeedback(celebrate(true) + (clean ? " Correct, first try." : " Correct." + requeueNote()), "ok");
+    return;
+  }
+  cur.wrongTries++;
+  const kept = keepAligned(typed);
+  showDashes();
+  if (allLocked()) {
+    finish("help");
+    setFeedback("Nearly. You had extra letters. Here's the spelling." + requeueNote(), "bad");
+    celebrate(false);
+    return;
+  }
+  setFeedback(kept
+    ? "Not quite. The green letters are right. Fill in the rest and check again."
+    : "Not quite. Here are the dashes. Fill them in and check again.", "bad");
+  focusFirstOpen();
+}
+
+window.addEventListener("resize", sizeSlots);
+
+function lockLetter(i, cls) {
+  const inp = cur.inputs[i];
+  inp.value = cur.answer[i];
+  inp.readOnly = true;
+  inp.classList.remove("wrong");
+  inp.classList.add(cls);
+}
+
+function editable(i) { return cur.inputs[i] && !cur.inputs[i].readOnly; }
+
+function focusFrom(i, dir) {
+  let j = i;
+  while (j >= 0 && j < cur.inputs.length) {
+    if (editable(j)) { cur.inputs[j].focus(); return true; }
+    j += dir;
+  }
+  return false;
+}
+
+function focusFirstOpen() {
+  const empty = cur.inputs.findIndex(inp => !inp.readOnly && !inp.value);
+  if (empty >= 0) { cur.inputs[empty].focus({ preventScroll: true }); return; }
+  focusFrom(0, 1);
+}
+
+function wireInput(inp) {
+  const i = Number(inp.dataset.i);
+  inp.addEventListener("focus", () => { if (!inp.readOnly) inp.select(); });
+  inp.addEventListener("input", () => {
+    const chars = inp.value.replace(/[^a-z0-9]/gi, "");
+    inp.value = chars.slice(-1).toLowerCase();
+    inp.classList.remove("wrong");
+    if (inp.value && !focusFrom(i + 1, 1)) inp.blur();
+  });
+  inp.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (cur.done) nextTerm(); else check();
+    } else if (e.key === "Backspace" && !inp.value) {
+      e.preventDefault();
+      let j = i - 1;
+      while (j >= 0 && !editable(j)) j--;
+      if (j >= 0) { cur.inputs[j].value = ""; cur.inputs[j].classList.remove("wrong"); cur.inputs[j].focus(); }
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault(); focusFrom(i - 1, -1);
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault(); focusFrom(i + 1, 1);
+    }
+  });
+  inp.addEventListener("paste", e => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData("text").replace(/[^a-z0-9]/gi, "").toLowerCase();
+    let j = i;
+    for (const ch of text) {
+      while (j < cur.inputs.length && !editable(j)) j++;
+      if (j >= cur.inputs.length) break;
+      cur.inputs[j].value = ch;
+      cur.inputs[j].classList.remove("wrong");
+      j++;
+    }
+    focusFirstOpen();
+  });
+}
+
+function showFullAnswer() {
+  const a = cur.item.a;
+  const plain = a.replace(/[–‑—]/g, "-").replace(/[’‘]/g, "'");
+  if (plain !== cur.item.s) {
+    els.answerNote.innerHTML = "";
+    els.answerNote.append("Full answer: ");
+    const b = document.createElement("b");
+    b.textContent = a;
+    els.answerNote.append(b);
+    els.answerNote.hidden = false;
+  }
+}
+
+const PRAISE = { ka: "Ka pai!", tino: "Tino pai!", whetu: "Whetū nui!", kaha: "Kia kaha!" };
+function kaPai(tier, text) {
+  const el = document.getElementById("kapai");
+  document.getElementById("kapaiText").textContent = text || PRAISE[tier];
+  document.getElementById("kpArt").innerHTML = LEVEL_ART[levelStats().lv];
+  el.classList.remove("show", "ka", "tino", "whetu", "kaha");
+  void el.offsetWidth;
+  el.classList.add(tier, "show");
+}
+// Shows the biggest praise earned by this answer. Returns the word used ("" if none).
+function requeueNote() { return cur && cur.requeued ? " It'll come back in a few cards." : ""; }
+function celebrate(correct) {
+  // never discouraging: anything that isn't a clean answer still gets "Kia kaha!"
+  const tier = (cur && cur.tier) || (correct ? "ka" : "kaha");
+  if (cur && cur.levelUp) showLevelUp(cur.levelUp); else kaPai(tier);
+  return PRAISE[tier];
+}
+
+function check() {
+  if (!cur || cur.done) return;
+  if (cur.mode === "free") { checkFree(); return; }
+  const left = cur.inputs.filter(inp => !inp.value).length;
+  if (left) {
+    setFeedback(left === 1 ? "One dash is still empty. Fill it in, then check." : left + " dashes are still empty. Fill them in, then check.", "info");
+    focusFirstOpen();
+    return;
+  }
+  let wrong = 0;
+  cur.inputs.forEach((inp, i) => {
+    if (inp.readOnly) return;
+    if (inp.value === cur.answer[i]) { inp.readOnly = true; inp.classList.add("correct"); }
+    else { inp.classList.add("wrong"); wrong++; }
+  });
+  if (wrong === 0) {
+    const clean = cur.hints === 0 && cur.wrongTries === 0;
+    finish(clean ? "ok" : "help");
+    setFeedback(celebrate(true) + (clean ? " Correct, first try." : " Correct." + requeueNote()), "ok");
+  } else {
+    cur.wrongTries++;
+    setFeedback(wrong === 1 ? "Nearly. The red letter is wrong. Fix it and check again." : "Not yet. The red letters are wrong. Fix them and check again.", "bad");
+    const firstWrong = cur.inputs.findIndex(inp => inp.classList.contains("wrong"));
+    if (firstWrong >= 0) cur.inputs[firstWrong].focus();
+  }
+}
+
+function hint() {
+  if (!cur || cur.done) return;
+  if (cur.mode === "free") {
+    cur.hints++;
+    const typed = norm(els.freeAnswer.value);
+    const kept = typed ? keepAligned(typed) : 0;
+    showDashes();
+    if (allLocked()) { finish("help"); setFeedback("That completes it." + requeueNote(), "ok"); celebrate(false); return; }
+    setFeedback(kept ? "Here are the dashes. Letters you had in the right place are kept." : "Here are the dashes.", "info");
+    focusFirstOpen();
+    return;
+  }
+  const i = cur.inputs.findIndex((inp, k) => !inp.readOnly && inp.value !== cur.answer[k]);
+  if (i < 0) { check(); return; }
+  cur.hints++;
+  lockLetter(i, "hinted");
+  if (cur.inputs.every((inp, k) => inp.value === cur.answer[k])) {
+    cur.inputs.forEach(inp => { if (!inp.readOnly) { inp.readOnly = true; inp.classList.add("correct"); } });
+    finish("help");
+    setFeedback("That completes it." + requeueNote(), "ok");
+    celebrate(false);
+  } else {
+    setFeedback("Letter " + (i + 1) + " filled in.", "info");
+    focusFirstOpen();
+  }
+}
+
+function reveal() {
+  if (!cur || cur.done) return;
+  if (cur.mode === "free") showDashes();
+  cur.inputs.forEach((inp, i) => {
+    if (inp.readOnly) return;
+    inp.value = cur.answer[i];
+    inp.readOnly = true;
+    inp.classList.remove("wrong");
+    inp.classList.add("revealed");
+  });
+  finish("bad");
+  setFeedback(cur.requeued ? "Here's the answer. It'll come back in a few cards." : "Here's the answer. It's added to your list to revisit.", "bad");
+  celebrate(false);
+}
+
+function finish(status) {
+  cur.done = true;
+  const idx = order[pos];
+  results[pos] = { idx, status, retry: cur.retry };
+  const g = srsGrade(idx, status, cur.retry);
+  // in a spaced review, a missed term comes back a few cards later until it's spelled right
+  cur.requeued = false;
+  if (currentSet && currentSet.kind === "review" && status !== "ok") {
+    retryCount[idx] = (retryCount[idx] || 0) + 1;
+    if (retryCount[idx] <= MAX_RETRIES) {
+      const at = Math.min(order.length, pos + 3);
+      order.splice(at, 0, idx);
+      orderRetry.splice(at, 0, true);
+      cur.requeued = true;
+    } else {
+      srsGiveUp(idx);
+    }
+  }
+  const day = recordDaily(g.isNew, g.wasDue && !cur.retry);
+  const badge = checkBadge(ALL[order[pos]].lec);
+  cur.levelUp = checkLevel();
+  roundRun = status === "ok" ? roundRun + 1 : 0;
+  const firsts = results.filter(r => r && !r.retry);
+  const perfect = pos + 1 === order.length && firsts.length >= 3 && firsts.every(r => r.status === "ok");
+  if (cur.levelUp || badge === 3 || perfect || day.newBest) cur.tier = "whetu";
+  else if (badge > 0 || day.justMet || (status === "ok" && roundRun % 5 === 0)) cur.tier = "tino";
+  else cur.tier = null;
+  showFullAnswer();
+  els.checkBtn.hidden = true;
+  els.hintBtn.hidden = true;
+  els.revealBtn.hidden = true;
+  els.nextBtn.hidden = false;
+  els.nextBtn.textContent = pos + 1 < order.length ? "Next term" : "See results";
+  els.nextBtn.focus();
+  updateBar();
+}
+
+function nextTerm() {
+  if (!cur || !cur.done) return;
+  pos++;
+  if (pos >= order.length) showSummary(); else showTerm();
+}
+
+function tally() {
+  const done = results.filter(r => r && !r.retry);
+  return {
+    ok: done.filter(r => r.status === "ok").length,
+    help: done.filter(r => r.status === "help").length,
+    bad: done.filter(r => r.status === "bad").length,
+    done: done.length
+  };
+}
+
+function updateBar() {
+  const t = tally();
+  els.count.textContent = "Term " + Math.min(pos + 1, order.length) + " of " + order.length;
+  els.fill.style.width = (order.length ? (results.filter(Boolean).length / order.length) * 100 : 0) + "%";
+  els.chipOk.textContent = t.ok + " first try";
+  els.chipHelp.textContent = t.help + " with help";
+  els.chipBad.textContent = t.bad + " shown";
+}
+
+function showSummary() {
+  const t = tally();
+  const lst = levelStats(), pr = levelProgress(lst);
+  const gained = lst.learned - roundStartLearned;
+  document.getElementById("sumArt").innerHTML = LEVEL_ART[lst.lv];
+  document.getElementById("sumMain").textContent = gained > 0
+    ? "+" + plural(gained, "term") + " learned this round"
+    : "Every round makes your memory stronger";
+  paintMeter(document.getElementById("sumMeter"), pr.have, 0, pr.need);
+  document.getElementById("sumNext").textContent = LEVELS[lst.lv].name + " · " + pr.txt;
+  els.card.hidden = true;
+  els.summaryCard.hidden = false;
+  els.count.textContent = "Round complete: " + plural(t.done, "term");
+  els.sOk.textContent = t.ok;
+  els.sHelp.textContent = t.help;
+  els.sBad.textContent = t.bad;
+  const missed = results.filter(r => r && !r.retry && r.status !== "ok");
+  els.missedList.innerHTML = "";
+  missed.forEach(r => {
+    const item = ALL[r.idx];
+    const li = document.createElement("li");
+    if (r.status === "bad") li.className = "revealed";
+    const s = document.createElement("strong");
+    s.textContent = item.a;
+    const tag = document.createElement("span");
+    tag.className = "tag";
+    tag.textContent = lecName(item.lec);
+    const p = document.createElement("p");
+    p.textContent = item.d;
+    li.append(s, tag, p);
+    els.missedList.appendChild(li);
+  });
+  els.missedWrap.hidden = missed.length === 0;
+  els.practiseBtn.hidden = missed.length === 0;
+  els.practiseBtn.textContent = "Practise these " + missed.length + " again";
+  $("summaryTitle").textContent = missed.length === 0
+    ? "Whetū nui! Every term spelled first try"
+    : (t.ok / Math.max(1, t.done) >= 0.8 ? "Tino pai! Round complete" : "Mahi pai! Round complete");
+  const dueNow = reviewQueue().total, nd = nextDue();
+  els.srsNote.textContent = "Review schedule updated. " + (dueNow
+    ? plural(dueNow, "term") + (dueNow === 1 ? " is" : " are") + " ready for review today."
+    : nd ? "Next review " + whenText(nd.inDays) + ": " + plural(nd.count, "term") + "." : "")
+    + (dayRec(today()).n >= daily.goal ? " Daily goal reached." : " Today: " + dayRec(today()).n + " of " + daily.goal + " terms.");
+  (missed.length ? els.practiseBtn : els.againBtn).focus();
+}
+
+els.checkBtn.addEventListener("click", check);
+els.hintBtn.addEventListener("click", hint);
+els.revealBtn.addEventListener("click", reveal);
+els.nextBtn.addEventListener("click", nextTerm);
+els.restartBtn.addEventListener("click", () => startRound());
+els.againBtn.addEventListener("click", () => startRound());
+els.practiseBtn.addEventListener("click", () => startRound(results.filter(r => r && !r.retry && r.status !== "ok").map(r => r.idx)));
+els.firstLetter.addEventListener("change", () => {
+  store(STORE_FIRST, els.firstLetter.checked ? "1" : "0");
+  if (!cur || cur.done) return;
+  if (cur.mode === "free") paintFreeMeta();
+  else if (els.firstLetter.checked && editable(0)) { lockLetter(0, "hinted"); focusFirstOpen(); }
+});
+els.hideDashes.addEventListener("change", () => {
+  store(STORE_HIDE, els.hideDashes.checked ? "1" : "0");
+  if (cur && !cur.done && !els.card.hidden) showTerm();
+});
+els.freeAnswer.addEventListener("keydown", e => {
+  if (e.key === "Enter") { e.preventDefault(); if (cur && cur.done) nextTerm(); else check(); }
+});
+
+/* ---------- Flashcards ---------- */
+const fc = { deck: [], cur: null, known: 0, total: 0, misses: {}, flipped: false, dir: "desc", name: "", busy: false };
+const fcEls = {
+  lecture: $("fcLecture"), card: $("fcCard"), front: $("fcFront"), back: $("fcBack"), frontKind: $("fcFrontKind"), backKind: $("fcBackKind"),
+  lecHint: $("fcLecHint"), flipRow: $("fcFlipRow"), rateRow: $("fcRateRow"), count: $("fcCount"), knownChip: $("fcKnown"), leftChip: $("fcLeft"),
+  fill: $("fcFill"), name: $("fcName"), doneNote: $("fcDoneNote"), tough: $("fcTough"), toughWrap: $("fcToughWrap"), spell: $("fcSpell")
+};
+(function fillFcSelect() {
+  const all = document.createElement("option");
+  all.value = "all"; all.textContent = "All lectures (" + ALL.length + " cards)";
+  fcEls.lecture.appendChild(all);
+  LECTURES.forEach(L => {
+    const o = document.createElement("option");
+    o.value = String(L.n);
+    o.textContent = lecName(L.n) + ": " + L.topic + " (" + L.items.length + ")";
+    fcEls.lecture.appendChild(o);
+  });
+})();
+
+function hideFlashcards() {
+  els.fcSetup.hidden = true; els.fcPlay.hidden = true; els.fcDone.hidden = true;
+}
+function fcHideOthers() {
+  currentSet = null; cur = null;
+  els.menu.hidden = true; els.roundHead.hidden = true; els.bar.hidden = true;
+  els.card.hidden = true; els.summaryCard.hidden = true;
+  els.hsSetup.hidden = true; els.hsResults.hidden = true;
+  els.appHeader.hidden = true; els.options.hidden = true;
+  hideFlashcards();
+}
+function showFcSetup() {
+  setLobby(true);
+  fcHideOthers();
+  els.fcSetup.hidden = false;
+  window.scrollTo(0, 0);
+}
+["fcHome1", "fcHome2", "fcHome3"].forEach(id => $(id).addEventListener("click", toMenu));
+$("fcSettings").addEventListener("click", showFcSetup);
+
+function fcStart(indices) {
+  setLobby(false);
+  const pick = fcEls.lecture.value;
+  fc.dir = (document.querySelector('input[name="fcDir"]:checked') || { value: "desc" }).value;
+  fc.deck = shuffle(indices ? indices.slice() : ALL.map((x, i) => i).filter(i => pick === "all" || ALL[i].lec === Number(pick)));
+  fc.lastIndices = fc.deck.slice();
+  fc.total = fc.deck.length; fc.known = 0; fc.misses = {};
+  fc.name = pick === "all" ? "Flashcards: all lectures" : "Flashcards: " + lecName(Number(pick)) + ", " + LECTURES.find(L => L.n === Number(pick)).topic;
+  fcHideOthers();
+  els.fcPlay.hidden = false;
+  fcEls.name.textContent = fc.name;
+  fcNext();
+  window.scrollTo(0, 0);
+}
+$("fcStart").addEventListener("click", () => fcStart());
+$("fcRedo").addEventListener("click", () => fcStart(fc.lastIndices));
+
+function fcPaintBar() {
+  const left = fc.total - fc.known;
+  fcEls.count.textContent = fc.known + " of " + fc.total + " known";
+  fcEls.knownChip.textContent = fc.known + " got it";
+  fcEls.leftChip.textContent = left + " to go";
+  fcEls.fill.style.width = (fc.total ? fc.known / fc.total * 100 : 0) + "%";
+}
+
+function fcSetFlipped(on) {
+  fc.flipped = on;
+  fcEls.card.classList.toggle("flipped", on);
+  fcEls.card.setAttribute("aria-label", on ? "Card showing the answer. Tap to flip back." : "Flip card");
+  fcEls.flipRow.hidden = on;
+  fcEls.rateRow.hidden = !on;
+}
+
+function fcNext() {
+  fcPaintBar();
+  if (!fc.deck.length) { fcFinish(); return; }
+  fc.cur = fc.deck.shift();
+  const item = ALL[fc.cur];
+  // turn the card face-down without animating, then fill it
+  fcEls.card.classList.remove("swipe-got", "swipe-again");
+  const inner = fcEls.card.querySelector(".fc-inner");
+  inner.style.transition = "none";
+  fcSetFlipped(false);
+  void inner.offsetWidth;
+  inner.style.transition = "";
+  const termFirst = fc.dir === "term";
+  fcEls.frontKind.textContent = termFirst ? "Term" : "Description";
+  fcEls.backKind.textContent = termFirst ? "Description" : "Term";
+  fcEls.front.textContent = termFirst ? item.a : item.d;
+  fcEls.front.className = "fc-text" + (termFirst ? " term" : "");
+  fcEls.back.textContent = termFirst ? item.d : item.a;
+  fcEls.back.className = "fc-text" + (termFirst ? "" : " term");
+  fcEls.lecHint.textContent = lecName(item.lec) + ": " + item.topic;
+  fc.busy = false;
+  fcEls.card.focus({ preventScroll: true });
+}
+
+function fcRate(got) {
+  if (!fc.flipped || fc.busy || fc.cur === null) return;
+  fc.busy = true;
+  if (got) {
+    fc.known++;
+  } else {
+    fc.misses[fc.cur] = (fc.misses[fc.cur] || 0) + 1;
+    const at = Math.min(fc.deck.length, 3 + Math.floor(Math.random() * 3));
+    fc.deck.splice(at, 0, fc.cur);
+  }
+  fcEls.card.classList.add(got ? "swipe-got" : "swipe-again");
+  setTimeout(fcNext, 180);
+}
+
+fcEls.card.addEventListener("click", () => { if (fc.swiped) { fc.swiped = false; return; } fcSetFlipped(!fc.flipped); });
+$("fcFlip").addEventListener("click", () => { fcSetFlipped(true); fcEls.card.focus({ preventScroll: true }); });
+$("fcGot").addEventListener("click", () => fcRate(true));
+$("fcAgain").addEventListener("click", () => fcRate(false));
+
+// swipe right = got it, left = still learning (only once the card is flipped)
+let fcSwipeX = null, fcSwipeY = null;
+fcEls.card.addEventListener("pointerdown", e => { fcSwipeX = e.clientX; fcSwipeY = e.clientY; });
+fcEls.card.addEventListener("pointerup", e => {
+  if (fcSwipeX === null) return;
+  const dx = e.clientX - fcSwipeX, dy = e.clientY - fcSwipeY;
+  fcSwipeX = null;
+  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+    fc.swiped = true;
+    if (fc.flipped) fcRate(dx > 0); else fcSetFlipped(true);
+  }
+});
+fcEls.card.addEventListener("pointercancel", () => { fcSwipeX = null; });
+
+document.addEventListener("keydown", e => {
+  if (els.fcPlay.hidden) return;
+  if (e.key === "ArrowRight" && fc.flipped) { e.preventDefault(); fcRate(true); }
+  else if (e.key === "ArrowLeft" && fc.flipped) { e.preventDefault(); fcRate(false); }
+});
+
+function fcFinish() {
+  fc.cur = null;
+  fcHideOthers();
+  els.fcDone.hidden = false;
+  const toughIdx = Object.keys(fc.misses).map(Number);
+  const firstTime = fc.total - toughIdx.length;
+  $("fcTitle").textContent = !toughIdx.length ? "Whetū nui! Deck complete" : (firstTime / fc.total >= 0.8 ? "Tino pai! Deck complete" : "Mahi pai! Deck complete");
+  fcEls.doneNote.textContent = toughIdx.length
+    ? "You got " + plural(fc.total - toughIdx.length, "card") + " first time. " + plural(toughIdx.length, "card") + " needed another look."
+    : "You knew every card first time.";
+  fcEls.tough.innerHTML = "";
+  toughIdx.sort((a, b) => fc.misses[b] - fc.misses[a]).forEach(i => {
+    const li = document.createElement("li");
+    const st = document.createElement("strong"); st.textContent = ALL[i].a;
+    const tag = document.createElement("span"); tag.className = "tag"; tag.textContent = lecName(ALL[i].lec) + (fc.misses[i] > 1 ? " · " + fc.misses[i] + " tries" : "");
+    const pp = document.createElement("p"); pp.textContent = ALL[i].d;
+    li.append(st, tag, pp);
+    fcEls.tough.appendChild(li);
+  });
+  fcEls.toughWrap.hidden = !toughIdx.length;
+  fcEls.spell.hidden = !toughIdx.length;
+  fc.tough = toughIdx;
+  window.scrollTo(0, 0);
+}
+fcEls.spell.addEventListener("click", () => {
+  if (location.hash) { try { history.pushState(null, "", location.pathname + location.search); } catch (e) {} }
+  hideFlashcards();
+  openSet({ kind: "custom", name: "Spelling: cards from your flashcards", indices: fc.tough });
+});
+
+/* ---------- Hot Seat ---------- */
+const hs = { deck: [], pos: 0, log: [], endAt: 0, timer: null, lock: false, state: "idle", audio: null, wake: null, endArmed: null };
+const hsEls = {
+  lecture: $("hsLecture"), showDesc: $("hsShowDesc"), sound: $("hsSound"), start: $("hsStart"),
+  timer: $("hsTimer"), term: $("hsTerm"), desc: $("hsDesc"), got: $("hsGot"), pass: $("hsPass"), end: $("hsEnd"), count: $("hsCount"),
+  score: $("hsScore"), scoreNote: $("hsScoreNote"), list: $("hsList"), again: $("hsAgain"), settings: $("hsSettings")
+};
+(function fillLectureSelect() {
+  const all = document.createElement("option");
+  all.value = "all"; all.textContent = "All lectures (" + ALL.length + " terms)";
+  hsEls.lecture.appendChild(all);
+  LECTURES.forEach(L => {
+    const o = document.createElement("option");
+    o.value = String(L.n);
+    o.textContent = lecName(L.n) + ": " + L.topic + " (" + L.items.length + ")";
+    hsEls.lecture.appendChild(o);
+  });
+})();
+
+function hideHotSeat() {
+  els.hsSetup.hidden = true;
+  els.hsResults.hidden = true;
+  els.appHeader.hidden = false;
+  els.options.hidden = false;
+}
+function showHotSeatSetup() {
+  setLobby(true);
+  currentSet = null; cur = null;
+  els.menu.hidden = true; els.roundHead.hidden = true; els.bar.hidden = true;
+  els.card.hidden = true; els.summaryCard.hidden = true;
+  els.appHeader.hidden = true; els.options.hidden = true;
+  els.hsResults.hidden = true;
+  hideFlashcards();
+  els.appHeader.hidden = true; els.options.hidden = true;
+  els.hsSetup.hidden = false;
+  window.scrollTo(0, 0);
+}
+$("hsHome1").addEventListener("click", toMenu);
+$("hsHome2").addEventListener("click", toMenu);
+hsEls.settings.addEventListener("click", showHotSeatSetup);
+
+function beep(freq, ms, when) {
+  if (!hsEls.sound.checked || !hs.audio) return;
+  try {
+    const ctx = hs.audio, t = ctx.currentTime + (when || 0);
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = "sine"; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.25, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + ms / 1000);
+    o.connect(g).connect(ctx.destination);
+    o.start(t); o.stop(t + ms / 1000 + 0.02);
+  } catch (e) {}
+}
+
+function hsSetTerm() {
+  if (hs.pos >= hs.deck.length) { shuffle(hs.deck); hs.pos = 0; }
+  const item = ALL[hs.deck[hs.pos]];
+  hsEls.term.textContent = item.a;
+  hsEls.desc.textContent = hsEls.showDesc.checked ? item.d : "";
+  hsEls.desc.hidden = !hsEls.showDesc.checked;
+}
+
+function fmt(sec) { const m = Math.floor(sec / 60), s2 = sec % 60; return m + ":" + String(s2).padStart(2, "0"); }
+
+function hsTick() {
+  const left = Math.max(0, Math.ceil((hs.endAt - performance.now()) / 1000));
+  if (hs.state === "playing") {
+    if (hsEls.timer.textContent !== fmt(left)) {
+      hsEls.timer.textContent = fmt(left);
+      hsEls.timer.classList.toggle("low", left <= 10);
+      if (left > 0 && left <= 5) beep(660, 90);
+    }
+    if (left <= 0) hsFinish();
+  }
+}
+
+hsEls.start.addEventListener("click", async () => {
+  setLobby(false);
+  const pick = hsEls.lecture.value;
+  hs.deck = shuffle(ALL.map((x, i) => i).filter(i => pick === "all" || ALL[i].lec === Number(pick)));
+  hs.pos = 0; hs.log = [];
+  hs.seconds = Number((document.querySelector('input[name="hsTime"]:checked') || { value: 90 }).value);
+  try { if (!hs.audio) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) hs.audio = new AC(); } if (hs.audio && hs.audio.state === "suspended") hs.audio.resume(); } catch (e) { hs.audio = null; }
+  try { const fs = document.documentElement.requestFullscreen; if (fs) document.documentElement.requestFullscreen().catch(() => {}); } catch (e) {}
+  try { if (navigator.wakeLock) hs.wake = await navigator.wakeLock.request("screen"); } catch (e) { hs.wake = null; }
+  els.hsPlay.hidden = false;
+  els.hsPlay.className = "hs-play";
+  hsEls.end.textContent = "End";
+  hsEls.count.textContent = "";
+  hsEls.desc.hidden = false;
+  hs.state = "countdown";
+  hs.lock = true;
+  let n = 3;
+  hsEls.timer.textContent = "";
+  hsEls.desc.textContent = "Hold the phone to your forehead, screen facing the group.";
+  const step = () => {
+    if (hs.state !== "countdown") return;
+    if (n > 0) {
+      hsEls.term.textContent = String(n);
+      beep(520, 120);
+      n--;
+      hs.timer = setTimeout(step, 900);
+    } else {
+      hs.state = "playing";
+      hs.lock = false;
+      hs.endAt = performance.now() + hs.seconds * 1000;
+      beep(880, 200);
+      hsSetTerm();
+      hsEls.timer.textContent = fmt(hs.seconds);
+      hsEls.count.textContent = "0";
+      hs.timer = setInterval(hsTick, 200);
+    }
+  };
+  step();
+});
+
+function hsMark(got) {
+  if (hs.state !== "playing" || hs.lock) return;
+  hs.lock = true;
+  hs.log.push({ idx: hs.deck[hs.pos], got });
+  hs.pos++;
+  hsEls.count.textContent = String(hs.log.filter(x => x.got).length);
+  els.hsPlay.classList.add(got ? "flash-got" : "flash-pass");
+  hsEls.term.textContent = got ? "Ka pai!" : "Pass";
+  hsEls.desc.textContent = "";
+  if (got) { beep(880, 120); beep(1175, 160, 0.12); } else { beep(300, 220); }
+  setTimeout(() => {
+    if (hs.state !== "playing") return;
+    els.hsPlay.classList.remove("flash-got", "flash-pass");
+    hsSetTerm();
+    hs.lock = false;
+  }, 700);
+}
+hsEls.got.addEventListener("click", () => hsMark(true));
+hsEls.pass.addEventListener("click", () => hsMark(false));
+document.addEventListener("keydown", e => {
+  if (els.hsPlay.hidden || hs.state !== "playing") return;
+  if (e.key === "ArrowUp" || e.key === " ") { e.preventDefault(); hsMark(true); }
+  else if (e.key === "ArrowDown") { e.preventDefault(); hsMark(false); }
+  else if (e.key === "Escape") { e.preventDefault(); hsFinish(); }
+});
+hsEls.end.addEventListener("click", () => {
+  if (hs.state === "done") return;
+  if (!hs.endArmed) {
+    hsEls.end.textContent = "Tap again to end";
+    hs.endArmed = setTimeout(() => { hs.endArmed = null; hsEls.end.textContent = "End"; }, 3000);
+    return;
+  }
+  clearTimeout(hs.endArmed); hs.endArmed = null;
+  hsFinish();
+});
+
+function hsStop(showResults) {
+  if (hs.state === "idle") return;
+  clearInterval(hs.timer); clearTimeout(hs.timer);
+  hs.state = "idle";
+  els.hsPlay.hidden = true;
+  els.hsPlay.className = "hs-play";
+  try { if (hs.wake) hs.wake.release(); } catch (e) {} hs.wake = null;
+  try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); } catch (e) {}
+}
+
+function hsFinish() {
+  if (hs.state !== "playing" && hs.state !== "countdown") return;
+  const wasPlaying = hs.state === "playing";
+  hs.state = "done";
+  clearInterval(hs.timer); clearTimeout(hs.timer);
+  if (!wasPlaying) { hsStop(); return; }
+  beep(330, 500);
+  els.hsPlay.classList.remove("flash-got", "flash-pass");
+  hsEls.term.textContent = "Time's up";
+  hsEls.desc.textContent = "";
+  hsEls.timer.textContent = "0:00";
+  setTimeout(() => {
+    if (hs.state !== "done") return;
+    hs.state = "done-shown";
+    hsStop();
+    hsShowResults();
+  }, 1200);
+}
+
+function hsShowResults() {
+  showHotSeatSetup();
+  els.hsSetup.hidden = true;
+  els.hsResults.hidden = false;
+  const got = hs.log.filter(x => x.got).length, passed = hs.log.length - got;
+  const perMin = got / ((hs.seconds || 90) / 60);
+  $("hsTitle").textContent = perMin >= 6 ? "Whetū nui!" : perMin >= 4 ? "Tino pai!" : got ? "Mahi pai!" : "Time's up";
+  hsEls.score.textContent = got + (got === 1 ? " term" : " terms");
+  hsEls.scoreNote.textContent = passed ? passed + " passed." : (hs.log.length ? "No passes." : "No terms played.");
+  hsEls.list.innerHTML = "";
+  hs.log.forEach(x => {
+    const li = document.createElement("li");
+    li.className = x.got ? "got" : "pass";
+    const mk = document.createElement("span");
+    mk.className = "mk"; mk.textContent = x.got ? "✓" : "–";
+    mk.setAttribute("aria-label", x.got ? "Got it" : "Passed");
+    const t = document.createElement("span");
+    t.textContent = ALL[x.idx].a;
+    li.append(mk, t);
+    hsEls.list.appendChild(li);
+  });
+  hsEls.again.focus();
+}
+hsEls.again.addEventListener("click", () => hsEls.start.click());
+
+route();
+
+// Save the app on this device so it works offline (only on its own website, not inside a preview).
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  try { navigator.serviceWorker.register("sw.js").catch(() => {}); } catch (e) {}
+}
+</script>
+</body>
+</html>
