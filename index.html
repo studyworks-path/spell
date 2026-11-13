@@ -337,6 +337,19 @@ h2 { margin: 0; font-family: var(--font-display); font-size: 1.5rem; }
 .sc-stats { margin: 4px 0 0; font-size: 0.92rem; opacity: 0.92; }
 .sc-date { margin: 0; font-size: 0.8rem; opacity: 0.75; }
 .sc-tip { margin: 4px 0 0; color: var(--muted); font-size: 0.85rem; }
+.score-face { padding-top: 16px; gap: 6px; }
+.score-face.clock { background: linear-gradient(150deg, #7a3e06 0%, #b8640f 50%, #c93d73 100%); }
+.score-face.timed { background: linear-gradient(150deg, #0b0f14 0%, #123a2a 55%, #4a2c82 100%); }
+.sc-host { height: 128px; display: flex; align-items: flex-end; justify-content: center; }
+.sc-host img { height: 128px; width: auto; display: block; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.35)); }
+.sc-game { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; line-height: 1.1; }
+.sc-big { margin: 2px 0 0; font-family: var(--font-display); font-weight: 800; font-size: 4.6rem; line-height: 0.95; font-variant-numeric: tabular-nums; }
+.sc-unit { margin: 0; font-size: 1rem; font-weight: 700; opacity: 0.95; }
+.sc-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 6px; }
+.sc-chip { padding: 4px 12px; border-radius: 999px; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.35); font-size: 0.85rem; font-weight: 700; }
+.sc-best { margin: 6px 0 0; font-size: 0.95rem; }
+.sc-new { display: inline-block; margin-top: 4px; padding: 4px 12px; border-radius: 999px; background: #ffd76a; color: #1d1a2e; font-weight: 800; font-size: 0.9rem; }
+.ks-score .share-btn { margin-left: 4px; }
 .sum-level { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; background: var(--paper); border: 1.5px solid var(--line); }
 .sum-art { width: 60px; height: 60px; display: block; }
 .sum-art svg { width: 100%; height: 100%; display: block; }
@@ -359,6 +372,24 @@ h2 { margin: 0; font-family: var(--font-display); font-size: 1.5rem; }
   background: var(--paper);
 }
 .review .label { margin: 0; color: var(--eosin); font-size: 0.7rem; }
+.review.hero { grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 16px 16px 14px; border-left-width: 6px; background: var(--surface); box-shadow: 0 6px 18px color-mix(in srgb, var(--eosin) 14%, transparent); }
+.review.hero .review-main { font-size: 1.35rem; }
+.review.hero > #reviewBtn { width: 100%; padding: 14px 16px; font-size: 1.08rem; }
+.lec-picker { border: 1.5px solid var(--line); border-radius: 12px; background: var(--surface); }
+.lec-picker > summary { list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; }
+.lec-picker > summary::-webkit-details-marker { display: none; }
+.lec-picker > summary::after { content: ""; width: 10px; height: 10px; flex: none; border-right: 2.5px solid var(--haem); border-bottom: 2.5px solid var(--haem); transform: rotate(45deg) translate(-2px, -2px); transition: transform 200ms ease; }
+.lec-picker[open] > summary::after { transform: rotate(225deg) translate(-2px, -2px); }
+.lec-picker > summary:focus-visible { outline: 3px solid var(--haem); outline-offset: 2px; border-radius: 10px; }
+.lp-title { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--haem); white-space: nowrap; }
+.lp-note { margin-left: auto; font-size: 0.85rem; color: var(--muted); font-weight: 700; white-space: nowrap; }
+.lp-note .due { color: var(--eosin); }
+.lp-body { display: grid; gap: 14px; padding: 0 14px 14px; }
+.sec-label { margin: 10px 0 -6px; display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; color: var(--ink); }
+.sec-label::after { content: ""; flex: 1; height: 1.5px; background: var(--line); }
+.games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.games-grid > button { height: 100%; align-content: start; }
+.more-label { margin: 6px 0 -8px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 .review-main { margin: 0; font-family: var(--font-display); font-size: 1.05rem; line-height: 1.2; font-weight: 700; font-variant-numeric: tabular-nums; }
 .review-sub { margin: 1px 0 0; color: var(--muted); font-size: 0.8rem; line-height: 1.3; }
 .review > button { padding: 8px 12px; font-size: 0.88rem; }
@@ -495,6 +526,90 @@ h2 { margin: 0; font-family: var(--font-display); font-size: 1.5rem; }
   @keyframes kapai { 0% { opacity: 0; } 15% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }
   .kapai { transform: translate(-50%, -50%); }
 }
+
+/* Keep them stable */
+.ks-btn {
+  display: grid; gap: 2px; text-align: left; padding: 16px 18px;
+  border: 1.5px solid #1f3b2c; background: #0d1512; color: #d8f5e4;
+}
+.ks-btn:hover { border-color: #3ddc84; }
+.ks-btn .big { font-family: var(--font-display); font-size: 1.2rem; color: #3ddc84; }
+.ks-btn .small { font-weight: 400; color: #9fc7b0; font-size: 0.92rem; }
+.monitor {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 14px; align-items: center;
+  padding: 12px 14px; border-radius: 16px; background: #0b0f14; border: 2px solid #22303a; color: #e6f2f8;
+  box-shadow: inset 0 0 24px rgba(0,0,0,0.6);
+}
+.monitor canvas { width: 100%; height: 86px; display: block; }
+.mon-vals { display: grid; gap: 4px; justify-items: end; }
+.mon-v { display: grid; justify-items: end; line-height: 1; }
+.mon-l { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; opacity: 0.85; }
+.mon-n { font-family: var(--font-mono); font-weight: 600; font-size: 2.1rem; font-variant-numeric: tabular-nums; }
+.mon-v.hr { color: #3ddc84; }
+.mon-v.spo2 { color: #33d6ff; }
+.monitor[data-zone="amber"] .mon-v.spo2 { color: #ffb020; }
+.monitor[data-zone="red"] .mon-v.spo2 { color: #ff5d6c; animation: monBlink 1s steps(2) infinite; }
+.monitor[data-zone="red"] { border-color: #6b1f28; }
+@keyframes monBlink { 50% { opacity: 0.35; } }
+.mon-status { grid-column: 1 / -1; margin: 0; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #3ddc84; }
+.monitor[data-zone="amber"] .mon-status { color: #ffb020; }
+.monitor[data-zone="red"] .mon-status { color: #ff5d6c; }
+.mon-dots { display: flex; gap: 5px; }
+.mon-dot { width: 10px; height: 10px; border-radius: 50%; background: #22303a; }
+.mon-dot.on { background: #ff5d6c; }
+.ks-word { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px 20px; padding: 6px 0; --ch: 30px; }
+.ks-w { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 0; }
+.ks-seg { display: flex; gap: 5px; flex-wrap: nowrap; align-items: flex-end; }
+.ks-ch {
+  width: var(--ch); height: calc(var(--ch) * 1.3); display: flex; align-items: flex-end; justify-content: center;
+  border-bottom: 3px solid var(--ink); font-family: var(--font-mono); font-weight: 600; font-size: calc(var(--ch) * 0.75);
+  text-transform: uppercase; color: var(--ink); line-height: 1.1;
+}
+.ks-ch.got { color: var(--ok); border-bottom-color: var(--ok); }
+.ks-ch.missed { color: var(--hint); border-bottom-color: var(--hint); }
+.ks-ch.cur { border-bottom-color: var(--haem); background: color-mix(in srgb, var(--haem) 14%, transparent); }
+.ks-ch.nope { color: var(--bad); border-bottom-color: var(--bad); animation: ksShake 320ms ease; }
+@keyframes ksShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+.ks-key.flash-hit { background: var(--ok); border-color: var(--ok); color: var(--surface); }
+.ks-key.flash-miss { background: var(--bad); border-color: var(--bad); color: #ffffff; }
+.ks-ch.fixed { border-bottom-color: transparent; color: var(--muted); width: auto; padding: 0 1px; }
+.ks-keys { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.ks-key {
+  min-height: 46px; padding: 0; font-family: var(--font-mono); font-weight: 600; font-size: 1.15rem;
+  text-transform: uppercase; border-radius: 10px;
+}
+.ks-key.hit { background: var(--ok); border-color: var(--ok); color: var(--surface); }
+.ks-key.miss { background: var(--line); border-color: var(--line); color: var(--muted); text-decoration: line-through; }
+.ks-key:disabled { cursor: default; }
+.ks-score { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; font-size: 0.92rem; color: var(--muted); }
+.ks-score b { color: var(--ink); font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) { .monitor[data-zone="red"] .mon-v.spo2, .ks-ch.nope { animation: none; } }
+.ks-btn.timed .big { color: #ffb020; }
+.ks-btn.timed { border-color: #3d3220; }
+.ks-btn.timed:hover { border-color: #ffb020; }
+.clock-btn { display: grid; gap: 2px; text-align: left; padding: 16px 18px; border: 1.5px solid var(--hint); background: color-mix(in srgb, var(--hint) 9%, var(--surface)); }
+.clock-btn .big { font-family: var(--font-display); font-size: 1.2rem; color: var(--hint); }
+.clock-btn .small { font-weight: 400; color: var(--muted); font-size: 0.92rem; }
+.mon-time { font-family: var(--font-mono); font-weight: 600; font-size: 1.15rem; color: #ffffff; font-variant-numeric: tabular-nums; }
+.monitor[data-zone="red"] .mon-time { color: #ff5d6c; }
+.clock-bar { display: grid; gap: 8px; padding: 12px 16px; border-radius: 16px; background: var(--surface); border: 2px solid var(--hint); }
+.clock-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.clock-time { font-family: var(--font-mono); font-weight: 600; font-size: 2.2rem; line-height: 1; color: var(--hint); font-variant-numeric: tabular-nums; }
+.clock-bar.low .clock-time { color: var(--bad); }
+.clock-score { font-size: 1.05rem; color: var(--muted); }
+.clock-score b { font-family: var(--font-display); font-size: 1.6rem; color: var(--ink); }
+.clock-bar .fill { background: var(--hint); transition: width 120ms linear; }
+.clock-bar.low .fill { background: var(--bad); }
+.best-box { display: grid; gap: 8px; padding: 12px 14px; border-radius: 12px; background: var(--paper); border: 1.5px solid var(--line); }
+.best-box .label { margin: 0; color: var(--hint); }
+.best-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; }
+.best-chip { display: grid; justify-items: center; gap: 2px; padding: 8px 6px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface); }
+.best-chip b { font-family: var(--font-display); font-size: 1.5rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.best-chip span { font-size: 0.78rem; color: var(--muted); font-weight: 700; }
+.best-chip.sel { border-color: var(--haem); background: color-mix(in srgb, var(--haem) 10%, var(--surface)); }
+.best-chip.sel span { color: var(--haem); }
+.ks-card-flash { animation: ksGood 450ms ease; }
+@keyframes ksGood { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent); } 100% { box-shadow: 0 0 0 14px transparent; } }
 
 /* Flashcards */
 .fc-btn {
@@ -645,8 +760,23 @@ select:focus-visible { outline: 3px solid var(--haem); outline-offset: 1px; }
         <button type="button" class="share-btn" id="shareBtn">Share my level</button>
       </div>
     </div>
-    <h2>What do you want to practise?</h2>
-    <p class="menu-sub">Pick one lecture, mix questions from every lecture, or review the terms that are due.</p>
+    <div class="review hero" id="reviewBox">
+      <div>
+        <p class="label">Start here · Today's spaced review</p>
+        <p class="review-main" id="reviewMain"></p>
+        <p class="review-sub" id="reviewSub"></p>
+      </div>
+      <button type="button" class="primary" id="reviewBtn">Start review</button>
+      <div class="fq-row">
+        <div class="fq">
+          <p class="fq-title">Due this week</p>
+          <div class="fq-days" id="fqDays" role="img"></div>
+        </div>
+        <label class="goal-row stack" for="newSel">New a day
+          <select id="newSel"><option value="0">None</option><option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="20">20</option><option value="25">25</option><option value="30">30</option></select>
+        </label>
+      </div>
+    </div>
     <div class="daily" id="dailyBox">
       <div class="daily-top">
         <div class="streak">
@@ -669,30 +799,19 @@ select:focus-visible { outline: 3px solid var(--haem); outline-offset: 1px; }
         </label>
       </div>
     </div>
-    <div class="review" id="reviewBox">
-      <div>
-        <p class="label">Spaced review</p>
-        <p class="review-main" id="reviewMain"></p>
-        <p class="review-sub" id="reviewSub"></p>
+    <h3 class="sec-label">Practice</h3>
+    <details class="lec-picker" id="lecPicker">
+      <summary><span class="lp-title">Choose a lecture</span><span class="lp-note" id="lecSumNote"></span></summary>
+      <div class="lp-body">
+      <div class="legend" aria-hidden="true"><span><i class="k"></i>Learned</span><span><i class="l"></i>Still learning</span><span><i class="u"></i>Not started</span></div>
+      <div class="badge-key">
+        <span><span class="medal" data-level="1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h4l1.5 5-3 1.5L7 2zm10 0h-4l-1.5 5 3 1.5L17 2z" fill="currentColor" opacity="0.55"/><circle cx="12" cy="15" r="7" fill="currentColor"/><circle cx="12" cy="15" r="4.6" fill="none" stroke="#fff" stroke-opacity="0.6" stroke-width="1.3"/></svg></span>Bronze: half the terms learned</span>
+        <span><span class="medal" data-level="2"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h4l1.5 5-3 1.5L7 2zm10 0h-4l-1.5 5 3 1.5L17 2z" fill="currentColor" opacity="0.55"/><circle cx="12" cy="15" r="7" fill="currentColor"/><circle cx="12" cy="15" r="4.6" fill="none" stroke="#fff" stroke-opacity="0.6" stroke-width="1.3"/></svg></span>Silver: every term learned</span>
+        <span><span class="medal" data-level="3"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h4l1.5 5-3 1.5L7 2zm10 0h-4l-1.5 5 3 1.5L17 2z" fill="currentColor" opacity="0.55"/><circle cx="12" cy="15" r="7" fill="currentColor"/><circle cx="12" cy="15" r="4.6" fill="none" stroke="#fff" stroke-opacity="0.6" stroke-width="1.3"/></svg></span>Gold: every term passed a 3-day review</span>
       </div>
-      <button type="button" class="primary" id="reviewBtn">Start review</button>
-      <div class="fq-row">
-        <div class="fq">
-          <p class="fq-title">Due this week</p>
-          <div class="fq-days" id="fqDays" role="img"></div>
-        </div>
-        <label class="goal-row stack" for="newSel">New a day
-          <select id="newSel"><option value="0">None</option><option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="20">20</option><option value="25">25</option><option value="30">30</option></select>
-        </label>
+      <div class="lec-grid" id="lecGrid"></div>
       </div>
-    </div>
-    <div class="legend" aria-hidden="true"><span><i class="k"></i>Learned</span><span><i class="l"></i>Still learning</span><span><i class="u"></i>Not started</span></div>
-    <div class="badge-key">
-      <span><span class="medal" data-level="1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h4l1.5 5-3 1.5L7 2zm10 0h-4l-1.5 5 3 1.5L17 2z" fill="currentColor" opacity="0.55"/><circle cx="12" cy="15" r="7" fill="currentColor"/><circle cx="12" cy="15" r="4.6" fill="none" stroke="#fff" stroke-opacity="0.6" stroke-width="1.3"/></svg></span>Bronze: half the terms learned</span>
-      <span><span class="medal" data-level="2"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h4l1.5 5-3 1.5L7 2zm10 0h-4l-1.5 5 3 1.5L17 2z" fill="currentColor" opacity="0.55"/><circle cx="12" cy="15" r="7" fill="currentColor"/><circle cx="12" cy="15" r="4.6" fill="none" stroke="#fff" stroke-opacity="0.6" stroke-width="1.3"/></svg></span>Silver: every term learned</span>
-      <span><span class="medal" data-level="3"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h4l1.5 5-3 1.5L7 2zm10 0h-4l-1.5 5 3 1.5L17 2z" fill="currentColor" opacity="0.55"/><circle cx="12" cy="15" r="7" fill="currentColor"/><circle cx="12" cy="15" r="4.6" fill="none" stroke="#fff" stroke-opacity="0.6" stroke-width="1.3"/></svg></span>Gold: every term passed a 3-day review</span>
-    </div>
-    <div class="lec-grid" id="lecGrid"></div>
+    </details>
     <button type="button" class="all-btn" id="allBtn">
       <span class="big">Random from all lectures</span>
       <span class="small" id="allCount">189 terms in random order</span>
@@ -702,10 +821,25 @@ select:focus-visible { outline: 3px solid var(--haem); outline-offset: 1px; }
       <span class="big">Flashcards</span>
       <span class="small">Flip through descriptions and terms. Cards you're unsure of come back until you know them.</span>
     </button>
-    <button type="button" class="hs-btn" id="hsBtn">
-      <span class="big">Hot Seat: group game</span>
-      <span class="small">One player holds the phone to their forehead. The group gives clues until they name the term.</span>
-    </button>
+    <h3 class="sec-label">Games</h3>
+    <div class="games-grid">
+      <button type="button" class="ks-btn" id="ksBtn">
+        <span class="big">Keep them stable</span>
+        <span class="small">Spell the term letter by letter, in order. Every wrong letter drops the patient's SpO₂.</span>
+      </button>
+      <button type="button" class="ks-btn timed" id="ktBtn">
+        <span class="big">Time critical</span>
+        <span class="small">30, 45 or 60 seconds per patient. Spell the term before time runs out. Wrong letters cost 5 seconds.</span>
+      </button>
+      <button type="button" class="clock-btn" id="kcBtn">
+        <span class="big">Beat the clock</span>
+        <span class="small">Pick a shift length, then spell as many terms as you can before time runs out.</span>
+      </button>
+      <button type="button" class="hs-btn" id="hsBtn">
+        <span class="big">Hot Seat: group game</span>
+        <span class="small">One player holds the phone to their forehead. The group gives clues until they name the term.</span>
+      </button>
+    </div>
   </section>
 
   <div class="round-head" id="roundHead" hidden>
@@ -768,6 +902,103 @@ select:focus-visible { outline: 3px solid var(--haem); outline-offset: 1px; }
       <button type="button" class="primary" id="practiseBtn">Practise these again</button>
       <button type="button" id="againBtn">Play this set again</button>
       <button type="button" id="menuBtn">← Back to home</button>
+    </div>
+  </section>
+
+  <section class="card" id="ksSetup" hidden>
+    <div class="hs-head">
+      <button type="button" class="back-btn" id="ksHome1">← Home</button>
+      <h2 id="ksTitle">Keep them stable</h2>
+    </div>
+    <ol class="hs-steps" id="ksSteps"></ol>
+    <label class="field" for="ksLecture">
+      <span id="ksFromLbl">Patients from</span>
+      <select id="ksLecture"></select>
+    </label>
+    <fieldset class="field" id="ksDurWrap" hidden>
+      <legend>Shift length</legend>
+      <div class="seg-row">
+        <label><input type="radio" name="ksDur" value="120" id="ksDur120" checked><span>2 min</span></label>
+        <label><input type="radio" name="ksDur" value="180" id="ksDur180"><span>3 min</span></label>
+        <label><input type="radio" name="ksDur" value="300" id="ksDur300"><span>5 min</span></label>
+      </div>
+    </fieldset>
+    <fieldset class="field" id="ktDurWrap" hidden>
+      <legend>Time per patient</legend>
+      <div class="seg-row">
+        <label><input type="radio" name="ktDur" value="30" id="ktDur30" checked><span>30 s</span></label>
+        <label><input type="radio" name="ktDur" value="45" id="ktDur45"><span>45 s</span></label>
+        <label><input type="radio" name="ktDur" value="60" id="ktDur60"><span>60 s</span></label>
+      </div>
+    </fieldset>
+    <div class="best-box" id="ksBestBox">
+      <p class="label" id="ksBestLbl">Your personal bests</p>
+      <div class="best-row" id="ksBestRow"></div>
+    </div>
+    <div class="actions" style="justify-content:flex-start">
+      <button type="button" class="primary" id="ksStart">Start shift</button>
+    </div>
+  </section>
+
+  <section id="ksPlay" hidden style="display:grid;gap:14px">
+    <div class="round-head">
+      <button type="button" class="back-btn" id="ksHome2">← Home</button>
+      <span class="round-name" id="ksName">Keep them stable</span>
+    </div>
+    <div class="clock-bar" id="ksClock" hidden>
+      <div class="clock-top">
+        <span class="clock-time" id="ksClockTime" role="timer" aria-live="off">1:00</span>
+        <span class="clock-score">Spelled <b id="ksClockScore">0</b> · Best <b id="ksClockBest">0</b></span>
+      </div>
+      <div class="track"><div class="fill" id="ksClockFill" style="width:100%"></div></div>
+    </div>
+    <div class="monitor" id="ksMonitor" data-zone="green">
+      <canvas id="ksEcg" aria-hidden="true"></canvas>
+      <div class="mon-vals">
+        <div class="mon-v hr"><span class="mon-l">HR</span><span class="mon-n" id="ksHr">78</span></div>
+        <div class="mon-v spo2"><span class="mon-l">SpO₂ %</span><span class="mon-n" id="ksSpo2">98</span></div>
+      </div>
+      <div class="mon-status" style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <span id="ksStatus" role="status" aria-live="polite">Patient stable</span>
+        <span class="mon-dots" id="ksDots" aria-hidden="true"></span>
+        <span class="mon-time" id="ksTime" hidden role="timer" aria-live="off">0:30</span>
+      </div>
+    </div>
+    <section class="card" id="ksCard">
+      <div class="card-head"><p class="label">Description</p><span class="lec-tag" id="ksLec"></span></div>
+      <p class="definition" id="ksDesc"></p>
+      <div class="ks-word" id="ksWord" role="img"></div>
+      <p class="feedback" id="ksFeedback" role="status" aria-live="polite"></p>
+      <p class="answer-note" id="ksNote" hidden></p>
+      <div class="ks-keys" id="ksKeys" role="group" aria-label="Letters"></div>
+      <div class="actions"><button type="button" class="primary" id="ksNext" hidden>Next patient</button><button type="button" id="ksSkip" hidden>Skip this term</button></div>
+    </section>
+    <div class="ks-score" id="ksScoreRow">
+      <span>Stabilised: <b id="ksTotal">0</b></span>
+      <span>In a row: <b id="ksRun">0</b></span>
+      <span>Best run: <b id="ksBest">0</b></span>
+      <button type="button" class="share-btn" id="ksScoreBtn" hidden>Score card</button>
+    </div>
+  </section>
+
+  <section class="card" id="ksClockDone" hidden>
+    <div class="hs-head">
+      <button type="button" class="back-btn" id="ksHome3">← Home</button>
+      <h2 id="ksCdTitle">Time!</h2>
+    </div>
+    <p class="hs-score" id="ksCdCount">0 terms</p>
+    <p class="srs-note" id="ksCdNote"></p>
+    <div id="ksCdMissWrap">
+      <p class="label" style="margin-bottom:10px">The one you were on</p>
+      <ul class="missed" id="ksCdMiss"></ul>
+    </div>
+    <div id="ksCdListWrap">
+      <p class="label" style="margin-bottom:10px">Spelled this shift</p>
+      <ul class="hs-list" id="ksCdList"></ul>
+    </div>
+    <div class="actions" style="justify-content:flex-start">
+      <button type="button" class="primary" id="ksCdAgain">New shift</button>
+      <button type="button" id="ksCdCard">Show my score card</button>
     </div>
   </section>
 
@@ -907,6 +1138,23 @@ select:focus-visible { outline: 3px solid var(--haem); outline-offset: 1px; }
       <button type="button" class="primary" id="luOk">Ka pai!</button>
       <button type="button" id="luShare">Share my level</button>
     </div>
+  </div>
+</div>
+<div class="levelup" id="scoreCard" hidden>
+  <div class="lu-card" role="dialog" aria-labelledby="scoreGame" aria-modal="true">
+    <div class="share-face score-face" id="scoreFace">
+      <div class="sc-host"><img id="scoreHost" alt=""></div>
+      <p class="sc-kicker">Name That Pathology</p>
+      <p class="sc-game" id="scoreGame"></p>
+      <p class="sc-big" id="scoreNum">0</p>
+      <p class="sc-unit" id="scoreUnit"></p>
+      <div class="sc-chips"><span class="sc-chip" id="scoreLec"></span><span class="sc-chip" id="scoreCap"></span></div>
+      <p class="sc-best" id="scoreBest"></p>
+      <span class="sc-new" id="scoreNew" hidden>New personal best!</span>
+      <p class="sc-date" id="scoreDate"></p>
+    </div>
+    <p class="sc-tip">Take a screenshot to show your friends.</p>
+    <button type="button" class="primary" id="scoreDone">Done</button>
   </div>
 </div>
 <div class="levelup" id="shareCard" hidden>
@@ -1105,7 +1353,7 @@ function paintMenu() {
     els.reviewMain.textContent = "All done for today";
     els.reviewSub.textContent = q.held
       ? "Today's limit of " + REVIEW_CAP + " reached. The rest carry over."
-      : nd ? "Next review " + whenText(nd.inDays) + ": " + plural(nd.count, "term") + "." : "";
+      : (nd ? "Next review " + whenText(nd.inDays) + ": " + plural(nd.count, "term") + ". " : "") + "Choose a lecture below for extra practice.";
     els.reviewBtn.hidden = true;
   } else {
     els.reviewMain.textContent = "No terms yet";
@@ -1143,6 +1391,11 @@ function paintMenu() {
   });
   paintDaily();
   paintLevel();
+  const lecDue = dueAll().length;
+  const note = document.getElementById("lecSumNote");
+  note.innerHTML = "";
+  if (lecDue) { const d = document.createElement("span"); d.className = "due"; d.textContent = lecDue + " due"; note.appendChild(d); }
+  else note.append(LECTURES.length + " lectures");
 }
 
 function paintForecast() {
@@ -1521,6 +1774,9 @@ els.allBtn.addEventListener("click", () => go("all"));
 els.reviewBtn.addEventListener("click", () => go("review"));
 els.hsBtn.addEventListener("click", () => go("hot-seat"));
 els.fcBtn.addEventListener("click", () => go("flashcards"));
+document.getElementById("ksBtn").addEventListener("click", () => go("stable"));
+document.getElementById("ktBtn").addEventListener("click", () => go("timed"));
+document.getElementById("kcBtn").addEventListener("click", () => go("clock"));
 
 function go(hash) {
   if (location.hash.slice(1) === hash) route(); else location.hash = hash;
@@ -1546,6 +1802,9 @@ function route() {
   const h = location.hash.slice(1);
   if (h === "hot-seat") { showHotSeatSetup(); return; }
   if (h === "flashcards") { showFcSetup(); return; }
+  if (h === "stable") { showKsSetup("stable"); return; }
+  if (h === "timed") { showKsSetup("timed"); return; }
+  if (h === "clock") { showKsSetup("clock"); return; }
   const m = h.match(/^lecture-(\d+)$/);
   if (h === "all") openSet({ kind: "all" });
   else if (h === "review") { if (reviewQueue().total) openSet({ kind: "review" }); else showMenu(); }
@@ -2077,6 +2336,500 @@ els.freeAnswer.addEventListener("keydown", e => {
   if (e.key === "Enter") { e.preventDefault(); if (cur && cur.done) nextTerm(); else check(); }
 });
 
+/* ---------- Keep them stable ---------- */
+const KS_MAX = 3;                 // wrong letters before handover
+const KS_BEST = "pathSpell.ksBest.v1";
+const KS_MODES = {
+  stable: { title: "Keep them stable", start: "Start shift", from: "Patients from", best: KS_BEST, steps: [
+    "Read the description and spell the term one letter at a time, in order.",
+    "Every wrong letter drops the patient's SpO₂ and their heart rate climbs.",
+    "You have three chances. Name the term before your third wrong letter to stabilise your patient."] },
+  timed: { title: "Time critical", start: "Start shift", from: "Patients from", best: "pathSpell.ktBest.v1", steps: [
+    "Read the description and spell the term one letter at a time, in order.",
+    "Choose 30, 45 or 60 seconds per patient. 30 seconds matches a station in the real test. As time runs down their SpO₂ falls, then VF, then asystole.",
+    "Wrong letters cost 5 seconds. Finish the term before time runs out to stabilise your patient."] },
+  clock: { title: "Beat the clock", start: "Start the clock", from: "Terms from", best: "pathSpell.kcBest.v1", steps: [
+    "Choose how long your shift is: 2, 3 or 5 minutes.",
+    "Spell as many terms as you can, one letter at a time, in order. Each one you finish loads the next straight away.",
+    "Wrong letters cost 2 seconds. Stuck? Skip to the next term."] }
+};
+const STORE_KS_DUR = "pathSpell.kcDur.v1";
+const ksDurLabel = sec => sec < 60 ? sec + " s" : sec === 90 ? "1½ min" : (sec / 60) + " min";
+function ksClockLen() { const r = document.querySelector('input[name="ksDur"]:checked'); return Number(r && r.value) || 120; }
+const STORE_KT_DUR = "pathSpell.ktDur.v1";
+function ksTcLen() { const r = document.querySelector('input[name="ktDur"]:checked'); return Number(r && r.value) || 30; }
+// Time critical bests are kept per time-per-patient AND per lecture choice
+const ksTcBestKey = (sec, lec) => KS_MODES.timed.best + "." + sec + "." + (lec || "all");
+// Beat the clock bests are kept per shift length AND per lecture choice ("all" or a lecture number)
+const ksClockBestKey = (sec, lec) => KS_MODES.clock.best + "." + sec + "." + (lec || "all");
+const ksLecShort = v => v === "all" ? "All lectures" : (() => { const L = LECTURES.find(x => x.n === Number(v)); return L ? lecName(L.n) + ": " + L.topic : "All lectures"; })();
+const ks = { mode: "stable", deck: [], pos: 0, item: null, wrong: 0, done: true, total: 0, run: 0, best: Number(load(KS_BEST)) || 0, raf: null, timer: null, left: 0, limit: 1, lastT: 0, spelled: [] };
+const ksEl = id => document.getElementById(id);
+(function fillKsSelect() {
+  const sel = ksEl("ksLecture");
+  const all = document.createElement("option");
+  all.value = "all"; all.textContent = "All lectures (" + ALL.length + " patients)";
+  sel.appendChild(all);
+  LECTURES.forEach(L => {
+    const o = document.createElement("option");
+    o.value = String(L.n); o.textContent = lecName(L.n) + ": " + L.topic + " (" + L.items.length + ")";
+    sel.appendChild(o);
+  });
+  const dots = ksEl("ksDots");
+  for (let i = 0; i < KS_MAX; i++) { const d = document.createElement("span"); d.className = "mon-dot"; dots.appendChild(d); }
+  const keys = ksEl("ksKeys");
+  "abcdefghijklmnopqrstuvwxyz".split("").forEach(ch => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "ks-key"; b.id = "ks-key-" + ch; b.textContent = ch;
+    b.setAttribute("aria-label", "Letter " + ch.toUpperCase());
+    b.addEventListener("click", () => ksGuess(ch));
+    keys.appendChild(b);
+  });
+})();
+
+function paintSetupBests() {
+  const row = ksEl("ksBestRow");
+  row.innerHTML = "";
+  let opts;
+  const lecPick = ksEl("ksLecture").value || "all";
+  if (ks.mode === "clock") opts = [120, 180, 300].map(v => ({ label: ksDurLabel(v), val: load(ksClockBestKey(v, lecPick)), sel: v === ksClockLen() }));
+  else if (ks.mode === "timed") opts = [30, 45, 60].map(v => ({ label: v + " s", val: load(ksTcBestKey(v, lecPick)), sel: v === ksTcLen() }));
+  else opts = [{ label: "best run", val: load(KS_BEST), sel: true }];
+  ksEl("ksBestLbl").textContent = ks.mode === "clock" ? "Your bests: " + ksLecShort(lecPick) + " (terms spelled)"
+    : ks.mode === "timed" ? "Your bests: " + ksLecShort(lecPick) + " (patients in a row)" : "Your personal best (patients in a row)";
+  opts.forEach(o => {
+    const c = document.createElement("div");
+    c.className = "best-chip" + (o.sel ? " sel" : "");
+    const b = document.createElement("b"); b.textContent = Number(o.val) > 0 ? o.val : "–";
+    const sp = document.createElement("span"); sp.textContent = o.label;
+    c.append(b, sp);
+    row.appendChild(c);
+  });
+}
+document.querySelectorAll('input[name="ksDur"], input[name="ktDur"]').forEach(r => r.addEventListener("change", paintSetupBests));
+document.getElementById("ksLecture").addEventListener("change", paintSetupBests);
+
+function showKsSetup(mode) {
+  ks.mode = KS_MODES[mode] ? mode : "stable";
+  const M = KS_MODES[ks.mode];
+  ksEl("ksTitle").textContent = M.title;
+  ksEl("ksStart").textContent = M.start;
+  ksEl("ksFromLbl").textContent = M.from;
+  const ol = ksEl("ksSteps"); ol.innerHTML = "";
+  M.steps.forEach(t => { const li = document.createElement("li"); li.textContent = t; ol.appendChild(li); });
+  ks.best = Number(load(M.best)) || 0;
+  ksEl("ksDurWrap").hidden = ks.mode !== "clock";
+  ksEl("ktDurWrap").hidden = ks.mode !== "timed";
+  if (ks.mode === "timed") {
+    const savedT = load(STORE_KT_DUR);
+    const rt = savedT && document.getElementById("ktDur" + savedT);
+    if (rt) rt.checked = true;
+  }
+  const allOpt = ksEl("ksLecture").querySelector('option[value="all"]');
+  if (allOpt) allOpt.textContent = "All lectures (" + ALL.length + (ks.mode === "clock" ? " terms)" : " patients)");
+  if (ks.mode === "clock") {
+    const saved = load(STORE_KS_DUR);
+    const r = saved && document.getElementById("ksDur" + saved);
+    if (r) r.checked = true;
+  }
+  paintSetupBests();
+  setLobby(true);
+  fcHideOthers();
+  ksEl("ksSetup").hidden = false;
+  window.scrollTo(0, 0);
+}
+["ksHome1", "ksHome2", "ksHome3"].forEach(id => ksEl(id).addEventListener("click", toMenu));
+ksEl("ksCdAgain").addEventListener("click", () => ksEl("ksStart").click());
+
+ksEl("ksStart").addEventListener("click", () => {
+  const pick = ksEl("ksLecture").value;
+  ks.deck = shuffle(ALL.map((x, i) => i).filter(i => pick === "all" || ALL[i].lec === Number(pick)));
+  ks.pos = 0; ks.total = 0; ks.run = 0; ks.spelled = [];
+  const M = KS_MODES[ks.mode];
+  ks.lecLabel = pick === "all" ? "All lectures" : (() => { const L = LECTURES.find(x => x.n === Number(pick)); return lecName(L.n) + ": " + L.topic; })();
+  ksEl("ksName").textContent = M.title + (ks.mode === "clock" ? " (" + ksDurLabel(ksClockLen()) + ")" : ks.mode === "timed" ? " (" + ksTcLen() + " s)" : "") + ": " + (pick === "all" ? "all lectures" : lecName(Number(pick)));
+  if (ks.mode === "timed") {
+    ks.tcLen = ksTcLen();
+    store(STORE_KT_DUR, String(ks.tcLen));
+    ks.tcLec = pick;
+    ks.best = Number(load(ksTcBestKey(ks.tcLen, pick))) || 0;
+  }
+  setLobby(false);
+  fcHideOthers();
+  const clock = ks.mode === "clock";
+  ksEl("ksPlay").hidden = false;
+  ksEl("ksMonitor").hidden = clock;
+  ksEl("ksClock").hidden = !clock;
+  ksEl("ksScoreRow").hidden = clock;
+  ksEl("ksDots").hidden = ks.mode !== "stable";
+  ksEl("ksTime").hidden = ks.mode !== "timed";
+  ksEl("ksSkip").hidden = !clock;
+  ksEl("ksScoreBtn").hidden = ks.mode !== "timed";
+  if (clock) {
+    const len = ksClockLen();
+    store(STORE_KS_DUR, String(len));
+    ks.left = len; ks.limit = len; ks.clockLen = len;
+    ks.clockLec = pick;
+    ks.best = Number(load(ksClockBestKey(len, pick))) || 0;
+  }
+  ksShow();
+  if (!clock) ksStartAnim();
+  if (ks.mode !== "stable") ksStartTimer();
+  window.scrollTo(0, 0);
+});
+
+const ksFrac = () => Math.max(0, ks.left) / ks.limit;
+const ksSpo2 = () => ks.mode === "timed" ? Math.round(98 - (1 - ksFrac()) * 20) : 98 - ks.wrong * 8;
+// Keep them stable: second-last wrong letter = VF, last = asystole.
+// Time critical: VF in the last 6 seconds, asystole at zero.
+function ksRhythm() {
+  if (ks.done && ks.won) return "sinus";
+  if (ks.mode === "timed") return ks.left <= 0 ? "asys" : ks.left <= 6 ? "vf" : "sinus";
+  return ks.wrong >= KS_MAX ? "asys" : ks.wrong === KS_MAX - 1 ? "vf" : "sinus";
+}
+const ksHr = () => ks.mode === "timed" ? Math.round(78 + (1 - ksFrac()) * 70) : 78 + ks.wrong * 28;
+const fmtSec = v => { const t = Math.max(0, Math.ceil(v)); return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0"); };
+function ksZone() { const v = ksSpo2(); return v >= 94 ? "green" : v >= 90 ? "amber" : "red"; }
+
+function ksPaintMonitor(statusText) {
+  const mon = ksEl("ksMonitor");
+  mon.dataset.zone = ks.done && ks.won ? "green" : ksZone();
+  const rh = ksRhythm();
+  ksEl("ksSpo2").textContent = ks.done && ks.won ? 99 : rh === "sinus" ? ksSpo2() : "--";
+  ksEl("ksHr").textContent = ks.done && ks.won ? 76 : rh === "vf" ? "VF" : rh === "asys" ? 0 : ksHr();
+  ksEl("ksDots").querySelectorAll(".mon-dot").forEach((d, i) => d.classList.toggle("on", i < ks.wrong));
+  if (ks.mode === "timed") ksEl("ksTime").textContent = fmtSec(ks.left);
+  ksEl("ksStatus").textContent = statusText || (rh === "vf" ? "VF" : rh === "asys" ? "Asystole" : ksZone() === "green" ? "Patient stable" : ksZone() === "amber" ? "SpO₂ dropping" : "Patient deteriorating");
+}
+
+function ksShow() {
+  if (ks.pos >= ks.deck.length) {
+    const last = ks.deck[ks.deck.length - 1];
+    shuffle(ks.deck); ks.pos = 0;
+    if (ks.deck.length > 1 && ks.deck[0] === last) { const j = 1 + Math.floor(Math.random() * (ks.deck.length - 1)); [ks.deck[0], ks.deck[j]] = [ks.deck[j], ks.deck[0]]; }
+  }
+  const item = ALL[ks.deck[ks.pos]];
+  ks.item = item; ks.wrong = 0; ks.done = false; ks.won = false; ks.nope = "";
+  ks.seq = item.s.toLowerCase().replace(/[^a-z]/g, "").split("");   // letters to spell, in order
+  ks.at = 0;                                                          // how many are spelled so far
+  if (ks.mode === "timed") {
+    ks.limit = ks.tcLen || 30;   // 30 s matches a station in the real test
+    ks.left = ks.limit;
+    ks.lastT = performance.now();
+  }
+  ksEl("ksDesc").textContent = item.d;
+  ksEl("ksLec").textContent = lecName(item.lec) + " · " + item.topic;
+  ksEl("ksFeedback").textContent = ""; ksEl("ksFeedback").className = "feedback";
+  ksEl("ksNote").hidden = true;
+  ksEl("ksNext").hidden = true;
+  ksEl("ksKeys").querySelectorAll(".ks-key").forEach(b => { b.disabled = false; b.className = "ks-key"; });
+  ksRenderWord();
+  ksPaintMonitor();
+  ksPaintScore();
+}
+
+function ksRenderWord() {
+  const wrap = ksEl("ksWord");
+  wrap.innerHTML = "";
+  let longest = 1, n = 0;
+  ks.item.s.trim().split(/\s+/).forEach(word => {
+    const w = document.createElement("div"); w.className = "ks-w";
+    (word.match(/[^-]+-?|-/g) || [word]).forEach(segText => {
+      const seg = document.createElement("div"); seg.className = "ks-seg";
+      longest = Math.max(longest, segText.length);
+      for (const ch of segText) {
+        const c = document.createElement("span");
+        if (/[a-z]/i.test(ch)) {
+          const k = n++;
+          if (k < ks.at) { c.className = "ks-ch got"; c.textContent = ch; }
+          else if (ks.done) { c.className = "ks-ch missed"; c.textContent = ch; }
+          else if (k === ks.at) { c.className = "ks-ch cur" + (ks.nope ? " nope" : ""); c.textContent = ks.nope; }
+          else { c.className = "ks-ch"; c.textContent = ""; }
+        } else if (/[0-9]/.test(ch)) {
+          c.className = "ks-ch got"; c.textContent = ch;
+        } else {
+          c.className = "ks-ch fixed"; c.textContent = ch === "'" ? "’" : ch;
+        }
+        seg.appendChild(c);
+      }
+      w.appendChild(seg);
+    });
+    wrap.appendChild(w);
+  });
+  const width = wrap.clientWidth || 340;
+  const size = Math.max(16, Math.min(36, Math.floor((width - 8 - (longest - 1) * 5) / longest)));
+  wrap.style.setProperty("--ch", size + "px");
+  wrap.setAttribute("aria-label", ks.done ? "Answer: " + ks.item.s : (ks.at ? "Spelled so far: " + ks.seq.slice(0, ks.at).join("") + ". " : "") + (ks.seq.length - ks.at) + " letters to go");
+}
+
+function ksFlash(key, cls) {
+  key.classList.remove("flash-hit", "flash-miss");
+  void key.offsetWidth;
+  key.classList.add(cls);
+  clearTimeout(key._t);
+  key._t = setTimeout(() => key.classList.remove(cls), 350);
+}
+function ksGuess(ch) {
+  if (ks.done) return;
+  const key = ksEl("ks-key-" + ch);
+  if (ch === ks.seq[ks.at]) {
+    ks.at++; ks.nope = "";
+    ksFlash(key, "flash-hit");
+    if (ks.at >= ks.seq.length) return ks.mode === "clock" ? ksClockGot() : ksWin();
+    ksRenderWord();
+  } else {
+    ks.wrong++; ks.nope = ch;
+    ksFlash(key, "flash-miss");
+    ksRenderWord();
+    if (ks.mode === "clock") { ks.left -= 2; ksPaintClock(); if (ks.left <= 0) ksEndShift(); return; }
+    if (ks.mode === "timed") { ks.left -= 5; ksPaintMonitor(); if (ks.left <= 0) ksLose(); return; }
+    ksPaintMonitor();
+    if (ks.wrong >= KS_MAX) return ksLose();
+  }
+}
+
+function ksFinish() {
+  ks.done = true; ks.nope = "";
+  ksEl("ksKeys").querySelectorAll(".ks-key").forEach(b => { b.disabled = true; });
+  ksRenderWord();
+  const plain = ks.item.a.replace(/[–‑—]/g, "-").replace(/[’‘]/g, "'");
+  if (plain !== ks.item.s) { const n = ksEl("ksNote"); n.innerHTML = ""; n.append("Full answer: "); const b = document.createElement("b"); b.textContent = ks.item.a; n.append(b); n.hidden = false; }
+  ksEl("ksNext").hidden = false;
+  ksEl("ksNext").focus({ preventScroll: true });
+  ks.pos++;
+  ksPaintScore();
+}
+function ksWin() {
+  const fromVf = ksRhythm() === "vf";
+  ks.won = true;
+  ks.total++; ks.run++;
+  if (ks.run > ks.best) { ks.best = ks.run; store(ks.mode === "timed" ? ksTcBestKey(ks.tcLen, ks.tcLec) : KS_MODES[ks.mode].best, String(ks.best)); }
+  ksFinish();
+  ksPaintMonitor(fromVf ? "ROSC! Patient stabilised" : "Patient stabilised");
+  const tier = ks.mode === "timed"
+    ? (ks.wrong === 0 && ksFrac() > 0.5 ? "whetu" : ksFrac() > 0.25 ? "tino" : "ka")
+    : (ks.wrong === 0 ? "whetu" : ks.wrong === 1 ? "tino" : "ka");
+  cur = null; kaPai(tier);
+  const fb = ksEl("ksFeedback");
+  fb.textContent = PRAISE[tier] + " Patient stabilised" + (ks.mode === "timed"
+    ? " with " + plural(Math.max(0, Math.ceil(ks.left)), "second") + " to spare."
+    : ks.wrong === 0 ? " with no wrong letters." : ".");
+  fb.className = "feedback ok";
+}
+function ksLose() {
+  ks.won = false;
+  const endedRun = ks.run;
+  if (endedRun) ks.lastRun = endedRun;
+  ks.run = 0;
+  ksFinish();
+  ksPaintMonitor("Asystole · Handover");
+  cur = null; kaPai("kaha");
+  const fb = ksEl("ksFeedback");
+  fb.textContent = (ks.mode === "timed" ? "Time's up. " : "") + "Handover to the next crew. Kia kaha, you'll get the next one.";
+  fb.className = "feedback info";
+  if (ks.mode === "timed" && endedRun > 0) {
+    const wasBest = endedRun >= ks.best;
+    setTimeout(() => { if (!ksEl("ksPlay").hidden && ks.mode === "timed") timedCard(endedRun, wasBest); }, 1800);
+  }
+}
+/* Score card: a screenshot-ready card for Beat the clock and Time critical */
+let scoreReturn = null;
+function openScoreCard(o) {
+  const face = ksEl("scoreFace");
+  face.className = "share-face score-face " + (o.mode === "clock" ? "clock" : "timed");
+  ksEl("scoreHost").src = o.isBest ? POP_TWO : POP_ONE;
+  ksEl("scoreGame").textContent = o.mode === "clock" ? "Beat the clock" : "Time critical";
+  ksEl("scoreNum").textContent = o.num;
+  ksEl("scoreUnit").textContent = o.unit;
+  ksEl("scoreLec").textContent = o.lec;
+  ksEl("scoreCap").textContent = o.cap;
+  ksEl("scoreBest").textContent = "Personal best at " + o.capShort + ": " + o.best;
+  ksEl("scoreNew").hidden = !o.isBest;
+  let d = "";
+  try { d = new Date().toLocaleDateString("en-NZ", { day: "numeric", month: "long", year: "numeric" }); } catch (e) { d = new Date().toDateString(); }
+  ksEl("scoreDate").textContent = d;
+  scoreReturn = document.activeElement;
+  ksEl("scoreCard").hidden = false;
+  ksEl("scoreDone").focus({ preventScroll: true });
+}
+function closeScoreCard() {
+  const box = ksEl("scoreCard");
+  if (box.hidden) return;
+  box.hidden = true;
+  if (scoreReturn && scoreReturn.focus) scoreReturn.focus({ preventScroll: true });
+}
+ksEl("scoreDone").addEventListener("click", closeScoreCard);
+ksEl("scoreCard").addEventListener("click", e => { if (e.target.id === "scoreCard") closeScoreCard(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeScoreCard(); });
+function clockCard(isBest) {
+  const len = ksDurLabel(ks.clockLen);
+  openScoreCard({ mode: "clock", num: ks.total, unit: (ks.total === 1 ? "term" : "terms") + " spelled in " + len,
+    lec: ks.lecLabel, cap: len + " shift", capShort: len + " (" + (ks.clockLec === "all" ? "all lectures" : lecName(Number(ks.clockLec))) + ")", best: ks.best, isBest });
+}
+function timedCard(run, isBest) {
+  openScoreCard({ mode: "timed", num: run, unit: (run === 1 ? "patient" : "patients") + " stabilised in a row",
+    lec: ks.lecLabel, cap: ks.tcLen + " s per patient", capShort: ks.tcLen + " s (" + (ks.tcLec === "all" ? "all lectures" : lecName(Number(ks.tcLec))) + ")", best: ks.best, isBest });
+}
+ksEl("ksCdCard").addEventListener("click", () => clockCard(ks.lastWasBest));
+ksEl("ksScoreBtn").addEventListener("click", () => {
+  const run = ks.run || ks.lastRun || 0;
+  timedCard(run, run > 0 && run >= ks.best);
+});
+
+function ksPaintScore() {
+  ksEl("ksTotal").textContent = ks.total;
+  ksEl("ksRun").textContent = ks.run;
+  ksEl("ksBest").textContent = ks.best;
+}
+
+/* timers for Time critical and Beat the clock */
+function ksStartTimer() {
+  ksStopTimer();
+  ks.lastT = performance.now();
+  ks.timer = setInterval(ksTick, 100);
+}
+function ksStopTimer() { if (ks.timer) { clearInterval(ks.timer); ks.timer = null; } }
+function ksTick() {
+  const now = performance.now();
+  const dt = (now - ks.lastT) / 1000;
+  ks.lastT = now;
+  if (document.hidden || ksEl("ksPlay").hidden) return;      // pause while away
+  if (ks.mode === "timed") {
+    if (ks.done) return;
+    ks.left -= dt;
+    ksPaintMonitor();
+    if (ks.left <= 0) ksLose();
+  } else if (ks.mode === "clock") {
+    if (ks.done) return;
+    ks.left -= dt;
+    ksPaintClock();
+    if (ks.left <= 0) ksEndShift();
+  }
+}
+function ksPaintClock() {
+  ksEl("ksClockTime").textContent = fmtSec(ks.left);
+  ksEl("ksClockScore").textContent = ks.total;
+  ksEl("ksClockBest").textContent = Math.max(ks.best, ks.total);
+  ksEl("ksClockFill").style.width = Math.max(0, ks.left / ks.clockLen * 100) + "%";
+  ksEl("ksClock").classList.toggle("low", ks.left <= 10);
+}
+function ksClockGot() {
+  ks.total++;
+  ks.spelled.push(ks.item);
+  const fb = ksEl("ksFeedback");
+  fb.textContent = "Ka pai! " + ks.item.a;
+  fb.className = "feedback ok";
+  const card = ksEl("ksCard");
+  card.classList.remove("ks-card-flash"); void card.offsetWidth; card.classList.add("ks-card-flash");
+  ks.pos++;
+  ksPaintClock();
+  ks.done = true;                                 // brief pause so they see it land
+  setTimeout(() => { if (ks.mode === "clock" && !ksEl("ksPlay").hidden && ks.left > 0) { ksShow(); ksEl("ksFeedback").textContent = "Ka pai! +1"; ksEl("ksFeedback").className = "feedback ok"; } }, 450);
+}
+ksEl("ksSkip").addEventListener("click", () => {
+  if (ks.mode !== "clock" || ks.left <= 0) return;
+  ks.pos++;
+  ksShow();
+  ksEl("ksFeedback").textContent = "Skipped. Next term.";
+  ksEl("ksFeedback").className = "feedback info";
+});
+function ksEndShift() {
+  if (ks.mode !== "clock" || ksEl("ksPlay").hidden) return;
+  ks.left = 0;
+  ks.done = true;
+  ksStopTimer();
+  const missed = ks.item;
+  const isBest = ks.total > ks.best;
+  if (isBest) { ks.best = ks.total; store(ksClockBestKey(ks.clockLen, ks.clockLec), String(ks.best)); }
+  ksEl("ksPlay").hidden = true;
+  ksEl("ksClockDone").hidden = false;
+  ksEl("ksCdTitle").textContent = isBest && ks.total ? "Whetū nui! New best" : ks.total ? "Mahi pai!" : "Time!";
+  ksEl("ksCdCount").textContent = plural(ks.total, "term");
+  const lenTxt = ksDurLabel(ks.clockLen);
+  const lecTxt = ks.clockLec === "all" ? "all lectures" : lecName(Number(ks.clockLec));
+  ksEl("ksCdNote").textContent = isBest && ks.total ? "That's your best " + lenTxt + " shift for " + lecTxt + " yet." : "Your best " + lenTxt + " shift for " + lecTxt + ": " + plural(ks.best, "term") + ".";
+  const ml = ksEl("ksCdMiss"); ml.innerHTML = "";
+  if (missed) {
+    const li = document.createElement("li");
+    const st = document.createElement("strong"); st.textContent = missed.a;
+    const pp = document.createElement("p"); pp.textContent = missed.d;
+    li.append(st, pp); ml.appendChild(li);
+  }
+  ksEl("ksCdMissWrap").hidden = !missed;
+  const list = ksEl("ksCdList"); list.innerHTML = "";
+  ks.spelled.forEach(it => {
+    const li = document.createElement("li"); li.className = "got";
+    const mk = document.createElement("span"); mk.className = "mk"; mk.textContent = "✓";
+    const t = document.createElement("span"); t.textContent = it.a;
+    li.append(mk, t); list.appendChild(li);
+  });
+  ksEl("ksCdListWrap").hidden = !ks.spelled.length;
+  ks.lastWasBest = isBest && ks.total > 0;
+  cur = null;
+  clockCard(ks.lastWasBest);
+  window.scrollTo(0, 0);
+}
+ksEl("ksNext").addEventListener("click", ksShow);
+document.addEventListener("keydown", e => {
+  if (ksEl("ksPlay").hidden || !ksEl("scoreCard").hidden || e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = (e.key || "").toLowerCase();
+  if (/^[a-z]$/.test(k)) { e.preventDefault(); ksGuess(k); }
+  else if (k === "enter" && ks.done) { e.preventDefault(); ksShow(); }
+});
+
+// The ECG trace: a sweeping PQRST that speeds up as the heart rate climbs.
+function ecgShape(ph) {
+  const g = (c, w, h) => h * Math.exp(-Math.pow((ph - c) / w, 2));
+  return g(0.12, 0.025, 0.12) - g(0.245, 0.008, 0.12) + g(0.26, 0.009, 1) - g(0.278, 0.01, 0.28) + g(0.47, 0.05, 0.25);
+}
+function ksDraw(now) {
+  const cv = ksEl("ksEcg");
+  const dpr = window.devicePixelRatio || 1;
+  const w = cv.clientWidth, h = cv.clientHeight;
+  if (!w || !h) return;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  ctx.strokeStyle = "rgba(61,220,132,0.08)"; ctx.lineWidth = 1;
+  for (let x = 0; x < w; x += 16) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+  for (let y = 0; y < h; y += 16) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+  const rh = ksRhythm();
+  const hr = ks.done && ks.won ? 76 : ksHr();
+  const period = 60 / hr, span = 3.2, t1 = now / 1000;
+  const TAU = Math.PI * 2;
+  ctx.strokeStyle = "#3ddc84"; ctx.lineWidth = 2.2; ctx.lineJoin = "round";
+  ctx.beginPath();
+  for (let x = 0; x <= w; x += 1.5) {
+    const t = t1 - (w - x) / w * span;
+    let v;
+    if (rh === "vf") {
+      // coarse, chaotic VF: wandering frequency and amplitude
+      const amp = 0.55 + 0.35 * Math.sin(TAU * 0.37 * t) * Math.sin(TAU * 0.11 * t + 1.3);
+      v = amp * (0.62 * Math.sin(TAU * 4.6 * t + 0.9 * Math.sin(TAU * 0.8 * t)) + 0.28 * Math.sin(TAU * 7.1 * t + 1.7) + 0.12 * Math.sin(TAU * 11.3 * t));
+      v = v * 0.5;
+    } else if (rh === "asys") {
+      v = 0.015 * Math.sin(TAU * 0.27 * t) + 0.008 * Math.sin(TAU * 1.9 * t);   // flat line, slight baseline wander
+    } else {
+      const ph = ((t % period) + period) % period / period;
+      v = ecgShape(ph);
+    }
+    const y = h * (rh === "sinus" ? 0.62 : 0.52) - v * h * 0.5;
+    x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+}
+function ksLoop(now) { ksDraw(now); ks.raf = requestAnimationFrame(ksLoop); }
+function ksStartAnim() {
+  ksStopAnim();
+  let still = false;
+  try { still = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+  if (still) { ksDraw(1000); return; }
+  ks.raf = requestAnimationFrame(ksLoop);
+}
+function ksStopAnim() { if (ks.raf) { cancelAnimationFrame(ks.raf); ks.raf = null; } }
+document.addEventListener("visibilitychange", () => { if (document.hidden) ksStopAnim(); else if (!ksEl("ksPlay").hidden) ksStartAnim(); });
+
 /* ---------- Flashcards ---------- */
 const fc = { deck: [], cur: null, known: 0, total: 0, misses: {}, flipped: false, dir: "desc", name: "", busy: false };
 const fcEls = {
@@ -2098,6 +2851,11 @@ const fcEls = {
 
 function hideFlashcards() {
   els.fcSetup.hidden = true; els.fcPlay.hidden = true; els.fcDone.hidden = true;
+  document.getElementById("ksSetup").hidden = true;
+  document.getElementById("ksPlay").hidden = true;
+  document.getElementById("ksClockDone").hidden = true;
+  if (typeof ksStopAnim === "function") ksStopAnim();
+  if (typeof ksStopTimer === "function") ksStopTimer();
 }
 function fcHideOthers() {
   currentSet = null; cur = null;
@@ -2298,7 +3056,11 @@ function beep(freq, ms, when) {
 }
 
 function hsSetTerm() {
-  if (hs.pos >= hs.deck.length) { shuffle(hs.deck); hs.pos = 0; }
+  if (hs.pos >= hs.deck.length) {
+    const last = hs.deck[hs.deck.length - 1];
+    shuffle(hs.deck); hs.pos = 0;
+    if (hs.deck.length > 1 && hs.deck[0] === last) { const j = 1 + Math.floor(Math.random() * (hs.deck.length - 1)); [hs.deck[0], hs.deck[j]] = [hs.deck[j], hs.deck[0]]; }
+  }
   const item = ALL[hs.deck[hs.pos]];
   hsEls.term.textContent = item.a;
   hsEls.desc.textContent = hsEls.showDesc.checked ? item.d : "";
