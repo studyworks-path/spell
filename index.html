@@ -1329,14 +1329,14 @@ const els = {
 };
 
 let order = [], pos = 0, results = [], cur = null;
-let orderRetry = [], retryCount = {};
+let orderRetry = [], retryCount = {}, countedRound = new Set();
 
 /* ---------- spaced repetition ---------- */
 // Each term keeps its own interval (days) and ease. Progress lives in this browser only.
 const STORE_SRS = "pathSpell.srs.v1";
 const REVIEW_CAP = 40;   // most due reviews offered in one day
 const MAX_IV = 120;      // longest gap between reviews, in days
-const MAX_RETRIES = 3;   // times a missed term comes back within one review
+const MAX_RETRIES = 2;   // times a missed term comes back within one review
 let srs = {};
 try { srs = JSON.parse(load(STORE_SRS) || "{}") || {}; } catch (e) { srs = {}; }
 function saveSrs() { store(STORE_SRS, JSON.stringify(srs)); }
@@ -1605,14 +1605,14 @@ function currentStreak() {
   while (dayRec(d).met) { n++; d--; }
   return n;
 }
-function recordDaily(isNew, reviewed) {
+function recordDaily(counts, isNew, reviewed) {
   const t = today();
   const r = dayRec(t);
-  r.n++;
+  if (counts) r.n++;
   if (isNew) r.nw = (r.nw || 0) + 1;
   if (reviewed) r.rv = (r.rv || 0) + 1;
   let justMet = false;
-  if (!r.met && r.n >= daily.goal) { r.met = true; justMet = true; }
+  if (counts && !r.met && r.n >= daily.goal) { r.met = true; justMet = true; }
   daily.days[t] = r;
   // keep about a year of history
   Object.keys(daily.days).forEach(k => { if (Number(k) < t - 400) delete daily.days[k]; });
@@ -2005,6 +2005,7 @@ function startRound(indices) {
   order = shuffle(base.slice());
   orderRetry = order.map(() => false);
   retryCount = {};
+  countedRound = new Set();
   pos = 0;
   results = [];
   els.summaryCard.hidden = true;
@@ -2329,8 +2330,14 @@ function hint() {
   lockLetter(i, "hinted");
   if (cur.inputs.every((inp, k) => inp.value === cur.answer[k])) {
     cur.inputs.forEach(inp => { if (!inp.readOnly) { inp.readOnly = true; inp.classList.add("correct"); } });
-    finish("help");
-    setFeedback("That completes it." + requeueNote(), "ok");
+    const given = cur.inputs.filter(inp => inp.classList.contains("hinted")).length;
+    if (given * 2 > cur.inputs.length) {
+      finish("bad");
+      setFeedback("That's the word. Most letters were given, so it's added to your list to revisit." + requeueNote(), "info");
+    } else {
+      finish("help");
+      setFeedback("That completes it." + requeueNote(), "ok");
+    }
     celebrate(false);
   } else {
     setFeedback("Letter " + (i + 1) + " filled in.", "info");
@@ -2362,8 +2369,10 @@ function finish(status) {
   cur.requeued = false;
   if (currentSet && currentSet.kind === "review" && status !== "ok") {
     retryCount[idx] = (retryCount[idx] || 0) + 1;
-    if (retryCount[idx] <= MAX_RETRIES) {
-      const at = Math.min(order.length, pos + 3);
+    // first miss: back in 3 cards; a second miss waits until the end so new terms keep coming
+    const at = retryCount[idx] === 1 ? Math.min(order.length, pos + 3) : order.length;
+    // only bring it back if at least one other term comes first, so it never repeats straight away
+    if (retryCount[idx] <= MAX_RETRIES && at > pos + 1) {
       order.splice(at, 0, idx);
       orderRetry.splice(at, 0, true);
       cur.requeued = true;
@@ -2371,7 +2380,10 @@ function finish(status) {
       srsGiveUp(idx);
     }
   }
-  const day = recordDaily(g.isNew, g.wasDue && !cur.retry);
+  // the daily goal counts terms the student spelled, not answers they were shown
+  let counts = false;
+  if (status !== "bad" && !countedRound.has(idx)) { countedRound.add(idx); counts = true; }
+  const day = recordDaily(counts, g.isNew, g.wasDue && !cur.retry);
   const badge = checkBadge(ALL[order[pos]].lec);
   cur.levelUp = checkLevel();
   roundRun = status === "ok" ? roundRun + 1 : 0;
@@ -2380,6 +2392,7 @@ function finish(status) {
   if (cur.levelUp || badge === 3 || perfect || day.newBest) cur.tier = "whetu";
   else if (badge > 0 || day.justMet || (status === "ok" && roundRun % 5 === 0)) cur.tier = "tino";
   else cur.tier = null;
+  if (status === "bad") cur.tier = null;   // a shown answer gets "Kia kaha", never a thumbs up
   showFullAnswer();
   els.checkBtn.hidden = true;
   els.hintBtn.hidden = true;
@@ -2406,10 +2419,18 @@ function tally() {
   };
 }
 
+function roundPos() {
+  let total = 0, k = 0;
+  orderRetry.forEach((r, j) => { if (!r) { total++; if (j <= pos) k++; } });
+  return { k: Math.max(1, Math.min(k, total)), total };
+}
 function updateBar() {
   const t = tally();
-  els.count.textContent = "Term " + Math.min(pos + 1, order.length) + " of " + order.length;
-  els.fill.style.width = (order.length ? (results.filter(Boolean).length / order.length) * 100 : 0) + "%";
+  const rp = roundPos();
+  els.count.textContent = cur && cur.retry
+    ? "Another go · " + t.done + " of " + rp.total + " done"
+    : "Term " + rp.k + " of " + rp.total;
+  els.fill.style.width = (rp.total ? (t.done / rp.total) * 100 : 0) + "%";
   els.chipOk.textContent = t.ok + " first try";
   els.chipHelp.textContent = t.help + " with help";
   els.chipBad.textContent = t.bad + " shown";
