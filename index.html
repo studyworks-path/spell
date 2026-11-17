@@ -126,7 +126,7 @@ header { display: grid; gap: 6px; }
 .ps-more::after { content: " ›"; }
 .progress-strip .meter { margin: 0; height: 5px; }
 .progress-strip .small-note { font-size: 0.78rem; }
-.row-list { display: grid; gap: 8px; }
+.row-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .row-btn { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; text-align: left; padding: 12px 14px; border-radius: 14px; background: var(--surface); border: 1.5px solid var(--line); font-weight: 400; color: var(--ink); }
 .row-btn:hover { border-color: var(--haem); }
 .row-ico { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; flex: none; }
@@ -144,6 +144,8 @@ header { display: grid; gap: 6px; }
 .lec-picker > summary { padding: 12px 14px; }
 .lec-picker > summary .row-ico { margin-right: 2px; }
 .lec-picker .lp-title { font-size: 1.02rem; color: var(--ink); }
+.lec-picker > summary { min-width: 0; }
+.lec-picker .lp-title { white-space: normal; min-width: 0; }
 .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .game-tile { display: grid; gap: 3px; align-content: start; justify-items: start; text-align: left; padding: 14px; border-radius: 16px; min-height: 124px; font-weight: 400; }
 .gt-ico { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; margin-bottom: 6px; }
@@ -324,7 +326,7 @@ button {
   color: var(--ink);
   cursor: pointer;
 }
-button:hover { border-color: var(--haem); }
+@media (hover: hover) { button:hover { border-color: var(--haem); } }
 button:focus-visible { outline: 3px solid var(--haem); outline-offset: 2px; }
 button.primary { background: var(--haem); border-color: var(--haem); color: var(--on-haem); }
 button.primary:hover { filter: brightness(1.08); }
@@ -516,7 +518,7 @@ h2 { margin: 0; font-family: var(--font-display); font-size: 1.5rem; }
 }
 .all-btn .big { font-family: var(--font-display); font-size: 1.2rem; color: var(--haem); }
 .all-btn .small { font-weight: 400; color: var(--muted); font-size: 0.92rem; }
-.lec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.lec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 10px; }
 .lec { position: relative; display: grid; gap: 2px; text-align: left; padding: 12px 14px; }
 .lec .medal { position: absolute; top: 10px; right: 12px; }
 .lec.gold {
@@ -664,7 +666,7 @@ h2 { margin: 0; font-family: var(--font-display); font-size: 1.5rem; }
 .mon-dot.on { background: #ff5d6c; }
 .ks-word { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px 20px; padding: 6px 0; --ch: 30px; }
 .ks-w { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 0; }
-.ks-seg { display: flex; gap: 5px; flex-wrap: nowrap; align-items: flex-end; }
+.ks-seg { display: flex; gap: var(--chgap, 5px); flex-wrap: nowrap; align-items: flex-end; }
 .ks-ch {
   width: var(--ch); height: calc(var(--ch) * 1.3); display: flex; align-items: flex-end; justify-content: center;
   border-bottom: 3px solid var(--ink); font-family: var(--font-mono); font-weight: 600; font-size: calc(var(--ch) * 0.75);
@@ -678,7 +680,9 @@ h2 { margin: 0; font-family: var(--font-display); font-size: 1.5rem; }
 .ks-key.flash-hit { background: var(--ok); border-color: var(--ok); color: var(--surface); }
 .ks-key.flash-miss { background: var(--bad); border-color: var(--bad); color: #ffffff; }
 .ks-ch.fixed { border-bottom-color: transparent; color: var(--muted); width: auto; padding: 0 1px; }
-.ks-keys { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.ks-keys { display: grid; gap: 7px; }
+.ks-row { display: flex; justify-content: center; gap: 5px; }
+.ks-row .ks-key { flex: 0 0 calc((100% - 45px) / 10); min-width: 0; font-size: 1.05rem; border-radius: 8px; }
 .ks-key {
   min-height: 46px; padding: 0; font-family: var(--font-mono); font-weight: 600; font-size: 1.15rem;
   text-transform: uppercase; border-radius: 10px;
@@ -846,6 +850,38 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
 .menu .game-tile .big { color: var(--ink) !important; }
 .menu .game-tile .small { color: var(--muted) !important; }
 .menu .row-btn:hover, .menu .game-tile:hover { border-color: var(--c) !important; }
+
+/* ---- Games: header, clock and monitor stay pinned while typing ---- */
+.ks-sticky { position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin: -8px -18px 0; padding: 0 18px 10px;
+  background: color-mix(in srgb, var(--paper) 82%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line); }
+.ks-sticky .round-head { position: static; margin: 0 -18px; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.ks-sticky .clock-bar[hidden], .ks-sticky .monitor[hidden] { display: none; }
+@media (max-width: 560px), (max-height: 820px) {
+  .ks-sticky .clock-bar { padding: 8px 12px; gap: 6px; }
+  .ks-sticky .clock-time { font-size: 1.7rem; }
+  .ks-sticky .clock-score b { font-size: 1.3rem; }
+  .ks-sticky .monitor { padding: 8px 12px; gap: 4px 12px; }
+  .ks-sticky .monitor canvas { height: 52px; }
+  .ks-sticky .mon-n { font-size: 1.5rem; }
+  .ks-sticky .mon-l { font-size: 0.62rem; }
+  .ks-sticky .mon-status { font-size: 0.75rem; }
+  #ksCard { gap: 10px; }
+  #ksCard .definition { font-size: 1.05rem; }
+  .ks-key { min-height: 42px; }
+}
+
+/* ---- On-screen keyboard for practice rounds ---- */
+.okb { display: grid; gap: 7px; margin-top: 2px; -webkit-user-select: none; user-select: none; }
+.okb-row { display: flex; justify-content: center; gap: 5px; }
+.okb-key { flex: 0 0 calc((100% - 45px) / 10); min-width: 0; min-height: 46px; padding: 0; border-radius: 8px;
+  font-family: var(--font-mono); font-weight: 700; font-size: 1.05rem; text-transform: uppercase;
+  display: flex; align-items: center; justify-content: center; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.okb-key:active { background: color-mix(in srgb, var(--haem) 20%, var(--surface)); border-color: var(--haem); }
+.okb-back { flex-basis: calc((100% - 45px) / 10 * 1.6 + 5px); }
+.okb-back svg { width: 22px; height: 22px; }
+.okb-space { flex-basis: 60%; text-transform: none; font-family: inherit; font-size: 0.9rem; color: var(--muted); }
+@media (max-height: 700px) { .okb-key { min-height: 40px; } .okb { gap: 5px; } }
 </style>
 </head>
 <body>
@@ -965,6 +1001,7 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
       <label for="freeAnswer" class="sr">Your answer</label>
       <input id="freeAnswer" class="free-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Type the term, then check">
     </div>
+    <div class="okb" id="okb" hidden role="group" aria-label="Keyboard"></div>
     <p class="meta" id="meta"></p>
     <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
     <p class="answer-note" id="answerNote" hidden></p>
@@ -1038,7 +1075,8 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
     </div>
   </section>
 
-  <section id="ksPlay" hidden style="display:grid;gap:14px">
+  <section id="ksPlay" hidden style="display:grid;gap:14px;grid-template-columns:minmax(0,1fr)">
+    <div class="ks-sticky">
     <div class="round-head">
       <button type="button" class="back-btn" id="ksHome2">← Home</button>
       <span class="round-name" id="ksName">Keep them stable</span>
@@ -1061,6 +1099,7 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
         <span class="mon-dots" id="ksDots" aria-hidden="true"></span>
         <span class="mon-time" id="ksTime" hidden role="timer" aria-live="off">0:30</span>
       </div>
+    </div>
     </div>
     <section class="card" id="ksCard">
       <div class="card-head"><p class="label">Description</p><span class="lec-tag" id="ksLec"></span></div>
@@ -1224,6 +1263,7 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
     <div class="set-row"><label for="newSel">New terms a day in your review</label><select id="newSel"><option value="0">None</option><option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="20">20</option><option value="25">25</option><option value="30">30</option></select></div>
     <label class="toggle" for="firstLetter"><input type="checkbox" id="firstLetter"> Start each term with the first letter filled in</label>
     <label class="toggle" for="hideDashes"><input type="checkbox" id="hideDashes"> Hide the dashes until I check</label>
+    <label class="toggle" for="appKb"><input type="checkbox" id="appKb"> Use the app's keyboard instead of the phone's</label>
     <div class="set-danger">
       <button type="button" id="resetSrsBtn">Reset review progress</button>
       <span class="small-note">Clears your review schedule, badges and level on this device. Your streak stays.</span>
@@ -1308,6 +1348,13 @@ LECTURES.forEach(L => L.items.forEach(it => ALL.push({ lec: L.n, topic: L.topic,
 
 const STORE_FIRST = "pathSpell.firstLetter.v2";
 const STORE_HIDE = "pathSpell.hideDashes.v1";
+const STORE_KB = "pathSpell.appKeyboard.v1";
+// on by default for phones and tablets, off for computers with a real keyboard
+function kbOn() {
+  const v = load(STORE_KB);
+  if (v === "1" || v === "0") return v === "1";
+  try { return matchMedia("(pointer: coarse)").matches; } catch (e) { return false; }
+}
 function store(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
 function load(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
 
@@ -1387,12 +1434,18 @@ function srsGrade(i, status, retry) {
   } else if (status === "ok") {
     if (wasDue) {
       r.reps++;
-      r.iv = r.iv < 1 ? 1 : r.iv < 3 ? 3 : Math.min(MAX_IV, fuzz(Math.round(r.iv * r.ef)));
+      r.iv = r.iv < 3 ? Math.max(3, r.post || 0) : Math.min(MAX_IV, fuzz(Math.round(r.iv * r.ef)));
       r.ef = Math.min(2.8, r.ef + 0.05);
       r.last = "good";
       r.due = t + r.iv;
+      delete r.post;
+    } else if (!isLearned(r)) {
+      // spelled right first try in a later round: it counts as learned now
+      r.last = "good";
+      delete r.post;
+      if (r.iv < 3) { r.iv = 3; r.due = t + 3; }
     }
-    // spelled right before it was due: keep the schedule as it is
+    // a learned term spelled right before it was due keeps its schedule
   } else if (status === "help") {
     r.ef = Math.max(1.3, r.ef - 0.15);
     r.iv = Math.max(1, Math.round(r.iv * 0.5));
@@ -2104,6 +2157,7 @@ function showTerm() {
   els.revealBtn.hidden = false;
   els.nextBtn.hidden = true;
   updateBar();
+  applyKb();
   if (cur.mode === "free") els.freeAnswer.focus({ preventScroll: true }); else focusFirstOpen();
 }
 
@@ -2362,6 +2416,7 @@ function reveal() {
 
 function finish(status) {
   cur.done = true;
+  els.okb.hidden = true;
   const idx = order[pos];
   results[pos] = { idx, status, retry: cur.retry };
   const g = srsGrade(idx, status, cur.retry);
@@ -2483,6 +2538,14 @@ function showSummary() {
 }
 
 els.checkBtn.addEventListener("click", check);
+document.addEventListener("keydown", e => {
+  if (e.key !== "Enter" || e.defaultPrevented || e.isComposing) return;
+  if (!cur || els.card.hidden || els.card.offsetParent === null) return;
+  const t = e.target;
+  if (t && t.closest && t.closest("button, a, select, textarea, input, summary, .sheet-wrap")) return;
+  e.preventDefault();
+  if (cur.done) nextTerm(); else check();
+});
 els.hintBtn.addEventListener("click", hint);
 els.revealBtn.addEventListener("click", reveal);
 els.nextBtn.addEventListener("click", nextTerm);
@@ -2499,6 +2562,110 @@ els.hideDashes.addEventListener("change", () => {
   store(STORE_HIDE, els.hideDashes.checked ? "1" : "0");
   if (cur && !cur.done && !els.card.hidden) showTerm();
 });
+
+/* ---------- On-screen keyboard (so the phone keyboard doesn't cover the screen) ---------- */
+els.okb = $("okb");
+els.appKb = $("appKb");
+(function buildOkb() {
+  const back = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H8l-6 7 6 7h13z"/><path d="M17 9l-6 6M11 9l6 6"/></svg>';
+  ["1234567890", "qwertyuiop", "asdfghjkl", "zxcvbnm<"].forEach((rowText, ri) => {
+    const row = document.createElement("div");
+    row.className = "okb-row" + (ri === 0 ? " okb-nums" : "");
+    for (const ch of rowText) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "okb-key";
+      if (ch === "<") {
+        b.classList.add("okb-back");
+        b.innerHTML = back;
+        b.setAttribute("aria-label", "Delete");
+        b.addEventListener("click", okbBack);
+      } else {
+        b.textContent = ch;
+        b.setAttribute("aria-label", (/\d/.test(ch) ? "Number " : "Letter ") + ch.toUpperCase());
+        b.addEventListener("click", () => okbType(ch));
+      }
+      // keep the current dash selected when a key is tapped
+      b.addEventListener("pointerdown", e => e.preventDefault());
+      b.addEventListener("mousedown", e => e.preventDefault());
+      row.appendChild(b);
+    }
+    els.okb.appendChild(row);
+  });
+  // space bar, only when typing the whole term (dashes hidden)
+  const row = document.createElement("div");
+  row.className = "okb-row okb-spacerow";
+  const sp = document.createElement("button");
+  sp.type = "button"; sp.className = "okb-key okb-space"; sp.textContent = "space"; sp.setAttribute("aria-label", "Space");
+  sp.addEventListener("pointerdown", e => e.preventDefault());
+  sp.addEventListener("mousedown", e => e.preventDefault());
+  sp.addEventListener("click", () => { if (cur && !cur.done && cur.mode === "free") { els.freeAnswer.value += " "; els.freeAnswer.focus({ preventScroll: true }); } });
+  row.appendChild(sp);
+  els.okb.appendChild(row);
+})();
+
+function applyKb() {
+  if (!cur) return;
+  const on = kbOn();
+  els.okb.hidden = !on || cur.done;
+  els.okb.querySelector(".okb-nums").hidden = !/\d/.test(cur.item.s);
+  els.okb.querySelector(".okb-spacerow").hidden = cur.mode !== "free";
+  const mode = on ? "none" : "text";
+  cur.inputs.forEach(inp => inp.setAttribute("inputmode", mode));
+  els.freeAnswer.setAttribute("inputmode", mode);
+}
+
+function activeSlot() {
+  const a = document.activeElement;
+  return a && a.classList && a.classList.contains("slot") ? Number(a.dataset.i) : -1;
+}
+
+function okbType(ch) {
+  if (!cur || cur.done) return;
+  if (cur.mode === "free") {
+    els.freeAnswer.value += ch;
+    els.freeAnswer.focus({ preventScroll: true });
+    return;
+  }
+  let i = activeSlot();
+  if (!editable(i)) i = cur.inputs.findIndex((inp, k) => editable(k) && !inp.value);
+  if (i < 0) return;
+  const inp = cur.inputs[i];
+  inp.value = ch;
+  inp.classList.remove("wrong");
+  if (!focusFrom(i + 1, 1)) inp.blur();
+}
+
+function okbBack() {
+  if (!cur || cur.done) return;
+  if (cur.mode === "free") {
+    els.freeAnswer.value = els.freeAnswer.value.slice(0, -1);
+    els.freeAnswer.focus({ preventScroll: true });
+    return;
+  }
+  let i = activeSlot();
+  if (editable(i) && cur.inputs[i].value) {
+    cur.inputs[i].value = "";
+    cur.inputs[i].classList.remove("wrong");
+    cur.inputs[i].focus({ preventScroll: true });
+    return;
+  }
+  if (i < 0) i = cur.inputs.length;
+  let j = i - 1;
+  while (j >= 0 && !(editable(j) && cur.inputs[j].value)) j--;
+  if (j >= 0) {
+    cur.inputs[j].value = "";
+    cur.inputs[j].classList.remove("wrong");
+    cur.inputs[j].focus({ preventScroll: true });
+  }
+}
+
+els.appKb.checked = kbOn();
+els.appKb.addEventListener("change", () => {
+  store(STORE_KB, els.appKb.checked ? "1" : "0");
+  if (cur && !els.card.hidden) applyKb();
+});
+
 els.freeAnswer.addEventListener("keydown", e => {
   if (e.key === "Enter") { e.preventDefault(); if (cur && cur.done) nextTerm(); else check(); }
 });
@@ -2545,12 +2712,17 @@ const ksEl = id => document.getElementById(id);
   const dots = ksEl("ksDots");
   for (let i = 0; i < KS_MAX; i++) { const d = document.createElement("span"); d.className = "mon-dot"; dots.appendChild(d); }
   const keys = ksEl("ksKeys");
-  "abcdefghijklmnopqrstuvwxyz".split("").forEach(ch => {
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "ks-key"; b.id = "ks-key-" + ch; b.textContent = ch;
-    b.setAttribute("aria-label", "Letter " + ch.toUpperCase());
-    b.addEventListener("click", () => ksGuess(ch));
-    keys.appendChild(b);
+  ["qwertyuiop", "asdfghjkl", "zxcvbnm"].forEach(rowText => {
+    const row = document.createElement("div");
+    row.className = "ks-row";
+    rowText.split("").forEach(ch => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "ks-key"; b.id = "ks-key-" + ch; b.textContent = ch;
+      b.setAttribute("aria-label", "Letter " + ch.toUpperCase());
+      b.addEventListener("click", () => ksGuess(ch));
+      row.appendChild(b);
+    });
+    keys.appendChild(row);
   });
 })();
 
@@ -2724,8 +2896,11 @@ function ksRenderWord() {
     wrap.appendChild(w);
   });
   const width = wrap.clientWidth || 340;
-  const size = Math.max(16, Math.min(36, Math.floor((width - 8 - (longest - 1) * 5) / longest)));
+  let gap = 5, size = Math.floor((width - 8 - (longest - 1) * gap) / longest);
+  if (size < 20) { gap = 3; size = Math.floor((width - 8 - (longest - 1) * gap) / longest); }
+  size = Math.max(12, Math.min(36, size));
   wrap.style.setProperty("--ch", size + "px");
+  wrap.style.setProperty("--chgap", gap + "px");
   wrap.setAttribute("aria-label", ks.done ? "Answer: " + ks.item.s : (ks.at ? "Spelled so far: " + ks.seq.slice(0, ks.at).join("") + ". " : "") + (ks.seq.length - ks.at) + " letters to go");
 }
 
