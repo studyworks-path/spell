@@ -907,6 +907,17 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
   background: color-mix(in srgb, var(--rb-blue) 8%, var(--surface)); border: 1.5px solid color-mix(in srgb, var(--rb-blue) 40%, var(--line)); color: var(--ink); }
 .ready-note::before { content: "⏱"; font-size: 1.2rem; }
 .ready-note b { color: var(--rb-blue); }
+
+/* ---- How it works sheet ---- */
+.help-sheet p { margin: 0; line-height: 1.45; font-size: 0.95rem; }
+.help-steps { margin: 0; padding-left: 1.4em; display: grid; gap: 4px; font-size: 0.95rem; }
+.help-steps li::marker { font-weight: 700; color: var(--haem); }
+.how-link { justify-self: center; background: none; border: 0; padding: 4px 8px; font-weight: 700; font-size: 0.92rem; color: var(--haem); text-decoration: underline; text-underline-offset: 3px; }
+
+.okb-nums .okb-key, .ks-nums .ks-key { min-height: 36px; font-size: 0.95rem; }
+
+.more-btn { margin-top: 2px; }
+.more-btn:not(.primary) { padding: 12px 16px; font-size: 1rem; }
 </style>
 </head>
 <body>
@@ -916,6 +927,7 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
       <h1>Name that pathology</h1>
       <div class="head-actions">
         <button type="button" class="icon-btn" id="musicBtn" aria-pressed="true" aria-label="Music on" title="Music on"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/><path class="slash" d="M3 3l18 18"/></svg></button>
+        <button type="button" class="icon-btn" id="helpBtn" aria-label="How it works" title="How it works" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.6 2.6 0 0 1 5 .9c0 1.7-2.5 2.3-2.5 3.9"/><path d="M12 17.2h.01"/></svg></button>
         <button type="button" class="icon-btn" id="settingsBtn" aria-label="Settings" title="Settings" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg></button>
       </div>
     </div>
@@ -937,12 +949,15 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
         <p class="review-sub" id="reviewSub"></p>
       </div>
       <button type="button" class="primary hero-btn" id="reviewBtn">Start review</button>
+      <button type="button" class="hero-btn more-btn" id="moreBtn" hidden>Learn 5 new terms</button>
       <div class="today-row" id="todayRow">
         <span class="tr-streak"><svg class="flame" id="flame" viewBox="0 0 24 28" aria-hidden="true"><path fill="currentColor" d="M12 1c1 4.5 6.5 7.5 6.5 14.2A6.5 6.5 0 0 1 12 22a6.5 6.5 0 0 1-6.5-6.8c0-3 1.5-4.9 3-6.3.3 2 1.2 3.3 2.4 3.9C10.4 9 10.6 4.6 12 1z"/></svg><b id="streakNum">No streak yet</b></span>
         <span class="tr-today"><b id="todayNum">0 of 10</b> <span id="todaySub">terms today</span></span>
         <span class="meter" id="todayMeter"><span class="k"></span><span class="l"></span></span>
       </div>
     </div>
+
+    <button type="button" class="how-link" id="howBtn" hidden>New here? See how it works</button>
 
     <div class="week-card" id="weekCard">
       <div class="wc-col">
@@ -1070,6 +1085,7 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
     </div>
     <div class="actions" style="justify-content:flex-start">
       <button type="button" class="primary" id="practiseBtn">Practise these again</button>
+      <button type="button" id="moreBtn2" hidden>Keep learning</button>
       <button type="button" id="againBtn">Play this set again</button>
       <button type="button" id="menuBtn">← Back to home</button>
     </div>
@@ -1292,6 +1308,39 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
 
 <audio id="lobbyMusic" src="lobby.mp3" loop preload="auto"></audio>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="sheet-wrap" id="helpSheet" hidden>
+  <div class="sheet help-sheet" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="sheet-head"><h2 id="helpTitle">How it works</h2><button type="button" class="icon-btn" data-close aria-label="Close how it works"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="sheet-sec">
+      <p class="label">Start here</p>
+      <p>Tap <b>Start review</b> once a day. It brings back terms just before you'd forget them, plus a few new ones in lecture order. Five to ten minutes a day is plenty.</p>
+    </div>
+    <div class="sheet-sec">
+      <p class="label">Every term climbs five steps</p>
+      <ol class="help-steps">
+        <li><b>New term</b> shown with its description</li>
+        <li><b>Dashes and first letter</b></li>
+        <li><b>Dashes only</b></li>
+        <li><b>No dashes</b>, type the whole term</li>
+        <li><b>Test conditions:</b> no dashes, 30 seconds</li>
+      </ol>
+      <p>Spell it right and next time there's less help. A slip moves that term back one step, never to the start. The coloured bar on each card shows its step.</p>
+    </div>
+    <div class="sheet-sec">
+      <p class="label">Typing</p>
+      <p>Tap the letters on the app's keyboard. To fix a letter, tap that dash first. Stuck? <b>Give me a letter</b> or <b>Show answer</b>, and the term comes back to practise. Only terms you spell yourself count toward your daily goal.</p>
+    </div>
+    <div class="sheet-sec">
+      <p class="label">Practice and games</p>
+      <p>Under Practice you can work through one lecture, mix them all, or use flashcards. Lectures at silver are marked <b>ready</b> in the games. Time critical at 30 seconds a patient matches the real test.</p>
+    </div>
+    <div class="sheet-sec">
+      <p class="label">Badges and levels</p>
+      <p>Bronze: half a lecture learned. Silver: all of it learned. Gold: every term test-ready. Your level grows from Pathbaby all the way to Pathophreak.</p>
+    </div>
+    <p class="small-note">Your progress is saved on this phone, in this browser. There's no sign-in, and nothing is sent anywhere.</p>
+  </div>
+</div>
 <div class="sheet-wrap" id="settingsSheet" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="setTitle">
     <div class="sheet-head"><h2 id="setTitle">Settings</h2><button type="button" class="icon-btn" data-close aria-label="Close settings"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
@@ -1582,6 +1631,13 @@ function reviewQueue() {
   const fresh = newLeft ? ALL.map((x, i) => i).filter(i => !srs[keyOf(i)]).slice(0, newLeft) : [];
   return { due, fresh, held: all.length - due.length, total: due.length + fresh.length };
 }
+// "Keep learning": a batch of new terms beyond the daily limit, enough to reach the goal (5 to 10)
+function moreIndices() {
+  const left = daily.goal - (dayRec(today()).n || 0);
+  const n = Math.min(10, Math.max(5, left));
+  return ALL.map((x, i) => i).filter(i => !srs[keyOf(i)]).slice(0, n);
+}
+
 function nextDue() {
   const t = today();
   let day = Infinity, count = 0;
@@ -1604,12 +1660,15 @@ const plural = (n, word) => n + " " + word + (n === 1 ? "" : "s");
 
 function paintMenu() {
   try { paintReadyNote(); } catch (e) {}
+  const moreBtn = document.getElementById("moreBtn");
+  moreBtn.hidden = true;
   const q = reviewQueue();
   const seen = ALL.filter((x, i) => srs[keyOf(i)]).length;
   const nd = nextDue();
   const firstTime = seen === 0 && !Object.keys(daily.days).length;
   document.getElementById("todayRow").hidden = firstTime;
   document.getElementById("weekCard").hidden = firstTime;
+  document.getElementById("howBtn").hidden = !firstTime;
   if (q.total && firstTime) {
     els.reviewMain.textContent = "Your first " + plural(q.total, "term") + " are ready";
     els.reviewSub.textContent = "Takes about 2 minutes. Each one comes back just before you'd forget it.";
@@ -1622,11 +1681,21 @@ function paintMenu() {
     els.reviewSub.textContent = parts.join(" · ") + (q.held ? " · " + q.held + " held over" : "");
     els.reviewBtn.hidden = false;
   } else if (seen) {
-    els.reviewMain.textContent = "All done for today";
-    els.reviewSub.textContent = q.held
-      ? "Today's limit of " + REVIEW_CAP + " reached. The rest carry over."
-      : (nd ? "Next review " + whenText(nd.inDays) + ": " + plural(nd.count, "term") + ". " : "") + "Choose a lecture below for extra practice.";
+    const left = daily.goal - (dayRec(today()).n || 0);
+    const more = moreIndices().length;
+    if (more && left > 0 && !q.held) {
+      els.reviewMain.textContent = plural(left, "more term") + " for today's goal";
+      els.reviewSub.textContent = "Your reviews are done. Learn a few new terms to reach it.";
+    } else {
+      els.reviewMain.textContent = "All done for today";
+      els.reviewSub.textContent = q.held
+        ? "Today's limit of " + REVIEW_CAP + " reached. The rest carry over."
+        : (nd ? "Next review " + whenText(nd.inDays) + ": " + plural(nd.count, "term") + ". " : "") + (more ? "Want more? Learn some new terms." : "Choose a lecture below for extra practice.");
+    }
     els.reviewBtn.hidden = true;
+    moreBtn.hidden = !more || !!q.held;
+    moreBtn.textContent = "Learn " + plural(more, "new term");
+    moreBtn.classList.toggle("primary", left > 0);
   } else {
     els.reviewMain.textContent = "No terms yet";
     els.reviewSub.textContent = "Practise a lecture to start your reviews.";
@@ -1721,6 +1790,8 @@ document.querySelectorAll(".sheet-wrap").forEach(w => {
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheets(); });
 document.getElementById("settingsBtn").addEventListener("click", () => openSheet("settingsSheet"));
+document.getElementById("helpBtn").addEventListener("click", () => openSheet("helpSheet"));
+document.getElementById("howBtn").addEventListener("click", () => openSheet("helpSheet"));
 document.getElementById("progressBtn").addEventListener("click", () => openSheet("progressSheet"));
 
 let resetArmed = null;
@@ -2110,6 +2181,7 @@ function route() {
   const m = h.match(/^lecture-(\d+)$/);
   if (h === "all") openSet({ kind: "all" });
   else if (h === "review") { if (reviewQueue().total) openSet({ kind: "review" }); else showMenu(); }
+  else if (h === "more") { const ix = moreIndices(); if (ix.length) openSet({ kind: "custom", name: "Learning new terms", indices: ix, retry: true }); else showMenu(); }
   else if (m && LECTURES.some(L => L.n === Number(m[1]))) openSet({ kind: "lec", n: Number(m[1]) });
   else showMenu();
 }
@@ -2603,7 +2675,7 @@ function finish(status) {
   els.stepNote.hidden = !note;
   // in a spaced review, a missed term comes back a few cards later until it's spelled right
   cur.requeued = false;
-  if (currentSet && currentSet.kind === "review" && status !== "ok") {
+  if (currentSet && (currentSet.kind === "review" || currentSet.retry) && status !== "ok") {
     retryCount[idx] = (retryCount[idx] || 0) + 1;
     // first miss: back in 3 cards; a second miss waits until the end so new terms keep coming
     const at = retryCount[idx] === 1 ? Math.min(order.length, pos + 3) : order.length;
@@ -2715,7 +2787,14 @@ function showSummary() {
     ? plural(dueNow, "term") + (dueNow === 1 ? " is" : " are") + " ready for review today."
     : nd ? "Next review " + whenText(nd.inDays) + ": " + plural(nd.count, "term") + "." : "")
     + (dayRec(today()).n >= daily.goal ? " Daily goal reached." : " Today: " + dayRec(today()).n + " of " + daily.goal + " terms.");
-  (missed.length ? els.practiseBtn : els.againBtn).focus();
+  // reviews finished but today's goal not met (or keen for more): offer new terms
+  const moreN = dueNow ? 0 : moreIndices().length;
+  const goalLeft = daily.goal - (dayRec(today()).n || 0);
+  const mb = $("moreBtn2");
+  mb.hidden = !moreN || !currentSet || !(currentSet.kind === "review" || currentSet.retry);
+  mb.textContent = (goalLeft > 0 ? "Keep learning: " : "Learn ") + plural(moreN, "new term");
+  mb.classList.toggle("primary", goalLeft > 0 && !missed.length);
+  (missed.length ? els.practiseBtn : !mb.hidden && goalLeft > 0 ? mb : els.againBtn).focus();
 }
 
 els.checkBtn.addEventListener("click", check);
@@ -2733,6 +2812,8 @@ els.revealBtn.addEventListener("click", reveal);
 els.nextBtn.addEventListener("click", nextTerm);
 els.restartBtn.addEventListener("click", () => startRound());
 els.againBtn.addEventListener("click", () => startRound());
+$("moreBtn2").addEventListener("click", () => go("more"));
+document.getElementById("moreBtn").addEventListener("click", () => go("more"));
 els.practiseBtn.addEventListener("click", () => startRound(results.filter(r => r && !r.retry && r.status !== "ok").map(r => r.idx)));
 els.supportSel.addEventListener("change", () => {
   store(STORE_SUPPORT, els.supportSel.value);
@@ -2786,7 +2867,6 @@ function applyKb() {
   if (!cur) return;
   const on = kbOn();
   els.okb.hidden = !on || cur.done || cur.mode === "meet";
-  els.okb.querySelector(".okb-nums").hidden = !/\d/.test(cur.item.s);
   els.okb.querySelector(".okb-spacerow").hidden = cur.mode !== "free";
   const mode = on ? "none" : "text";
   cur.inputs.forEach(inp => inp.setAttribute("inputmode", mode));
@@ -2890,13 +2970,13 @@ const ksEl = id => document.getElementById(id);
   const dots = ksEl("ksDots");
   for (let i = 0; i < KS_MAX; i++) { const d = document.createElement("span"); d.className = "mon-dot"; dots.appendChild(d); }
   const keys = ksEl("ksKeys");
-  ["qwertyuiop", "asdfghjkl", "zxcvbnm"].forEach(rowText => {
+  ["1234567890", "qwertyuiop", "asdfghjkl", "zxcvbnm"].forEach((rowText, ri) => {
     const row = document.createElement("div");
-    row.className = "ks-row";
+    row.className = "ks-row" + (ri === 0 ? " ks-nums" : "");
     rowText.split("").forEach(ch => {
       const b = document.createElement("button");
       b.type = "button"; b.className = "ks-key"; b.id = "ks-key-" + ch; b.textContent = ch;
-      b.setAttribute("aria-label", "Letter " + ch.toUpperCase());
+      b.setAttribute("aria-label", (/\d/.test(ch) ? "Number " : "Letter ") + ch.toUpperCase());
       b.addEventListener("click", () => ksGuess(ch));
       row.appendChild(b);
     });
@@ -3061,7 +3141,7 @@ function ksShow() {
   }
   const item = ALL[ks.deck[ks.pos]];
   ks.item = item; ks.wrong = 0; ks.done = false; ks.won = false; ks.nope = "";
-  ks.seq = item.s.toLowerCase().replace(/[^a-z]/g, "").split("");   // letters to spell, in order
+  ks.seq = item.s.toLowerCase().replace(/[^a-z0-9]/g, "").split("");   // letters and numbers to spell, in order
   ks.at = 0;                                                          // how many are spelled so far
   if (ks.mode === "timed") {
     ks.limit = ks.tcLen || 30;   // 30 s matches a station in the real test
@@ -3090,14 +3170,12 @@ function ksRenderWord() {
       longest = Math.max(longest, segText.length);
       for (const ch of segText) {
         const c = document.createElement("span");
-        if (/[a-z]/i.test(ch)) {
+        if (/[a-z0-9]/i.test(ch)) {
           const k = n++;
           if (k < ks.at) { c.className = "ks-ch got"; c.textContent = ch; }
           else if (ks.done) { c.className = "ks-ch missed"; c.textContent = ch; }
           else if (k === ks.at) { c.className = "ks-ch cur" + (ks.nope ? " nope" : ""); c.textContent = ks.nope; }
           else { c.className = "ks-ch"; c.textContent = ""; }
-        } else if (/[0-9]/.test(ch)) {
-          c.className = "ks-ch got"; c.textContent = ch;
         } else {
           c.className = "ks-ch fixed"; c.textContent = ch === "'" ? "’" : ch;
         }
@@ -3327,7 +3405,7 @@ ksEl("ksNext").addEventListener("click", ksShow);
 document.addEventListener("keydown", e => {
   if (ksEl("ksPlay").hidden || !ksEl("scoreCard").hidden || e.ctrlKey || e.metaKey || e.altKey) return;
   const k = (e.key || "").toLowerCase();
-  if (/^[a-z]$/.test(k)) { e.preventDefault(); ksGuess(k); }
+  if (/^[a-z0-9]$/.test(k)) { e.preventDefault(); ksGuess(k); }
   else if (k === "enter" && ks.done) { e.preventDefault(); ksShow(); }
 });
 
