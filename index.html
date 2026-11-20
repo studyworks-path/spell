@@ -923,6 +923,27 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
 .ks-type { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; border: 0; padding: 0; font-size: 16px; pointer-events: none; }
 .ks-typebtn { justify-self: center; display: inline-flex; align-items: center; gap: 8px; }
 .ks-typebtn::before { content: "⌨"; font-size: 1.2rem; }
+
+/* ---- Read aloud ---- */
+.say-btn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; min-height: 0; border-radius: 999px; font-size: 0.82rem; font-weight: 700; color: var(--haem); background: var(--surface); }
+.say-btn svg { width: 17px; height: 17px; }
+.say-btn.on { background: color-mix(in srgb, var(--haem) 14%, var(--surface)); border-color: var(--haem); }
+.card-head .say-btn { margin-right: auto; }
+.meet .say-btn { justify-self: center; }
+.after-row { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.parts { margin: 0; font-weight: 700; color: var(--haem); letter-spacing: 0.04em; word-spacing: 0.1em; }
+.fc-parts { display: block; margin-top: 8px; font-size: 0.95rem; }
+/* ---- Dyslexia-friendly reading ---- */
+body.dys { --font-body: Verdana, "Atkinson Hyperlegible", Tahoma, Arial, sans-serif; }
+body.dys .definition, body.dys .fc-text, body.dys .meet-term, body.dys .help-sheet p { letter-spacing: 0.03em; word-spacing: 0.14em; line-height: 1.75; }
+body.dys .definition { font-size: 1.1rem; text-align: left; hyphens: none; }
+body.dys .fc-text { text-align: left; }
+.definition .dl, .fc-text .dl { display: block; }
+body.dys #card, body.dys #ksCard, body.dys .fc-face { background: #FDF6E3; }
+body.dys .slot, body.dys .ks-ch { letter-spacing: 0.02em; }
+body.dys em, body.dys i { font-style: normal; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body.dys #card, :root:not([data-theme="light"]) body.dys #ksCard, :root:not([data-theme="light"]) body.dys .fc-face { background: #2A2620; } }
+:root[data-theme="dark"] body.dys #card, :root[data-theme="dark"] body.dys #ksCard, :root[data-theme="dark"] body.dys .fc-face { background: #2A2620; }
 </style>
 </head>
 <body>
@@ -1040,13 +1061,15 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
   </div>
 
   <section class="card" id="card" hidden>
-    <div class="card-head"><p class="label">Description</p><span class="lec-tag" id="lecTag"></span></div>
+    <div class="card-head"><p class="label">Description</p><button type="button" class="say-btn" id="sayDesc" aria-label="Read the description aloud"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span>Listen</span></button><span class="lec-tag" id="lecTag"></span></div>
     <div class="step-row" id="stepRow" hidden><span class="step-dots" id="stepDots" aria-hidden="true"></span><span class="step-txt" id="stepTxt"></span></div>
     <div class="t30" id="t30" hidden><div class="t30-track"><i id="t30Fill"></i></div><span class="t30-txt" id="t30Txt" role="timer" aria-live="off">30 s</span></div>
     <p class="definition" id="definition"></p>
     <div class="meet" id="meetBox" hidden>
       <p class="meet-label">New term</p>
       <p class="meet-term" id="meetTerm"></p>
+      <p class="parts" id="meetParts" hidden></p>
+      <button type="button" class="say-btn" id="sayMeet" aria-label="Hear the term"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span>Hear it</span></button>
       <p class="small-note">Read it, say it out loud, then tap Got it. You'll spell it in a few cards.</p>
     </div>
     <div class="slots" id="slots" role="group" aria-label="Answer, one box per letter"></div>
@@ -1059,6 +1082,7 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
     <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
     <p class="step-note" id="stepNote" hidden></p>
     <p class="answer-note" id="answerNote" hidden></p>
+    <div class="after-row" id="afterRow" hidden><p class="parts" id="partsNote"></p><button type="button" class="say-btn" id="sayAns" aria-label="Hear the term"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span>Hear it</span></button></div>
     <div class="actions">
       <button type="button" class="primary" id="meetBtn" hidden>Got it</button>
       <button type="button" class="primary" id="checkBtn">Check spelling</button>
@@ -1159,7 +1183,7 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
     </div>
     </div>
     <section class="card" id="ksCard">
-      <div class="card-head"><p class="label">Description</p><span class="lec-tag" id="ksLec"></span></div>
+      <div class="card-head"><p class="label">Description</p><button type="button" class="say-btn" id="sayKs" aria-label="Read the description aloud"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg><span>Listen</span></button><span class="lec-tag" id="ksLec"></span></div>
       <p class="definition" id="ksDesc"></p>
       <div class="ks-word" id="ksWord" role="img"></div>
       <p class="feedback" id="ksFeedback" role="status" aria-live="polite"></p>
@@ -1356,6 +1380,8 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
     <div class="set-row"><label for="supportSel">Help while spelling</label><select id="supportSel"><option value="auto">Steps up as you learn</option><option value="2">Dashes + first letter</option><option value="3">Dashes only</option><option value="4">No dashes</option></select></div>
     <p class="small-note set-explain">"Steps up as you learn" gives each term less help as you get it right: a flashcard first, then dashes with the first letter, dashes only, no dashes, and finally 30 seconds like the real test. A slip moves that term back one step.</p>
     <label class="toggle" for="appKb"><input type="checkbox" id="appKb"> Use the app's keyboard instead of the phone's</label>
+    <label class="toggle" for="dysMode"><input type="checkbox" id="dysMode"> Dyslexia-friendly reading</label>
+    <p class="small-note set-explain">A clearer font with more space between letters and lines, a cream card, descriptions in short lines, and each term split into parts after you answer.</p>
     <div class="set-danger">
       <button type="button" id="resetSrsBtn">Reset review progress</button>
       <span class="small-note">Clears your review schedule, badges and level on this device. Your streak stays.</span>
@@ -1447,6 +1473,88 @@ function supportSetting() {
   return v === "2" || v === "3" || v === "4" ? v : "auto";
 }
 const STORE_KB = "pathSpell.appKeyboard.v1";
+const STORE_DYS = "pathSpell.dys.v1";
+// each term split into spelling parts (word parts where they exist, otherwise syllables)
+const CHUNKS = {"Primary traumatic brain injury": "Primary trau·mat·ic brain injury", "Secondary brain injury": "Secondary brain injury", "Cerebral contusion": "Cere·bral con·tu·sion", "Coup-contrecoup injury": "Coup-contre·coup injury", "Epidural haematoma": "Epi·dur·al haemat·oma", "Subdural haematoma": "Sub·dur·al haemat·oma", "Subarachnoid haemorrhage": "Sub·arach·noid haem·or·rhage", "Intracerebral haemorrhage": "Intra·cere·bral haem·or·rhage", "Concussion": "Con·cus·sion", "Diffuse axonal injury": "Diffuse ax·on·al injury", "Monro-Kellie hypothesis": "Mon·ro-Kel·lie hy·poth·e·sis", "Cushing reflex": "Cush·ing reflex", "Central nervous system ischaemic response": "Central nervous system isch·aem·ic response", "Hypoxic brain injury": "Hyp·ox·ic brain injury", "Stroke": "Stroke", "Ischaemic stroke": "Isch·aem·ic stroke", "Thrombotic stroke": "Throm·bot·ic stroke", "Embolic stroke": "Em·bol·ic stroke", "Haemorrhagic stroke": "Haem·or·rhag·ic stroke", "Transient ischaemic attack": "Tran·si·ent isch·aem·ic attack", "Ischaemic penumbra": "Isch·aem·ic pen·um·bra", "Bell's palsy": "Bell's pal·sy", "Meningitis": "Mening·itis", "Seizure": "Sei·zure", "Epilepsy": "Epi·lep·sy", "Generalised seizure": "Gen·er·al·ised sei·zure", "Focal seizure": "Fo·cal sei·zure", "Tonic-clonic seizure": "Ton·ic-clon·ic sei·zure", "Status epilepticus": "Status epi·lep·ti·cus", "Post-ictal state": "Post-ic·tal state", "Shock": "Shock", "Anaerobic metabolism": "An·aer·o·bic me·tab·ol·ism", "Sympathetic response": "Sym·pa·thet·ic response", "Renin-angiotensin-aldosterone system": "Re·nin-angio·ten·sin-al·do·ster·one system", "Compensated shock": "Com·pen·sat·ed shock", "Decompensated shock": "De·com·pen·sat·ed shock", "Irreversible shock": "Ir·re·vers·ible shock", "Hypovolaemic shock": "Hypo·vol·aem·ic shock", "Trauma triad of death": "Trauma tri·ad of death", "Cardiogenic shock": "Cardio·gen·ic shock", "Obstructive shock": "Ob·struc·tive shock", "Distributive shock": "Dis·trib·u·tive shock", "Neurogenic shock": "Neuro·gen·ic shock", "Anaphylactic shock": "Ana·phy·lac·tic shock", "Septic shock": "Sep·tic shock", "Sensitisation": "Sen·si·tis·a·tion", "Primary response": "Primary response", "Secondary response": "Secondary response", "Histamine": "Hist·a·mine", "Innate immune response": "Innate immune response", "Adaptive immune response": "A·dap·tive immune response", "Multiple organ dysfunction syndrome": "Multiple organ dys·func·tion syn·drome", "Acute respiratory distress syndrome": "Acute res·pir·a·tory distress syn·drome", "Ventilation-perfusion mismatch": "Ven·ti·la·tion-per·fu·sion mismatch", "Respiratory acidosis": "Res·pir·a·tory acid·osis", "Respiratory alkalosis": "Res·pir·a·tory alkal·osis", "Bronchiectasis": "Bronch·i·ec·ta·sis", "Pulmonary embolism": "Pul·mon·ary em·bol·ism", "Pneumonia": "Pneu·mon·ia", "Pleurisy": "Pleur·i·sy", "Pleural effusion": "Pleur·al ef·fu·sion", "Haemothorax": "Haemo·thorax", "Pneumothorax": "Pneumo·thorax", "Tension pneumothorax": "Tension pneumo·thorax", "Chronic obstructive pulmonary disease": "Chron·ic ob·struc·tive pul·mon·ary disease", "Emphysema": "Em·phy·se·ma", "Chronic bronchitis": "Chron·ic bronch·itis", "Alpha-1 antitrypsin deficiency": "Al·pha-1 anti·tryp·sin de·fi·cien·cy", "Asthma": "Asth·ma", "Early-phase asthma response": "Early-phase asth·ma response", "Late-phase asthma response": "Late-phase asth·ma response", "Shunt": "Shunt", "Lung hyperinflation": "Lung hyper·in·fla·tion", "Status asthmaticus": "Status asth·mat·i·cus", "Oxygen-induced hypercapnia": "Oxygen-induced hyper·cap·nia", "Dead space": "Dead space", "Pericarditis": "Peri·card·itis", "Chronic constrictive pericarditis": "Chron·ic con·stric·tive peri·card·itis", "Pericardial effusion": "Peri·card·i·al ef·fu·sion", "Cardiac tamponade": "Card·i·ac tam·pon·ade", "Beck's triad": "Beck's tri·ad", "Aneurysm": "An·eu·rysm", "Dissecting aneurysm": "Dissecting an·eu·rysm", "Heart failure": "Heart failure", "Systolic heart failure": "Sys·tol·ic heart failure", "Diastolic heart failure": "Dia·stol·ic heart failure", "Cardiogenic pulmonary oedema": "Cardio·gen·ic pul·mon·ary oedema", "Right-sided heart failure": "Right-sided heart failure", "Left-sided heart failure": "Left-sided heart failure", "Cor pulmonale": "Cor pul·mon·a·le", "Coronary artery disease": "Cor·on·ary artery disease", "Ischaemic heart disease": "Isch·aem·ic heart disease", "Acute coronary syndrome": "Acute cor·on·ary syn·drome", "Stable angina": "Stable an·gi·na", "Unstable angina": "Unstable an·gi·na", "Myocardial infarction": "Myo·card·i·al in·farc·tion", "Vasospastic angina": "Vaso·spas·tic an·gi·na", "ST-elevation myocardial infarction": "ST-el·e·va·tion myo·card·i·al in·farc·tion", "Non-ST-elevation myocardial infarction": "Non-ST-el·e·va·tion myo·card·i·al in·farc·tion", "Gastroesophageal reflux disease": "Gastro·esophag·eal reflux disease", "Reflux oesophagitis": "Reflux oesophag·itis", "Barrett's oesophagus": "Bar·rett's oe·soph·a·gus", "Hiatus hernia": "Hiatus her·nia", "Gastritis": "Gastr·itis", "Peptic ulcer": "Pep·tic ul·cer", "Gastroenteritis": "Gastro·enter·itis", "Irritable bowel syndrome": "Irritable bow·el syn·drome", "Crohn's disease": "Crohn's disease", "Ulcerative colitis": "Ul·cer·a·tive col·itis", "Diverticulosis": "Di·ver·tic·ul·osis", "Diverticulitis": "Di·ver·tic·ul·itis", "Appendicitis": "Append·ic·itis", "Bowel obstruction": "Bow·el ob·struc·tion", "Peritonitis": "Peri·ton·itis", "Cholelithiasis": "Chole·lith·i·asis", "Cholecystitis": "Chole·cyst·itis", "Pancreatitis": "Pan·cre·at·itis", "Liver failure": "Liver failure", "Hernia": "Her·nia", "Ectopic pregnancy": "Ec·top·ic preg·nan·cy", "Nephron": "Neph·ron", "Glomerulonephritis": "Glom·er·ulo·nephr·itis", "Urinary tract infection": "Ur·in·ary tract in·fec·tion", "Pyelonephritis": "Pyelo·nephr·itis", "Renal calculi": "Re·nal cal·cu·li", "Hydronephrosis": "Hydro·nephr·osis", "Acute kidney injury": "Acute kidney injury", "Pre-renal acute kidney injury": "Pre-re·nal acute kidney injury", "Intrinsic acute kidney injury": "In·trin·sic acute kidney injury", "Post-renal acute kidney injury": "Post-re·nal acute kidney injury", "Acute tubular necrosis": "Acute tu·bu·lar necr·osis", "Chronic renal failure": "Chron·ic re·nal failure", "Hyperkalaemia": "Hyper·kal·aem·ia", "Uraemia": "Ur·aem·ia", "Haemodialysis": "Haemo·dia·lysis", "Peritoneal dialysis": "Peri·ton·e·al dia·lysis", "Hypopituitarism": "Hypo·pi·tu·it·ar·ism", "Simple goitre": "Simple goi·tre", "Endemic goitre": "En·dem·ic goi·tre", "Hyperthyroidism": "Hyper·thyroid·ism", "Graves' disease": "Graves' disease", "Thyroid storm": "Thy·roid storm", "Hypothyroidism": "Hypo·thyroid·ism", "Hashimoto's thyroiditis": "Ha·shi·mo·to's thy·roid·itis", "Myxedema": "Myx·e·de·ma", "Myxedema coma": "Myx·e·de·ma co·ma", "Cushing's syndrome": "Cush·ing's syn·drome", "Addison's disease": "Ad·di·son's disease", "Type 1 diabetes mellitus": "Type 1 dia·be·tes mel·li·tus", "Type 2 diabetes mellitus": "Type 2 dia·be·tes mel·li·tus", "Gestational diabetes mellitus": "Ges·ta·tion·al dia·be·tes mel·li·tus", "Diabetic ketoacidosis": "Dia·bet·ic keto·acid·osis", "Hyperglycaemic hyperosmolar state": "Hyper·glyc·aem·ic hyper·os·mo·lar state", "Neurogenic diabetes insipidus": "Neuro·gen·ic dia·be·tes in·sip·i·dus", "Nephrogenic diabetes insipidus": "Nephro·gen·ic dia·be·tes in·sip·i·dus", "Flame burns": "Flame burns", "Scald burns": "Scald burns", "Chemical burns": "Chemical burns", "Electrical burns": "Electrical burns", "Radiation burns": "Ra·di·a·tion burns", "Superficial partial thickness burn": "Super·fi·cial partial thickness burn", "Partial thickness burn": "Partial thickness burn", "Deep partial thickness burn": "Deep partial thickness burn", "Full thickness burn": "Full thickness burn", "Rule of Nines": "Rule of Nines", "Palmar method": "Pal·mar method", "Zone of coagulation": "Zone of co·ag·u·la·tion", "Zone of stasis": "Zone of sta·sis", "Zone of hyperaemia": "Zone of hyper·aem·ia", "Systemic inflammatory response syndrome": "Sys·tem·ic in·flam·ma·tory response syn·drome", "Parkland formula": "Parkland formula", "Spinal cord injury": "Spin·al cord injury", "Hyperflexion injury": "Hyper·flex·ion injury", "Hyperextension injury": "Hyper·ex·ten·sion injury", "Compression fracture": "Compression fracture", "Flexion-rotation injury": "Flex·ion-ro·ta·tion injury", "Spinal cord shock": "Spin·al cord shock", "Primary spinal cord injury": "Primary spin·al cord injury", "Secondary spinal cord injury": "Secondary spin·al cord injury", "Tetraplegia": "Tetra·ple·gia", "Paraplegia": "Para·ple·gia", "Central cord syndrome": "Central cord syn·drome", "Anterior cord syndrome": "An·ter·i·or cord syn·drome", "Brown-Sequard syndrome": "Brown-Se·quard syn·drome", "Autonomic dysreflexia": "Auto·nom·ic dys·re·flex·ia", "Hemiplegia": "Hemi·ple·gia"};
+function dysOn() { return load(STORE_DYS) === "1"; }
+function applyDys() { document.body.classList.toggle("dys", dysOn()); }
+function partsOf(term) {
+  const c = CHUNKS[term];
+  if (!c || c === term) return "";
+  return c.split(" ").filter(w => w.includes("·")).map(w => w.replace(/·/g, "\u00a0·\u00a0")).join("\u2003 ");
+}
+// a description broken into short lines at its natural pauses, every word kept in order
+function descLines(text, MAX = 60) {
+  const CONNECT = /\s(?=(?:and|or|but|due to|caused by|resulting in|leading to|with|without|which|that|where|when|such as|following|from|through|despite|causing|commonly|often|usually|particularly|including|in which|involving)\b)/g;
+  // wrap into the fewest lines, with lengths as even as possible (no single word left alone)
+  const wrap = t => {
+    const words = t.split(" ");
+    const n = Math.ceil(t.length / MAX);
+    if (n <= 1) return [t];
+    const target = t.length / n;
+    const o = []; let c = "";
+    for (let i = 0; i < words.length; i++) {
+      const w = words[i];
+      const next = c ? c + " " + w : w;
+      const linesLeft = n - o.length;
+      if (c && linesLeft > 1 && (next.length > MAX || (next.length > target && Math.abs(next.length - target) > Math.abs(c.length - target)))) { o.push(c); c = w; }
+      else c = next;
+    }
+    if (c) o.push(c);
+    return o.flatMap(l => l.length > MAX ? wrap(l) : [l]);
+  };
+  const split = c => {
+    if (c.length <= MAX) return [c];
+    let m, best = -1; CONNECT.lastIndex = 0;
+    while ((m = CONNECT.exec(c))) { const i = m.index; if (i > 15 && c.length - i > 15 && (best < 0 || Math.abs(i - c.length / 2) < Math.abs(best - c.length / 2))) best = i; }
+    return best > 0 ? [...split(c.slice(0, best)), ...split(c.slice(best + 1))] : wrap(c);
+  };
+  const out = [];
+  for (const sen of text.trim().replace(/\s+/g, " ").split(/(?<=[.?!])\s+/)) {
+    const merged = [];
+    for (const p of sen.split(/(?<=,)\s+/).flatMap(split)) {
+      if (merged.length && (merged[merged.length - 1] + " " + p).length <= MAX) merged[merged.length - 1] += " " + p; else merged.push(p);
+    }
+    out.push(...merged);
+  }
+  return out;
+}
+function setDesc(el, text) {
+  if (!dysOn()) { el.textContent = text; return; }
+  // fit the lines to the space on screen (about 0.6 of the font size per character in Verdana)
+  const w = el.clientWidth || (el.parentElement && el.parentElement.clientWidth) || 320;
+  const fs = parseFloat(getComputedStyle(el).fontSize) || 17;
+  const max = Math.max(26, Math.min(60, Math.floor(w / (fs * 0.585))));
+  el.textContent = "";
+  descLines(text, max).forEach(l => { const s = document.createElement("span"); s.className = "dl"; s.textContent = l; el.appendChild(s); });
+}
+// read aloud with the phone's own voice, a New Zealand one where there is one
+const canSpeak = "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
+function pickVoice() {
+  const vs = speechSynthesis.getVoices() || [];
+  for (const p of ["en-nz", "en-au", "en-gb", "en-ie", "en-us"]) {
+    const v = vs.find(v => (v.lang || "").replace("_", "-").toLowerCase().startsWith(p));
+    if (v) return v;
+  }
+  return vs.find(v => /^en/i.test(v.lang || "")) || null;
+}
+function stopSpeech() {
+  if (!canSpeak) return;
+  try { speechSynthesis.cancel(); } catch (e) {}
+  document.querySelectorAll(".say-btn.on").forEach(b => b.classList.remove("on"));
+}
+function speak(text, btn) {
+  if (!canSpeak || !text) return;
+  const again = btn && btn.classList.contains("on");
+  stopSpeech();
+  if (again) return;                       // a second tap stops it
+  const u = new SpeechSynthesisUtterance(text);
+  const v = pickVoice();
+  if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "en-NZ";
+  u.rate = 0.92;
+  if (btn) { btn.classList.add("on"); u.onend = u.onerror = () => btn.classList.remove("on"); }
+  speechSynthesis.speak(u);
+}
 // on by default for phones and tablets, off for computers with a real keyboard
 function kbOn() {
   const v = load(STORE_KB);
@@ -2276,7 +2384,7 @@ function sizeSlots() {
 
 function showTerm() {
   const item = ALL[order[pos]];
-  els.definition.textContent = item.d;
+  setDesc(els.definition, item.d);
   els.lecTag.textContent = currentSet && currentSet.kind === "lec" ? "" : lecName(item.lec) + " · " + item.topic;
   els.slots.innerHTML = "";
   els.answerNote.hidden = true;
@@ -2337,6 +2445,8 @@ function showTerm() {
   cur.lvl = cur.auto ? Math.max(2, cur.step) : Number(supportSetting());
   els.meetBox.hidden = true;
   els.meetBtn.hidden = true;
+  els.afterRow.hidden = true;
+  stopSpeech();
   els.stepNote.hidden = true;
   stopT30();
   if (cur.lvl >= 4) {
@@ -2382,6 +2492,9 @@ function showMeet() {
   els.meta.hidden = true;
   els.okb.hidden = true;
   els.meetTerm.textContent = cur.item.a;
+  const mp = partsOf(cur.item.s);
+  els.meetParts.textContent = mp;
+  els.meetParts.hidden = !mp;
   els.meetBox.hidden = false;
   els.checkBtn.hidden = true;
   els.hintBtn.hidden = true;
@@ -2678,6 +2791,10 @@ function reveal() {
 
 function finish(status) {
   cur.done = true;
+  const ap = dysOn() ? partsOf(cur.item.s) : "";
+  els.partsNote.textContent = ap ? "Parts:  " + ap : "";
+  els.partsNote.hidden = !ap;
+  els.afterRow.hidden = !(ap || canSpeak);
   els.okb.hidden = true;
   const slow = !!cur.t0 && performance.now() - cur.t0 > 30000;
   stopT30();
@@ -2837,7 +2954,8 @@ els.supportSel.addEventListener("change", () => {
 
 /* ---------- On-screen keyboard (so the phone keyboard doesn't cover the screen) ---------- */
 els.okb = $("okb");
-Object.assign(els, { meetBox: $("meetBox"), meetTerm: $("meetTerm"), meetBtn: $("meetBtn"), stepNote: $("stepNote"),
+Object.assign(els, { meetParts: $("meetParts"), partsNote: $("partsNote"), afterRow: $("afterRow"), dysMode: $("dysMode"),
+  meetBox: $("meetBox"), meetTerm: $("meetTerm"), meetBtn: $("meetBtn"), stepNote: $("stepNote"),
   stepRow: $("stepRow"), stepDots: $("stepDots"), stepTxt: $("stepTxt"), t30: $("t30"), t30Fill: $("t30Fill"), t30Txt: $("t30Txt") });
 els.appKb = $("appKb");
 (function buildOkb() {
@@ -2934,6 +3052,24 @@ function okbBack() {
 }
 
 els.appKb.checked = kbOn();
+els.dysMode.checked = dysOn();
+applyDys();
+els.dysMode.addEventListener("change", () => {
+  store(STORE_DYS, els.dysMode.checked ? "1" : "0");
+  applyDys();
+  if (cur && !els.card.hidden) setDesc(els.definition, cur.item.d);
+  try { if (!ksEl("ksPlay").hidden && ks.item) setDesc(ksEl("ksDesc"), ks.item.d); } catch (e) {}
+});
+if (canSpeak) {
+  try { speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = () => {}; } catch (e) {}
+  $("sayDesc").addEventListener("click", e => speak(cur && cur.item.d, e.currentTarget));
+  $("sayKs").addEventListener("click", e => speak(ks.item && ks.item.d, e.currentTarget));
+  $("sayMeet").addEventListener("click", e => speak(cur && cur.item.s, e.currentTarget));
+  $("sayAns").addEventListener("click", e => speak(cur && cur.item.s, e.currentTarget));
+} else {
+  ["sayDesc", "sayKs", "sayMeet", "sayAns"].forEach(id => { $(id).hidden = true; });
+}
+document.addEventListener("visibilitychange", () => { if (document.hidden) stopSpeech(); });
 els.appKb.addEventListener("change", () => {
   store(STORE_KB, els.appKb.checked ? "1" : "0");
   if (cur && !els.card.hidden) applyKb();
@@ -3164,7 +3300,7 @@ function ksShow() {
     ks.left = ks.limit;
     ks.lastT = performance.now();
   }
-  ksEl("ksDesc").textContent = item.d;
+  setDesc(ksEl("ksDesc"), item.d);
   ksEl("ksLec").textContent = lecName(item.lec) + " · " + item.topic;
   ksEl("ksFeedback").textContent = ""; ksEl("ksFeedback").className = "feedback";
   ksEl("ksNote").hidden = true;
@@ -3603,10 +3739,12 @@ function fcNext() {
   const termFirst = fc.dir === "term";
   fcEls.frontKind.textContent = termFirst ? "Term" : "Description";
   fcEls.backKind.textContent = termFirst ? "Description" : "Term";
-  fcEls.front.textContent = termFirst ? item.a : item.d;
+  if (termFirst) fcEls.front.textContent = item.a; else setDesc(fcEls.front, item.d);
   fcEls.front.className = "fc-text" + (termFirst ? " term" : "");
-  fcEls.back.textContent = termFirst ? item.d : item.a;
+  if (termFirst) setDesc(fcEls.back, item.d); else fcEls.back.textContent = item.a;
   fcEls.back.className = "fc-text" + (termFirst ? "" : " term");
+  const fp = !termFirst && dysOn() ? partsOf(item.s) : "";
+  if (fp) { const sp = document.createElement("span"); sp.className = "parts fc-parts"; sp.textContent = fp; fcEls.back.appendChild(sp); }
   fcEls.lecHint.textContent = lecName(item.lec) + ": " + item.topic;
   fc.busy = false;
   fcEls.card.focus({ preventScroll: true });
