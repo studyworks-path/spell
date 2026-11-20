@@ -985,6 +985,9 @@ body.no-aloud .say-btn { display: none !important; }
 .means { margin: 0; font-size: 0.92rem; color: var(--muted); line-height: 1.5; text-align: center; }
 .after-row .means { flex-basis: 100%; }
 .set-sub { margin: 14px 0 2px; font-weight: 700; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+.name-row input { flex: 1; min-width: 0; max-width: 220px; padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 16px; }
+.sc-name { margin: -4px 0 0; font-weight: 700; color: var(--haem); }
 </style>
 </head>
 <body>
@@ -1421,6 +1424,8 @@ body.no-aloud .say-btn { display: none !important; }
 <div class="sheet-wrap" id="settingsSheet" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="setTitle">
     <div class="sheet-head"><h2 id="setTitle">Settings</h2><button type="button" class="icon-btn" data-close aria-label="Close settings"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="set-row name-row"><label for="nameInput">Your name</label><input id="nameInput" type="text" maxlength="24" autocomplete="given-name" autocapitalize="words" spellcheck="false" placeholder="Optional"></div>
+    <p class="small-note set-explain">So the app can talk to you by name. It's only saved on this phone.</p>
     <div class="set-row"><label for="goalSel">Daily goal (terms)</label><select id="goalSel"><option value="5">5</option><option value="10">10</option><option value="20">20</option><option value="30">30</option></select></div>
     <div class="set-row"><label for="newSel">New terms a day in your review</label><select id="newSel"><option value="0">None</option><option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="20">20</option><option value="25">25</option><option value="30">30</option></select></div>
     <div class="set-row"><label for="supportSel">Help while spelling</label><select id="supportSel"><option value="auto">Steps up as you learn</option><option value="2">Dashes + first letter</option><option value="3">Dashes only</option><option value="4">No dashes</option></select></div>
@@ -1484,6 +1489,7 @@ body.no-aloud .say-btn { display: none !important; }
     <div class="share-face score-face" id="scoreFace">
       <div class="sc-host"><img id="scoreHost" alt=""></div>
       <p class="sc-kicker">Name That Pathology</p>
+      <p class="sc-name" id="scoreName" hidden></p>
       <p class="sc-game" id="scoreGame"></p>
       <p class="sc-big" id="scoreNum">0</p>
       <p class="sc-unit" id="scoreUnit"></p>
@@ -1540,6 +1546,14 @@ function supportSetting() {
   return v === "2" || v === "3" || v === "4" ? v : "auto";
 }
 const STORE_KB = "pathSpell.appKeyboard.v1";
+const STORE_NAME = "pathSpell.name.v1";
+function userName() { return (load(STORE_NAME) || "").trim().replace(/\s+/g, " ").slice(0, 24); }
+// "Ka pai!" → "Ka pai, Sam!"; phrases stay as they are when no name is set
+function named(phrase) {
+  const n = userName();
+  if (!n) return phrase;
+  return /[!.]$/.test(phrase) ? phrase.slice(0, -1) + ", " + n + phrase.slice(-1) : phrase + ", " + n;
+}
 const STORE_DYS = "pathSpell.dys.v1";
 const STORE_READ = "pathSpell.read.v1";
 const READ_DEFAULT = { font: "std", tint: "rainbow", size: "m", aloud: true, rate: "n", hl: true, group: false, lower: false, swap: false, mean: false, extra: 0 };
@@ -2123,8 +2137,8 @@ function recordDaily(counts, isNew, reviewed) {
   if (st > daily.best) daily.best = st;
   saveDaily();
   const newBest = st > prevBest && st >= 2;
-  if (justMet) toast("Daily goal reached. Streak: " + plural(st, "day") + ". Kia pai te rā!");
-  if (newBest) toast("New best streak: " + plural(st, "day") + ".");
+  if (justMet) toast(named("Daily goal reached.") + " Streak: " + plural(st, "day") + ". Kia pai te rā!");
+  if (newBest) toast("New best streak: " + plural(st, "day") + ". " + named("Tino pai!"));
   return { justMet, newBest };
 }
 
@@ -2183,7 +2197,7 @@ function checkLevel() {
   if (st.lv > levelBest) {
     levelBest = st.lv;
     store(STORE_LEVEL, String(levelBest));
-    toast("Level up! You're now a " + LEVELS[levelBest].name + ".");
+    toast(named("Level up!") + " You're now a " + LEVELS[levelBest].name + ".");
     return LEVELS[levelBest].name;
   }
   return "";
@@ -2305,6 +2319,7 @@ function paintDaily() {
   sub.textContent = met ? plural(r.n, "term") + " · Kia pai te rā!" : "terms today";
   const returning = Object.keys(srs).length > 0 || Object.keys(daily.days).length > 0;
   document.getElementById("greetSub").textContent = returning ? "Happy studying." : "Welcome. Happy studying.";
+  document.getElementById("greetMain").textContent = userName() ? "Kia ora, " + userName() + "! Nau mai, haere mai." : "Kia ora! Nau mai, haere mai.";
   paintMeter(document.getElementById("todayMeter"), Math.min(r.n, daily.goal), 0, daily.goal);
   document.getElementById("goalSel").value = String(daily.goal);
   const week = document.getElementById("week");
@@ -2854,7 +2869,8 @@ const POP_TWO = "data:image/webp;base64,UklGRhw5AABXRUJQVlA4WAoAAAAQAAAAPwEACAEA
 const PRAISE = { ka: "Ka pai!", tino: "Tino pai!", whetu: "Whetū nui!", kaha: "Kia kaha!" };
 function kaPai(tier, text) {
   const el = document.getElementById("kapai");
-  document.getElementById("kapaiText").textContent = text || PRAISE[tier];
+  document.getElementById("kapaiText").textContent = text || named(PRAISE[tier]);
+  document.getElementById("kapaiSub").textContent = userName() ? "Keep practising, " + userName() + ". You've got this." : "Keep practising, you've got this.";
   document.getElementById("kapaiSub").hidden = tier !== "kaha";
   const kp = document.getElementById("kpArt");
   kp.innerHTML = "";
@@ -3081,8 +3097,8 @@ function showSummary() {
   els.practiseBtn.hidden = missed.length === 0;
   els.practiseBtn.textContent = "Practise these " + missed.length + " again";
   $("summaryTitle").textContent = missed.length === 0
-    ? "Whetū nui! Every term spelled first try"
-    : (t.ok / Math.max(1, t.done) >= 0.8 ? "Tino pai! Round complete" : "Mahi pai! Round complete");
+    ? named("Whetū nui!") + " Every term spelled first try"
+    : named(t.ok / Math.max(1, t.done) >= 0.8 ? "Tino pai!" : "Mahi pai!") + " Round complete";
   const dueNow = reviewQueue().total, nd = nextDue();
   els.srsNote.textContent = "Review schedule updated. " + (dueNow
     ? plural(dueNow, "term") + (dueNow === 1 ? " is" : " are") + " ready for review today."
@@ -3221,6 +3237,9 @@ function okbBack() {
 }
 
 els.appKb.checked = kbOn();
+const nameInput = document.getElementById("nameInput");
+nameInput.value = userName();
+nameInput.addEventListener("input", () => { store(STORE_NAME, nameInput.value.trim()); paintDaily(); });
 els.dysMode.checked = dysOn();
 const READ_CTRLS = { fontSel: "font", tintSel: "tint", sizeSel: "size", rateSel: "rate", extraSel: "extra" };
 const READ_TOGGLES = { aloudOn: "aloud", hlOn: "hl", groupOn: "group", lowerOn: "lower", swapOn: "swap", meanOn: "mean" };
@@ -3603,7 +3622,7 @@ function ksWin() {
     : (ks.wrong === 0 ? "whetu" : ks.wrong === 1 ? "tino" : "ka");
   cur = null; kaPai(tier);
   const fb = ksEl("ksFeedback");
-  fb.textContent = PRAISE[tier] + " Patient stabilised" + (ks.mode === "timed"
+  fb.textContent = named(PRAISE[tier]) + " Patient stabilised" + (ks.mode === "timed"
     ? " with " + plural(Math.max(0, Math.ceil(ks.left)), "second") + " to spare."
     : ks.wrong === 0 ? " with no wrong letters." : ".");
   fb.className = "feedback ok";
@@ -3617,7 +3636,7 @@ function ksLose() {
   ksPaintMonitor("Asystole · Handover");
   cur = null; kaPai("kaha");
   const fb = ksEl("ksFeedback");
-  fb.textContent = (ks.mode === "timed" ? "Time's up. " : "") + "Handover to the next crew. Kia kaha, you'll get the next one.";
+  fb.textContent = (ks.mode === "timed" ? "Time's up. " : "") + "Handover to the next crew. " + named("Kia kaha") + ", you'll get the next one.";
   fb.className = "feedback info";
   if (ks.mode === "timed" && endedRun > 0) {
     const wasBest = endedRun >= ks.best;
@@ -3628,6 +3647,9 @@ function ksLose() {
 let scoreReturn = null;
 function openScoreCard(o) {
   ksDropType();
+  const sn = document.getElementById("scoreName");
+  sn.textContent = userName() ? userName() + "'s score" : "";
+  sn.hidden = !userName();
   const face = ksEl("scoreFace");
   face.className = "share-face score-face " + (o.mode === "clock" ? "clock" : "timed");
   ksEl("scoreHost").src = o.isBest ? POP_TWO : POP_ONE;
