@@ -101,7 +101,12 @@ header { display: grid; gap: 6px; }
 .hero-btn { width: 100%; padding: 15px 16px; font-size: 1.1rem; border-radius: 14px; }
 .today-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; align-items: center; font-size: 0.88rem; color: var(--muted); }
 .today-row .meter { grid-column: 1 / -1; height: 5px; margin: 0; }
-.tr-streak { display: flex; align-items: center; gap: 6px; }
+.tr-streak { display: flex; align-items: center; gap: 6px; justify-self: start; margin: -6px -8px; padding: 6px 8px; min-height: 36px; border: 0; border-radius: 10px; background: none; color: inherit; font: inherit; cursor: pointer; }
+.tr-streak:focus-visible { outline: 2px solid var(--haem); outline-offset: 1px; }
+@media (hover: hover) { .tr-streak:hover { background: color-mix(in srgb, var(--surface) 70%, transparent); } }
+.tr-streak.pop .flame { animation: flamePop 600ms ease-out; }
+@keyframes flamePop { 0% { transform: scale(1); } 40% { transform: scale(1.6) rotate(-8deg); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .tr-streak.pop .flame { animation: none; } }
 .tr-streak .flame { width: 15px; height: 18px; }
 .tr-streak b, .tr-today b { color: var(--ink); font-variant-numeric: tabular-nums; }
 .week-card { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 12px 14px; border-radius: 16px; background: var(--surface); border: 1.5px solid var(--line); }
@@ -421,6 +426,7 @@ h2 { margin: 0; font-family: var(--font-display); font-size: 1.5rem; }
   background: radial-gradient(circle at 50% 30%, #4a2c82 0%, #1d1238 70%);
 }
 .celeb[hidden] { display: none; }
+.celeb video[hidden] { display: none; }
 .celeb-box {
   display: grid; justify-items: center; gap: 8px; text-align: center; width: min(420px, 100%);
   animation: luIn 450ms cubic-bezier(.2,.9,.3,1.25) both;
@@ -1049,7 +1055,7 @@ body.no-aloud .say-btn { display: none !important; }
       <button type="button" class="primary hero-btn" id="reviewBtn">Start review</button>
       <button type="button" class="hero-btn more-btn" id="moreBtn" hidden>Learn 5 new terms</button>
       <div class="today-row" id="todayRow">
-        <span class="tr-streak"><svg class="flame" id="flame" viewBox="0 0 24 28" aria-hidden="true"><path fill="currentColor" d="M12 1c1 4.5 6.5 7.5 6.5 14.2A6.5 6.5 0 0 1 12 22a6.5 6.5 0 0 1-6.5-6.8c0-3 1.5-4.9 3-6.3.3 2 1.2 3.3 2.4 3.9C10.4 9 10.6 4.6 12 1z"/></svg><b id="streakNum">No streak yet</b></span>
+        <button type="button" class="tr-streak" id="streakBtn"><svg class="flame" id="flame" viewBox="0 0 24 28" aria-hidden="true"><path fill="currentColor" d="M12 1c1 4.5 6.5 7.5 6.5 14.2A6.5 6.5 0 0 1 12 22a6.5 6.5 0 0 1-6.5-6.8c0-3 1.5-4.9 3-6.3.3 2 1.2 3.3 2.4 3.9C10.4 9 10.6 4.6 12 1z"/></svg><b id="streakNum">No streak yet</b></button>
         <span class="tr-today"><b id="todayNum">0 of 10</b> <span id="todaySub">terms today</span></span>
         <span class="meter" id="todayMeter"><span class="k"></span><span class="l"></span></span>
       </div>
@@ -1461,6 +1467,7 @@ body.no-aloud .say-btn { display: none !important; }
     <label class="toggle" for="appKb"><input type="checkbox" id="appKb"> Use the app's keyboard instead of the phone's</label>
     <label class="toggle" for="celebOn"><input type="checkbox" id="celebOn"> Celebration video when you earn a badge, level up or reach your daily goal</label>
     <div class="set-row"><span class="small-note">It plays with sound, so check your volume.</span><button type="button" id="celebTry">Watch it</button></div>
+    <p class="small-note set-explain" id="celebStatus" hidden></p>
 
     <p class="set-sub">Reading</p>
     <label class="toggle" for="dysMode"><input type="checkbox" id="dysMode"> Dyslexia-friendly reading</label>
@@ -2344,17 +2351,22 @@ const celebBox = document.getElementById("celeb");
 const celebVid = document.getElementById("celebVid");
 let celebOn = load(STORE_CELEB) !== "0";
 let celebLoaded = false, celebLoading = false, celebPrimed = false, celebAfter = null, celebReturn = null, celebEndT = null;
-// Load the whole clip into memory once, so it plays instantly and works offline.
+// Load the clip. On the installed GitHub app it's read into memory once, so it plays offline;
+// everywhere else the video loads the file directly.
+let celebFailed = "";
+function celebDirect() { celebVid.src = CELEB_FILE; try { celebVid.load(); } catch (e) {} celebLoaded = true; celebLoading = false; }
 function loadCeleb(force) {
   if (celebLoaded || celebLoading || (!celebOn && !force)) return;
+  const viaSw = !!(navigator.serviceWorker && navigator.serviceWorker.controller) && !!window.fetch;
+  if (!viaSw) { celebDirect(); return; }
   celebLoading = true;
-  const useUrl = () => { celebVid.src = CELEB_FILE; celebLoaded = true; celebLoading = false; };
   try {
-    fetch(CELEB_FILE).then(r => r.ok ? r.blob() : null).then(b => {
-      if (b && b.size > 1000) { celebVid.src = URL.createObjectURL(b); celebLoaded = true; celebLoading = false; }
-      else useUrl();
-    }).catch(useUrl);
-  } catch (e) { useUrl(); }
+    fetch(CELEB_FILE).then(r => r.ok ? r.blob() : null).then(bl => {
+      if (celebLoaded) return;
+      if (bl && bl.size > 1000) { celebVid.src = URL.createObjectURL(bl); celebLoaded = true; celebLoading = false; }
+      else celebDirect();
+    }).catch(() => { if (!celebLoaded) celebDirect(); });
+  } catch (e) { celebDirect(); }
 }
 setTimeout(loadCeleb, 1500);
 // Phones only allow sound from a video that has been started by a tap, so the first tap quietly starts and stops it.
@@ -2370,9 +2382,11 @@ function primeCeleb() {
 }
 document.addEventListener("pointerdown", primeCeleb, true);
 document.addEventListener("keydown", primeCeleb, true);
-function celebReady(force) { return (celebOn || force) && celebLoaded && !celebVid.error; }
+function celebReady(force) { return (celebOn || force) && !celebFailed; }
 function playCeleb(title, sub, after, force) {
   if (!celebReady(force)) { if (after) after(); return false; }
+  if (!celebLoaded) celebDirect();   // still loading in the background: use the file straight away
+  celebVid.hidden = false;
   celebAfter = after || null;
   document.getElementById("celebTitle").textContent = title;
   document.getElementById("celebSub").textContent = sub || "";
@@ -2393,7 +2407,7 @@ function playCeleb(title, sub, after, force) {
     soundBtn.hidden = false;
     fitCeleb();
     const q = celebVid.play();
-    if (q && q.catch) q.catch(() => closeCeleb());
+    if (q && q.catch) q.catch(() => celebNoVideo());
   });
   // safety net in case the video stalls
   celebEndT = setTimeout(closeCeleb, 12000);
@@ -2425,7 +2439,27 @@ function closeCeleb() {
   else if (celebReturn && celebReturn.focus) celebReturn.focus();
 }
 celebVid.addEventListener("ended", () => { clearTimeout(celebEndT); celebEndT = setTimeout(closeCeleb, 900); });
-celebVid.addEventListener("error", () => { if (!celebBox.hidden) closeCeleb(); });
+// If the video can't play, the student still gets the celebration words, and Settings says why.
+function celebNoVideo() {
+  if (celebBox.hidden) return;
+  celebVid.hidden = true;
+  document.getElementById("celebSound").hidden = true;
+  clearTimeout(celebEndT);
+  celebEndT = setTimeout(closeCeleb, 4000);
+}
+function paintCelebStatus() {
+  const el = document.getElementById("celebStatus");
+  if (el) { el.textContent = celebFailed ? "The video couldn't load on this device (" + celebFailed + "). You'll still get the celebration message." : ""; el.hidden = !celebFailed; }
+}
+celebVid.addEventListener("error", () => {
+  const blobSrc = celebVid.src.startsWith("blob:");
+  if (blobSrc) { celebDirect(); if (!celebBox.hidden) { const p = celebVid.play(); if (p && p.catch) p.catch(() => celebNoVideo()); } return; }
+  const code = celebVid.error ? celebVid.error.code : 0;
+  celebFailed = code === 4 ? "file missing or not supported" : code === 2 ? "network problem" : "error " + code;
+  paintCelebStatus();
+  celebNoVideo();
+});
+celebVid.addEventListener("loadeddata", () => { if (celebFailed) { celebFailed = ""; paintCelebStatus(); } });
 document.getElementById("celebDone").addEventListener("click", closeCeleb);
 document.getElementById("celebSound").addEventListener("click", () => {
   celebVid.muted = false;
@@ -2472,6 +2506,7 @@ function paintDaily() {
   const t = today(), r = dayRec(t), st = currentStreak();
   document.getElementById("streakNum").textContent = st ? st + "-day streak" : "No streak yet";
   document.getElementById("flame").classList.toggle("on", st > 0);
+  document.getElementById("streakBtn").setAttribute("aria-label", (st ? st + "-day streak" : "No streak yet") + (r.met ? ", today's goal reached. Tap to celebrate." : ". Tap to see what's left today."));
   document.getElementById("streakBest").textContent = daily.best ? "Best: " + plural(daily.best, "day") : "Hit your goal to start one";
   const met = r.n >= daily.goal;
   document.getElementById("todayNum").textContent = met ? "Goal reached" : r.n + " of " + daily.goal;
@@ -2503,6 +2538,22 @@ document.getElementById("goalSel").addEventListener("change", e => {
   if (!r.met && r.n >= daily.goal) { r.met = true; daily.days[t] = r; const st = currentStreak(); if (st > daily.best) daily.best = st; }
   saveDaily();
   paintDaily();
+});
+
+// Tapping the flame: a celebration once today's goal is met, otherwise a nudge with what's left.
+document.getElementById("streakBtn").addEventListener("click", () => {
+  const btn = document.getElementById("streakBtn");
+  btn.classList.remove("pop"); void btn.offsetWidth; btn.classList.add("pop");
+  const t = today(), r = dayRec(t), st = currentStreak();
+  if (r.met) {
+    const sub = st + "-day streak" + (st >= daily.best && st >= 2 ? ", your best yet" : "") + ". Kia pai te rā!";
+    if (!playCeleb(named("Streak kept alive!"), sub, null)) toast(named("Streak kept alive!") + " " + sub);
+    return;
+  }
+  const left = Math.max(1, daily.goal - r.n);
+  const word = plural(left, "more term");
+  if (st > 0) toast(named("Kia kaha!") + " " + word + " today to keep your " + st + "-day streak going.");
+  else toast(named("Kia kaha!") + " " + word + " today to start a streak.");
 });
 
 /* ---------- lobby music ---------- */
@@ -3409,15 +3460,10 @@ $("celebOn").addEventListener("change", e => {
   if (celebOn) loadCeleb();
 });
 $("celebTry").addEventListener("click", () => {
-  const go = () => { closeSheets(); playCeleb(named("Ka pai!"), "This plays when you earn a badge, level up or reach your daily goal.", null, true); };
-  if (celebLoaded) { go(); return; }
+  if (celebFailed) { celebFailed = ""; celebLoaded = false; celebLoading = false; }
   loadCeleb(true);
-  const btn = $("celebTry"); btn.textContent = "Loading…";
-  let tries = 0;
-  const wait = setInterval(() => {
-    tries++;
-    if (celebLoaded || tries > 60) { clearInterval(wait); btn.textContent = "Watch it"; if (celebLoaded) go(); }
-  }, 150);
+  closeSheets();
+  playCeleb(named("Ka pai!"), "This plays when you earn a badge, level up or reach your daily goal.", null, true);
 });
 const nameInput = document.getElementById("nameInput");
 nameInput.value = userName();
