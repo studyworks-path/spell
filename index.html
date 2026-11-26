@@ -416,6 +416,34 @@ h2 { margin: 0; font-family: var(--font-display); font-size: 1.5rem; }
 .rank-levels li.here { color: var(--ink); font-weight: 700; }
 .rank-levels li.locked .lv-art svg { filter: var(--sil); }
 .lv-art { width: 32px; height: 32px; flex: none; }
+.celeb {
+  position: fixed; inset: 0; z-index: 85; display: grid; place-items: center; padding: 14px;
+  background: radial-gradient(circle at 50% 30%, #4a2c82 0%, #1d1238 70%);
+}
+.celeb[hidden] { display: none; }
+.celeb-box {
+  display: grid; justify-items: center; gap: 8px; text-align: center; width: min(420px, 100%);
+  animation: luIn 450ms cubic-bezier(.2,.9,.3,1.25) both;
+}
+.celeb-title { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 1.9rem; line-height: 1.1; color: #ffe680; }
+.celeb-sub { margin: 0; color: #f4eeff; font-size: 1rem; line-height: 1.35; }
+.celeb-sub:empty { display: none; }
+.celeb video {
+  display: block; width: auto; max-width: 100%; aspect-ratio: 536 / 954;
+  height: min(55vh, 420px);
+  border-radius: 18px; background: #000; object-fit: cover;
+  border: 3px solid #ffe680; box-shadow: 0 16px 44px rgba(0,0,0,0.45);
+}
+.celeb-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.celeb-actions button { min-width: 120px; }
+@media (orientation: landscape) and (max-height: 520px) {
+  .celeb-box { width: min(640px, 100%); grid-template-columns: auto 1fr; grid-template-rows: 1fr auto auto auto 1fr; row-gap: 10px; column-gap: 18px; justify-items: start; text-align: left; align-items: center; }
+  .celeb video { grid-column: 1; grid-row: 1 / -1; }
+  .celeb-title { grid-column: 2; grid-row: 2; }
+  .celeb-sub { grid-column: 2; grid-row: 3; }
+  .celeb-actions { grid-column: 2; grid-row: 4; margin-top: 4px; }
+  .celeb-actions { justify-content: flex-start; }
+}
 .levelup {
   position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 20px;
   background: color-mix(in srgb, var(--ink) 45%, transparent);
@@ -1431,6 +1459,8 @@ body.no-aloud .say-btn { display: none !important; }
     <div class="set-row"><label for="supportSel">Help while spelling</label><select id="supportSel"><option value="auto">Steps up as you learn</option><option value="2">Dashes + first letter</option><option value="3">Dashes only</option><option value="4">No dashes</option></select></div>
     <p class="small-note set-explain">"Steps up as you learn" gives each term less help as you get it right: a flashcard first, then dashes with the first letter, dashes only, no dashes, and finally 30 seconds like the real test. A slip moves that term back one step.</p>
     <label class="toggle" for="appKb"><input type="checkbox" id="appKb"> Use the app's keyboard instead of the phone's</label>
+    <label class="toggle" for="celebOn"><input type="checkbox" id="celebOn"> Celebration video when you earn a badge, level up or reach your daily goal</label>
+    <div class="set-row"><span class="small-note">It plays with sound, so check your volume.</span><button type="button" id="celebTry">Watch it</button></div>
 
     <p class="set-sub">Reading</p>
     <label class="toggle" for="dysMode"><input type="checkbox" id="dysMode"> Dyslexia-friendly reading</label>
@@ -1472,6 +1502,17 @@ body.no-aloud .say-btn { display: none !important; }
   </div>
 </div>
 
+<div class="celeb" id="celeb" hidden>
+  <div class="celeb-box" role="dialog" aria-modal="true" aria-labelledby="celebTitle">
+    <p class="celeb-title" id="celebTitle"></p>
+    <p class="celeb-sub" id="celebSub"></p>
+    <video id="celebVid" playsinline webkit-playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video>
+    <div class="celeb-actions">
+      <button type="button" id="celebSound" hidden>Tap for sound</button>
+      <button type="button" class="primary" id="celebDone">Ka pai!</button>
+    </div>
+  </div>
+</div>
 <div class="levelup" id="levelUp" hidden>
   <div class="lu-card" role="dialog" aria-labelledby="luName" aria-modal="true">
     <div class="lu-art" id="luArt" aria-hidden="true"></div>
@@ -2295,6 +2336,125 @@ document.getElementById("shareBtn").addEventListener("click", () => { closeSheet
 document.getElementById("levelUp").addEventListener("click", e => { if (e.target.id === "levelUp") hideLevelUp(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") hideLevelUp(); });
 
+/* ---------- celebration video ---------- */
+// Plays when a student earns a new badge, moves up a level, or reaches the daily goal that keeps their streak going.
+const STORE_CELEB = "pathSpell.celebVid.v1";
+const CELEB_FILE = "celebrate.mp4";
+const celebBox = document.getElementById("celeb");
+const celebVid = document.getElementById("celebVid");
+let celebOn = load(STORE_CELEB) !== "0";
+let celebLoaded = false, celebLoading = false, celebPrimed = false, celebAfter = null, celebReturn = null, celebEndT = null;
+// Load the whole clip into memory once, so it plays instantly and works offline.
+function loadCeleb(force) {
+  if (celebLoaded || celebLoading || (!celebOn && !force)) return;
+  celebLoading = true;
+  const useUrl = () => { celebVid.src = CELEB_FILE; celebLoaded = true; celebLoading = false; };
+  try {
+    fetch(CELEB_FILE).then(r => r.ok ? r.blob() : null).then(b => {
+      if (b && b.size > 1000) { celebVid.src = URL.createObjectURL(b); celebLoaded = true; celebLoading = false; }
+      else useUrl();
+    }).catch(useUrl);
+  } catch (e) { useUrl(); }
+}
+setTimeout(loadCeleb, 1500);
+// Phones only allow sound from a video that has been started by a tap, so the first tap quietly starts and stops it.
+function primeCeleb() {
+  if (celebPrimed || !celebLoaded || !celebBox.hidden) return;
+  celebPrimed = true;
+  try {
+    celebVid.muted = true;
+    const p = celebVid.play();
+    const stop = () => { if (celebBox.hidden) { celebVid.pause(); try { celebVid.currentTime = 0; } catch (e) {} } celebVid.muted = false; };
+    if (p && p.then) p.then(stop, () => { celebVid.muted = false; celebPrimed = false; }); else stop();
+  } catch (e) { celebVid.muted = false; }
+}
+document.addEventListener("pointerdown", primeCeleb, true);
+document.addEventListener("keydown", primeCeleb, true);
+function celebReady(force) { return (celebOn || force) && celebLoaded && !celebVid.error; }
+function playCeleb(title, sub, after, force) {
+  if (!celebReady(force)) { if (after) after(); return false; }
+  celebAfter = after || null;
+  document.getElementById("celebTitle").textContent = title;
+  document.getElementById("celebSub").textContent = sub || "";
+  const soundBtn = document.getElementById("celebSound");
+  soundBtn.hidden = true;
+  celebReturn = document.activeElement;
+  celebBox.hidden = false;
+  fitCeleb();
+  document.getElementById("celebDone").focus();
+  clearTimeout(celebEndT);
+  try { celebVid.pause(); celebVid.currentTime = 0; } catch (e) {}
+  celebVid.muted = false;
+  celebVid.volume = 0.85;
+  const p = celebVid.play();
+  if (p && p.catch) p.catch(() => {
+    // sound was blocked: play it silently and offer a sound button
+    celebVid.muted = true;
+    soundBtn.hidden = false;
+    fitCeleb();
+    const q = celebVid.play();
+    if (q && q.catch) q.catch(() => closeCeleb());
+  });
+  // safety net in case the video stalls
+  celebEndT = setTimeout(closeCeleb, 12000);
+  return true;
+}
+// Makes the video as big as the space left after the words and button, so everything fits on small phones.
+function fitCeleb() {
+  if (celebBox.hidden) return;
+  const pad = 28, vh = window.innerHeight, vw = window.innerWidth;
+  if (window.matchMedia("(orientation: landscape) and (max-height: 520px)").matches) {
+    celebVid.style.height = Math.max(120, vh - pad) + "px";
+    return;
+  }
+  const box = celebBox.querySelector(".celeb-box");
+  celebVid.style.height = "0px";
+  const rest = box.offsetHeight;   // offsetHeight ignores the pop-in animation's scaling
+  const maxByWidth = (Math.min(420, vw - pad) - 6) * 954 / 536;
+  const h = Math.max(140, Math.min(vh - pad - rest, vh * 0.66, maxByWidth));
+  celebVid.style.height = Math.round(h) + "px";
+}
+window.addEventListener("resize", fitCeleb);
+function closeCeleb() {
+  clearTimeout(celebEndT);
+  if (celebBox.hidden) return;
+  try { celebVid.pause(); } catch (e) {}
+  celebBox.hidden = true;
+  const after = celebAfter; celebAfter = null;
+  if (after) after();
+  else if (celebReturn && celebReturn.focus) celebReturn.focus();
+}
+celebVid.addEventListener("ended", () => { clearTimeout(celebEndT); celebEndT = setTimeout(closeCeleb, 900); });
+celebVid.addEventListener("error", () => { if (!celebBox.hidden) closeCeleb(); });
+document.getElementById("celebDone").addEventListener("click", closeCeleb);
+document.getElementById("celebSound").addEventListener("click", () => {
+  celebVid.muted = false;
+  document.getElementById("celebSound").hidden = true;
+  fitCeleb();
+  if (celebVid.ended || celebVid.currentTime > 4.8) { try { celebVid.currentTime = 0; } catch (e) {} }
+  const p = celebVid.play(); if (p && p.catch) p.catch(() => {});
+  document.getElementById("celebDone").focus();
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeCeleb(); });
+// Builds the words for whatever was just earned. Returns null if nothing calls for the video.
+function celebWords(badge, lecN, day, levelName) {
+  const bits = [];
+  let title = "";
+  if (levelName) { title = named("Level up!"); bits.push("You're now a " + levelName + "."); }
+  if (badge) {
+    const L = LECTURES.find(x => x.n === lecN);
+    if (!title) { title = named(BADGE_NAMES[badge] + " badge!"); if (L) bits.push(lecName(L.n) + ", " + L.topic + "."); }
+    else bits.push(BADGE_NAMES[badge] + " badge" + (L ? " for " + lecName(L.n) : "") + ".");
+  }
+  if (day && day.justMet) {
+    const st = currentStreak();
+    const streakTxt = st + "-day streak" + (day.newBest ? ", your best yet" : "") + ".";
+    if (!title) { title = named("Daily goal reached!"); bits.push(streakTxt + " Kia pai te rā!"); }
+    else bits.push("Daily goal reached: " + st + "-day streak.");
+  }
+  return title ? { t: title, s: bits.join(" ") } : null;
+}
+
 let toastTimer = null, toastAt = 0;
 function toast(msg) {
   const el = document.getElementById("toast");
@@ -2891,7 +3051,11 @@ function requeueNote() { return cur && cur.requeued ? " It'll come back in a few
 function celebrate(correct) {
   // never discouraging: anything that isn't a clean answer still gets "Kia kaha!"
   const tier = (cur && cur.tier) || (correct ? "ka" : "kaha");
-  if (cur && cur.levelUp) showLevelUp(cur.levelUp); else kaPai(tier);
+  const lv = cur && cur.levelUp;
+  if (cur && cur.celeb && celebReady()) {
+    const c = cur.celeb; cur.celeb = null;
+    playCeleb(c.t, c.s, lv ? () => showLevelUp(lv) : null);
+  } else if (lv) showLevelUp(lv); else kaPai(tier);
   return PRAISE[tier];
 }
 
@@ -3011,6 +3175,7 @@ function finish(status) {
   const day = recordDaily(counts, g.isNew, g.wasDue && !cur.retry);
   const badge = checkBadge(ALL[order[pos]].lec);
   cur.levelUp = checkLevel();
+  cur.celeb = status === "bad" ? null : celebWords(badge, ALL[order[pos]].lec, day, cur.levelUp);
   roundRun = status === "ok" ? roundRun + 1 : 0;
   const firsts = results.filter(r => r && !r.retry);
   const perfect = pos + 1 === order.length && firsts.length >= 3 && firsts.every(r => r.status === "ok");
@@ -3237,6 +3402,23 @@ function okbBack() {
 }
 
 els.appKb.checked = kbOn();
+$("celebOn").checked = celebOn;
+$("celebOn").addEventListener("change", e => {
+  celebOn = e.target.checked;
+  store(STORE_CELEB, celebOn ? "1" : "0");
+  if (celebOn) loadCeleb();
+});
+$("celebTry").addEventListener("click", () => {
+  const go = () => { closeSheets(); playCeleb(named("Ka pai!"), "This plays when you earn a badge, level up or reach your daily goal.", null, true); };
+  if (celebLoaded) { go(); return; }
+  loadCeleb(true);
+  const btn = $("celebTry"); btn.textContent = "Loading…";
+  let tries = 0;
+  const wait = setInterval(() => {
+    tries++;
+    if (celebLoaded || tries > 60) { clearInterval(wait); btn.textContent = "Watch it"; if (celebLoaded) go(); }
+  }, 150);
+});
 const nameInput = document.getElementById("nameInput");
 nameInput.value = userName();
 nameInput.addEventListener("input", () => { store(STORE_NAME, nameInput.value.trim()); paintDaily(); });
