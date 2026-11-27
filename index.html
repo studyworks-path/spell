@@ -2410,7 +2410,7 @@ function playCeleb(title, sub, after, force) {
     if (q && q.catch) q.catch(() => celebNoVideo());
   });
   // safety net in case the video stalls
-  celebEndT = setTimeout(closeCeleb, 12000);
+  celebEndT = setTimeout(closeCeleb, 9000);
   return true;
 }
 // Makes the video as big as the space left after the words and button, so everything fits on small phones.
@@ -2465,7 +2465,7 @@ document.getElementById("celebSound").addEventListener("click", () => {
   celebVid.muted = false;
   document.getElementById("celebSound").hidden = true;
   fitCeleb();
-  if (celebVid.ended || celebVid.currentTime > 4.8) { try { celebVid.currentTime = 0; } catch (e) {} }
+  if (celebVid.ended || celebVid.currentTime > 2.2) { try { celebVid.currentTime = 0; } catch (e) {} }
   const p = celebVid.play(); if (p && p.catch) p.catch(() => {});
   document.getElementById("celebDone").focus();
 });
