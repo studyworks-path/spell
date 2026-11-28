@@ -2809,9 +2809,9 @@ function laceMarks(cols, y0) {
 
 /* Items. slot: where it goes. price 0 = everyone has it. need: true if the slot can't be empty. */
 const ST_SLOTS = {
-  hat: { label: "Hats", tab: "para" }, eyes: { label: "Glasses", tab: "para" }, mask: { label: "Masks", tab: "para" }, top: { label: "Tops", tab: "para", need: true },
+  hair: { label: "Hair", tab: "para" }, hat: { label: "Hats", tab: "para" }, eyes: { label: "Glasses", tab: "para" }, mask: { label: "Masks", tab: "para" }, top: { label: "Tops", tab: "para", need: true },
   legs: { label: "Pants", tab: "para", need: true }, feet: { label: "Shoes", tab: "para", need: true }, laces: { label: "Laces", tab: "para", need: true },
-  neck: { label: "Neck", tab: "para" }, hand: { label: "In hand", tab: "para" }, gloves: { label: "Gloves", tab: "para" }, taonga: { label: "Taonga", tab: "para" }, back: { label: "On the back", tab: "para" },
+  neck: { label: "Neck", tab: "para" }, hand: { label: "In hand", tab: "para" }, gloves: { label: "Gloves", tab: "para" }, taonga: { label: "Taonga", tab: "para" }, music: { label: "Music", tab: "para" }, back: { label: "On the back", tab: "para" },
   livery: { label: "Paint", tab: "amb", need: true }, lights: { label: "Light bar", tab: "amb", need: true }, wheels: { label: "Wheels", tab: "amb", need: true },
   decal: { label: "Stickers", tab: "amb" }, roof: { label: "On the roof", tab: "amb" }, glow: { label: "Underglow", tab: "amb" },
   tlight: { label: "Theatre light", tab: "theatre", need: true }, ttable: { label: "Operating table", tab: "theatre", need: true }, tmon: { label: "Monitor", tab: "theatre", need: true },
@@ -2905,6 +2905,7 @@ const ST_ITEMS = [
   { id: "goldsteth", slot: "neck", name: "Gold stethoscope", price: 300, svg: '<path d="M80 200 Q60 236 84 258" stroke="#d9a514" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M120 200 Q144 238 114 264 Q100 276 100 292" stroke="#d9a514" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="84" cy="259" r="3.5" fill="#fff1a8"/><circle cx="100" cy="300" r="11" fill="url(#stGold)" stroke="#a87a0a" stroke-width="3"/><circle cx="96" cy="296" r="3" fill="#fff6c2"/>' },
   { id: "lanyard", slot: "neck", name: "ID lanyard", price: 40, svg: '<path d="M82 200 L95 270 M118 200 L105 270" stroke="#c93d73" stroke-width="5" stroke-linecap="round"/><rect x="85" y="268" width="30" height="36" rx="4" fill="#fff" stroke="#c9c9d3" stroke-width="2"/><rect x="90" y="274" width="12" height="13" rx="2" fill="#f1b08f"/><path d="M90 294 H110 M90 299 H104" stroke="#4a2c82" stroke-width="2.5"/>' },
   { id: "bowtie", slot: "neck", name: "Bow tie", price: 80, svg: '<path d="M78 202 L100 212 L78 224 Z M122 202 L100 212 L122 224 Z" fill="#8a4bd0"/><circle cx="100" cy="212" r="6" fill="#6a33a8"/><circle cx="86" cy="210" r="2" fill="#fff" opacity=".6"/><circle cx="114" cy="216" r="2" fill="#fff" opacity=".6"/>' },
+  { id: "binoculars", slot: "neck", name: "Binoculars", price: 120, svg: '<path d="M80 202 Q78 232 86 250 M120 202 Q122 232 114 250" stroke="#5a3d22" stroke-width="3" fill="none"/><rect x="80" y="248" width="18" height="34" rx="6" fill="#3d4a36"/><rect x="102" y="248" width="18" height="34" rx="6" fill="#3d4a36"/><rect x="95" y="254" width="10" height="12" rx="2" fill="#2a3326"/><rect x="82" y="256" width="14" height="10" fill="#2a3326"/><rect x="104" y="256" width="14" height="10" fill="#2a3326"/><circle cx="89" cy="280" r="7" fill="#1b1f1a"/><circle cx="111" cy="280" r="7" fill="#1b1f1a"/><circle cx="87" cy="278" r="2.4" fill="#7fd3ff" opacity=".8"/><circle cx="109" cy="278" r="2.4" fill="#7fd3ff" opacity=".8"/>' },
   { id: "medal", slot: "neck", name: "Gold medal", price: 250, svg: '<path d="M80 200 L98 266 L104 266 L120 200 L110 200 L101 250 L90 200 Z" fill="#2f7fd8"/><circle cx="101" cy="282" r="18" fill="url(#stGold)" stroke="#a87a0a" stroke-width="3"/><path d="M101 270 l4 8 9 1 -7 6 2 9 -8 -5 -8 5 2 -9 -7 -6 9 -1 z" fill="#fff3b0"/>' },
   /* in hand (right hand is at 167, 306) */
   { id: "torch", slot: "hand", name: "Pen torch", price: 40, svg: '<rect x="163" y="270" width="9" height="40" rx="3" transform="rotate(28 167 300)" fill="#c7ccd2" stroke="#8a9099" stroke-width="2"/><circle cx="183" cy="268" r="10" fill="#fff6a8" opacity=".75"/><circle cx="182" cy="270" r="4" fill="#fffbe0"/>' },
@@ -3000,11 +3001,12 @@ const PNM = "url(#stPounamu)";
 const CORD = '<path d="M82 202 Q86 236 100 250 Q114 236 118 202" stroke="#3b2416" stroke-width="2.5" fill="none"/>';
 
 /* korowai: the back hangs behind the body, the front drapes over the shoulders and arms */
-const KOROWAI_BACK = '<path d="M54 204 L146 204 L184 398 Q100 414 16 398 Z" fill="url(#stKorowai)"/><path d="M18 386 Q100 402 182 386 L184 398 Q100 414 16 398 Z" fill="url(#stTaniko)"/><path d="M20 398 L20 412 M30 400 L30 414 M42 402 L42 416 M54 403 L54 417 M146 403 L146 417 M158 402 L158 416 M170 400 L170 414 M180 398 L180 412" stroke="#1a1208" stroke-width="2.4" stroke-linecap="round"/>';
-const KOROWAI_FRONT = '<path d="M76 200 Q60 200 46 210 Q30 222 26 250 L22 330 L80 334 Z" fill="url(#stKorowai)"/><path d="M124 200 Q140 200 154 210 Q170 222 174 250 L178 330 L120 334 Z" fill="url(#stKorowai)"/>' +
-  '<path d="M22 318 L80 322 L80 334 L22 330 Z M178 318 L120 322 L120 334 L178 330 Z" fill="url(#stTaniko)"/>' +
-  '<path d="M76 200 L80 334 M124 200 L120 334" stroke="#1a1208" stroke-width="2" fill="none"/>' +
-  '<path d="M30 332 V344 M40 333 V345 M50 333 V346 M62 334 V346 M72 334 V345 M128 334 V345 M138 334 V346 M150 333 V346 M160 333 V345 M170 332 V344" stroke="#1a1208" stroke-width="2.2" stroke-linecap="round"/>' +
+/* korowai: one layer, draped over the shoulders and hanging to just above the boots */
+const KOROWAI_BACK = "";
+const KOROWAI_FRONT = '<path d="M76 200 Q60 200 46 210 Q30 222 26 250 L20 382 L82 384 Z" fill="url(#stKorowai)"/><path d="M124 200 Q140 200 154 210 Q170 222 174 250 L180 382 L118 384 Z" fill="url(#stKorowai)"/>' +
+  '<path d="M20 370 L82 372 L82 384 L20 382 Z M180 370 L118 372 L118 384 L180 382 Z" fill="url(#stTaniko)"/>' +
+  '<path d="M76 200 L82 384 M124 200 L118 384" stroke="#1a1208" stroke-width="2" fill="none"/>' +
+  '<path d="M26 383 V392 M36 383 V393 M46 383 V393 M58 384 V393 M70 384 V392 M130 384 V392 M142 384 V393 M154 383 V393 M164 383 V393 M174 383 V392" stroke="#1a1208" stroke-width="2.2" stroke-linecap="round"/>' +
   '<path d="M74 206 Q100 220 126 206" stroke="#7a1f14" stroke-width="3" fill="none"/>';
 
 ST_ITEMS.push(
@@ -3089,6 +3091,78 @@ function stFlagOnWall(eq) {
   return '<g transform="translate(150 96) scale(.58)"><path d="M-2 -6 H62" stroke="#7a7f88" stroke-width="3"/><path d="M4 -6 L0 0 M56 -6 L60 0" stroke="#7a7f88" stroke-width="1.5"/>' + stFlagArt(eq.flag) + '</g>';
 }
 
+/* musical instruments, held across the body (hands are drawn over them) */
+function guitarShape(body, dark, scale, hole) {
+  return '<g transform="scale(' + scale + ')">' +
+    '<rect x="-4.5" y="-112" width="9" height="86" fill="#5a3a20"/><path d="M-4.5 -100 H4.5 M-4.5 -88 H4.5 M-4.5 -76 H4.5 M-4.5 -64 H4.5 M-4.5 -52 H4.5 M-4.5 -40 H4.5" stroke="#c9b48a" stroke-width="1.2"/>' +
+    '<path d="M-7 -132 H7 L6 -110 H-6 Z" fill="#3b2416"/><circle cx="-8" cy="-126" r="2" fill="#c7ccd2"/><circle cx="8" cy="-126" r="2" fill="#c7ccd2"/><circle cx="-8" cy="-116" r="2" fill="#c7ccd2"/><circle cx="8" cy="-116" r="2" fill="#c7ccd2"/>' +
+    '<path d="M0 -44 C-22 -44 -24 -28 -16 -20 C-30 -12 -32 18 0 26 C32 18 30 -12 16 -20 C24 -28 22 -44 0 -44 Z" fill="' + body + '" stroke="' + dark + '" stroke-width="2.5"/>' +
+    (hole ? '<circle cx="0" cy="-14" r="7.5" fill="#2a1a0e"/>' : "") + '<rect x="-9" y="8" width="18" height="4" rx="1.5" fill="#3b2416"/>' +
+    '<path d="M-2.5 -110 V10 M0 -110 V10 M2.5 -110 V10" stroke="#eee" stroke-width=".6" opacity=".8"/></g>';
+}
+ST_ITEMS.push(
+  { id: "ukulele", slot: "music", name: "Ukulele", price: 100, svg: '<g transform="translate(116 286) rotate(-52)">' + guitarShape("#e7b46a", "#a8743a", 0.62, true) + '</g>' },
+  { id: "guitar", slot: "music", name: "Acoustic guitar", price: 200, svg: '<g transform="translate(116 290) rotate(-56)">' + guitarShape("#d99a4e", "#8a552c", 0.95, true) + '</g>' },
+  { id: "electric", slot: "music", name: "Electric guitar", price: 300, svg: '<g transform="translate(116 290) rotate(-56)">' + guitarShape("#e03a2f", "#8f1d16", 0.95, false) + '<g transform="scale(.95)"><path d="M-10 -30 Q-2 -34 8 -26 L10 0 Q0 6 -12 0 Z" fill="#f4f4f0"/><rect x="-7" y="-20" width="14" height="3" fill="#333"/><rect x="-7" y="-10" width="14" height="3" fill="#333"/><circle cx="12" cy="12" r="2" fill="#f4f4f0"/></g></g><path d="M60 214 Q40 260 70 322" stroke="#222" stroke-width="3" fill="none"/>' },
+  { id: "keytar", slot: "music", name: "Keytar", price: 300, svg: () => {
+      let k = '<g transform="translate(100 286) rotate(-22)"><path d="M-74 -10 H52 Q70 -10 72 4 Q70 18 52 18 H-74 Q-80 18 -80 12 V-4 Q-80 -10 -74 -10 Z" fill="#2b2b33"/><rect x="-66" y="-4" width="108" height="18" fill="#fff"/>';
+      for (let i = 0; i < 18; i++) k += '<path d="M' + (-66 + i * 6) + ' -4 V14" stroke="#9aa0aa" stroke-width=".8"/>';
+      [1, 2, 4, 5, 6, 8, 9, 11, 12, 13, 15, 16].forEach(i => { k += '<rect x="' + (-67.6 + i * 6) + '" y="-4" width="3.4" height="10" fill="#111"/>'; });
+      return k + '<rect x="46" y="-14" width="32" height="8" rx="3" fill="#ff5fa2"/><circle cx="58" cy="6" r="3" fill="#38c6f4"/><circle cx="66" cy="6" r="3" fill="#ffd23f"/></g>';
+    } },
+  { id: "sax", slot: "music", name: "Saxophone", price: 250, svg: '<path d="M96 214 Q88 216 90 226" stroke="#222" stroke-width="3" fill="none"/><path d="M92 226 L96 300 Q98 316 112 314 Q124 312 126 298 L128 284" stroke="url(#stGold)" stroke-width="12" fill="none" stroke-linecap="round"/><path d="M118 286 Q128 270 144 276 L136 296 Z" fill="url(#stGold)" stroke="#a87a0a" stroke-width="2"/><g fill="#fff3b0" stroke="#a87a0a" stroke-width="1"><circle cx="94" cy="246" r="3"/><circle cx="95" cy="260" r="3"/><circle cx="96" cy="274" r="3"/><circle cx="97" cy="288" r="3"/></g>' },
+  { id: "trumpet", slot: "music", name: "Trumpet", price: 200, svg: '<g transform="translate(150 300)"><rect x="0" y="-4" width="44" height="6" rx="3" fill="url(#stGold)"/><rect x="6" y="4" width="30" height="6" rx="3" fill="url(#stGold)"/><path d="M6 2 Q0 7 6 10 M36 2 Q42 7 36 10" stroke="#d9a514" stroke-width="3" fill="none"/><rect x="14" y="-12" width="4" height="10" fill="#b8860b"/><rect x="21" y="-12" width="4" height="10" fill="#b8860b"/><rect x="28" y="-12" width="4" height="10" fill="#b8860b"/><path d="M44 -4 L64 -14 V12 L44 2 Z" fill="url(#stGold)" stroke="#a87a0a" stroke-width="1.5"/><ellipse cx="64" cy="-1" rx="3" ry="13" fill="#f6c90e" stroke="#a87a0a" stroke-width="1.5"/><rect x="-8" y="-3" width="8" height="4" rx="1" fill="#c7ccd2"/></g>' },
+  { id: "violin", slot: "music", name: "Violin", price: 250, svg: '<g transform="translate(70 238) rotate(62)"><path d="M0 -26 C-12 -26 -13 -16 -9 -11 C-16 -6 -17 12 0 16 C17 12 16 -6 9 -11 C13 -16 12 -26 0 -26 Z" fill="#a24a16" stroke="#5e2608" stroke-width="2"/><path d="M-4 -10 q-2 4 0 8 M4 -10 q2 4 0 8" stroke="#2a1205" stroke-width="1.5" fill="none"/><rect x="-2.5" y="-62" width="5" height="38" fill="#1e1e1e"/><circle cx="0" cy="-64" r="4" fill="#5e2608"/></g><path d="M166 304 L54 206" stroke="#7a4b23" stroke-width="2.5"/><path d="M164 300 L58 208" stroke="#f4f0e0" stroke-width="1"/>' },
+  { id: "snare", slot: "music", name: "Snare drum", price: 200, svg: '<path d="M70 210 L92 296 M130 210 L108 296" stroke="#2b2b33" stroke-width="3"/><rect x="62" y="296" width="76" height="30" fill="#e03a2f"/><path d="M66 296 V326 M80 296 V326 M94 296 V326 M108 296 V326 M122 296 V326 M134 296 V326" stroke="#d9dde3" stroke-width="2"/><ellipse cx="100" cy="326" rx="38" ry="8" fill="#b02a22"/><ellipse cx="100" cy="296" rx="38" ry="8" fill="#f4f4f0" stroke="#b9bfc6" stroke-width="2.5"/><path d="M38 300 L84 282 M162 300 L116 282" stroke="#e8c98f" stroke-width="5" stroke-linecap="round"/>' },
+  { id: "tambourine", slot: "music", name: "Tambourine", price: 100, svg: '<circle cx="182" cy="290" r="20" fill="#f4ecd8" stroke="#b07a45" stroke-width="5"/><g fill="#c7ccd2" stroke="#8a9099" stroke-width="1">' + [0, 60, 120, 180, 240, 300].map(a => { const r = a * Math.PI / 180; return '<ellipse cx="' + (182 + 20 * Math.cos(r)).toFixed(1) + '" cy="' + (290 + 20 * Math.sin(r)).toFixed(1) + '" rx="4.5" ry="2.5"/>'; }).join("") + '</g><path d="M180 270 l2 -6 2 6" stroke="#ff5fa2" stroke-width="2" fill="none"/>' }
+);
+
+/* hair: a cap over the top of the head, plus anything that hangs (drawn over the shoulders) or sits behind */
+const HAIR_CAP = "M25 82 Q18 -18 100 -20 Q182 -18 175 82 Q170 54 152 44 Q100 26 48 44 Q30 54 25 82 Z";
+function hairCap(col, extra) { return '<path d="' + HAIR_CAP + '" fill="' + col + '"/>' + (extra || ""); }
+function hairStrands(col) { return '<path d="M48 30 Q60 6 82 0 M70 30 Q84 4 104 -2 M98 28 Q116 2 136 4 M126 32 Q142 14 156 22" stroke="' + col + '" stroke-width="3" fill="none" stroke-linecap="round" opacity=".55"/>'; }
+function locs(col, hi) {
+  let s = "";
+  const one = (x0, y0, x1, y1) => '<path d="M' + x0 + ' ' + y0 + ' Q' + ((x0 + x1) / 2 + (x0 < 100 ? -6 : 6)) + ' ' + ((y0 + y1) / 2) + ' ' + x1 + ' ' + y1 + '" stroke="' + col + '" stroke-width="11" fill="none" stroke-linecap="round"/><path d="M' + x0 + ' ' + (y0 + 14) + ' Q' + ((x0 + x1) / 2 + (x0 < 100 ? -6 : 6)) + ' ' + ((y0 + y1) / 2) + ' ' + x1 + ' ' + (y1 - 8) + '" stroke="' + hi + '" stroke-width="2" fill="none" stroke-dasharray="3 7" stroke-linecap="round"/>';
+  [[30, 50, 18, 236], [40, 44, 34, 250], [24, 70, 8, 222], [52, 40, 52, 196]].forEach(([a, b, c, d]) => { s += one(a, b, c, d) + one(200 - a, b, 200 - c, d); });
+  return s;
+}
+ST_ITEMS.push(
+  { id: "crop", slot: "hair", name: "Short crop", price: 40, svg: hairCap("#5a3a22", hairStrands("#7a5434")) },
+  { id: "curly", slot: "hair", name: "Ginger curls", price: 100, svg: () => {
+      let c = hairCap("#c2541f");
+      [[40, 50], [56, 30], [76, 16], [100, 10], [124, 16], [144, 30], [160, 50], [32, 70], [168, 70], [66, 0], [100, -8], [134, 0], [86, -2], [116, -2]].forEach(([x, y]) => { c += '<circle cx="' + x + '" cy="' + y + '" r="13" fill="#d8692c"/><path d="M' + (x - 5) + ' ' + y + ' a5 5 0 1 1 5 5" stroke="#a8431a" stroke-width="2" fill="none"/>'; });
+      return c;
+    } },
+  { id: "spiky", slot: "hair", name: "Frosted spikes", price: 100, svg: () => {
+      let c = hairCap("#4a3324");
+      for (let i = 0; i < 9; i++) { const x = 34 + i * 16.5, y = 30 - Math.sin(i / 8 * Math.PI) * 26; c += '<path d="M' + (x - 11) + ' ' + (y + 22) + ' L' + (x + 2) + ' ' + (y - 26) + ' L' + (x + 12) + ' ' + (y + 22) + ' Z" fill="#4a3324"/><path d="M' + (x - 3) + ' ' + (y - 6) + ' L' + (x + 2) + ' ' + (y - 26) + ' L' + (x + 6) + ' ' + (y - 6) + ' Z" fill="#ffe27a"/>'; }
+      return c;
+    } },
+  { id: "mohawk", slot: "hair", name: "Mohawk", price: 120, svg: () => {
+      let c = '<path d="M86 22 Q84 0 82 -20 L116 -20 Q116 0 114 22 Q100 14 86 22 Z" fill="#1d1d22"/>';
+      for (let i = 0; i < 6; i++) c += '<path d="M' + (82 + i * 5.6) + ' -14 L' + (85 + i * 5.6) + ' ' + (-64 + Math.abs(i - 2.5) * 6) + ' L' + (91 + i * 5.6) + ' -14 Z" fill="#1d1d22"/>';
+      return c + '<path d="M90 16 V-40 M100 14 V-48 M110 16 V-40" stroke="#3a3a44" stroke-width="2" opacity=".7"/>';
+    } },
+  { id: "rainbowmohawk", slot: "hair", name: "Rainbow mohawk", price: 200, svg: () => {
+      let c = "";
+      RAINBOW6.forEach((col, i) => { const x = 82 + i * 6; c += '<path d="M' + x + ' ' + (18 + Math.abs(i - 2.5) * 1.5) + ' L' + x + ' -14 L' + (x + 3) + ' ' + (-66 + Math.abs(i - 2.5) * 7) + ' L' + (x + 6) + ' -14 L' + (x + 6) + ' ' + (18 + Math.abs(i - 2.5) * 1.5) + ' Z" fill="' + col + '"/>'; });
+      return c;
+    } },
+  { id: "dreads", slot: "hair", name: "Dreadlocks", price: 150, svg: () => hairCap("#2a1d14", '<path d="M40 40 Q60 10 80 30 M70 20 Q92 -4 112 20 M104 24 Q130 -2 150 34 M56 6 Q76 -12 96 4 M110 2 Q132 -10 146 10" stroke="#4a3526" stroke-width="7" fill="none" stroke-linecap="round"/>') + locs("#2a1d14", "#5a4432") },
+  { id: "afro", slot: "hair", name: "Afro", price: 150, under: '<circle cx="100" cy="46" r="100" fill="#1f1611"/><circle cx="100" cy="46" r="100" fill="url(#stCurls)"/>', svg: hairCap("#1f1611", '<path d="M30 70 Q24 20 52 6 M170 70 Q176 20 148 6" stroke="#1f1611" stroke-width="16" fill="none" stroke-linecap="round"/>') },
+  { id: "bun", slot: "hair", name: "Man bun", price: 100, svg: hairCap("#3d2a1c", hairStrands("#5e4330") + '<circle cx="100" cy="-24" r="22" fill="#3d2a1c"/><path d="M84 -26 Q100 -40 116 -26 M86 -18 Q100 -30 114 -18" stroke="#5e4330" stroke-width="3" fill="none"/><rect x="88" y="-6" width="24" height="6" rx="3" fill="#2b2b33"/>') },
+  { id: "mullet", slot: "hair", name: "Mullet", price: 120, svg: hairCap("#8a5a2b", hairStrands("#b07a45") + '<path d="M24 76 Q14 140 30 196 Q40 210 52 202 Q40 150 40 96 Z M176 76 Q186 140 170 196 Q160 210 148 202 Q160 150 160 96 Z" fill="#8a5a2b"/><path d="M30 120 Q28 160 38 190 M170 120 Q172 160 162 190" stroke="#b07a45" stroke-width="3" fill="none"/>') },
+  { id: "longhair", slot: "hair", name: "Long hair", price: 120, svg: hairCap("#e2b85c", hairStrands("#f4d590") + '<path d="M24 74 Q8 180 18 262 Q32 270 50 262 Q42 170 44 70 Z M176 74 Q192 180 182 262 Q168 270 150 262 Q158 170 156 70 Z" fill="#e2b85c"/><path d="M28 120 Q22 190 30 250 M172 120 Q178 190 170 250" stroke="#f4d590" stroke-width="3" fill="none"/>') },
+  { id: "pinkbob", slot: "hair", name: "Pink bob", price: 120, svg: hairCap("#ff6fb1", '<path d="M24 74 Q14 130 26 160 Q44 168 50 156 Q42 110 46 60 Z M176 74 Q186 130 174 160 Q156 168 150 156 Q158 110 154 60 Z" fill="#ff6fb1"/><path d="M44 50 Q100 30 156 50" stroke="#ff9bcb" stroke-width="5" fill="none" stroke-linecap="round"/>') },
+  { id: "braids", slot: "hair", name: "Braids", price: 150, svg: () => {
+      let b = hairCap("#2e1f16", '<path d="M100 -18 V40" stroke="#4a3526" stroke-width="3"/>');
+      [[30, 1], [170, -1]].forEach(([x, d]) => { for (let i = 0; i < 9; i++) b += '<ellipse cx="' + (x + d * 2 * (i % 2)) + '" cy="' + (90 + i * 20) + '" rx="10" ry="12" fill="#2e1f16" stroke="#4a3526" stroke-width="2"/>'; b += '<rect x="' + (x - 6) + '" y="266" width="12" height="7" rx="3" fill="#ff5fa2"/>'; });
+      return b;
+    } },
+  { id: "ponytail", slot: "hair", name: "Ponytail", price: 100, under: '<path d="M150 20 Q214 30 206 120 Q200 170 184 196 Q194 130 172 60 Z" fill="#6b4226"/>', svg: hairCap("#6b4226", hairStrands("#8f6040") + '<rect x="152" y="18" width="14" height="16" rx="5" transform="rotate(30 159 26)" fill="#38c6f4"/>') }
+);
+
 const ST_BY_ID = {};
 ST_ITEMS.forEach(it => { ST_BY_ID[it.id] = it; });
 const ST_DEFAULT = { top: "tee", legs: "trousers", feet: "boots", laces: "blacklaces", livery: "classic", lights: "stdlights", wheels: "stdwheels", bg: "garage" };
@@ -3105,6 +3179,8 @@ function stChar(eq) {
   const feet = ST_BY_ID[eq.feet] || ST_BY_ID.boots;
   const hand = eq.hand && ST_BY_ID[eq.hand];
   let s = "";
+  const hair = eq.hair && ST_BY_ID[eq.hair];
+  if (hair && hair.under) s += hair.under;
   s += stItemSvg(eq.back);
   if (hand && hand.behind) s += stItemSvg(eq.hand);
   s += stItemSvg(eq.legs || "trousers");
@@ -3117,12 +3193,14 @@ function stChar(eq) {
   if (back && back.front) s += back.front;
   s += stItemSvg(eq.neck);
   s += stItemSvg(eq.taonga);
+  s += stItemSvg(eq.music);
   if (hand && !hand.behind) s += stItemSvg(eq.hand);
   const glove = eq.gloves && ST_BY_ID[eq.gloves] && ST_BY_ID[eq.gloves].hand;
   const handCol = glove || SKIN;
   s += '<circle cx="33" cy="305" r="14" fill="' + handCol + '"/><circle cx="167" cy="305" r="14" fill="' + handCol + '"/>';
   s += glove ? '<path d="M24 292 L42 292 M158 292 L176 292" stroke="' + glove + '" stroke-width="7" stroke-linecap="round"/>' : '<path d="M160 300 q6 -4 12 0 M26 300 q6 -4 12 0" stroke="' + SKIN_D + '" stroke-width="2" fill="none"/>';
   s += '<use href="#stHead" x="15" y="0"/>';
+  s += stItemSvg(eq.hair);
   s += stItemSvg(eq.mask);
   s += stItemSvg(eq.eyes);
   s += stItemSvg(eq.hat);
@@ -3346,6 +3424,7 @@ function stDefsSvg(headSrc) {
     '<linearGradient id="stPounamu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fd3a8"/><stop offset=".45" stop-color="#2f8a55"/><stop offset="1" stop-color="#17482b"/></linearGradient>' +
     '<pattern id="stKorowai" patternUnits="userSpaceOnUse" width="10" height="10"><rect width="10" height="10" fill="#efe6d2"/><path d="M2 0.5 v5 M7 5 v5" stroke="#2a1d10" stroke-width="1.5" stroke-linecap="round"/><circle cx="5" cy="2" r=".9" fill="#b38a5a"/><circle cx="9.5" cy="8" r=".9" fill="#b38a5a"/></pattern>' +
     '<pattern id="stTaniko" patternUnits="userSpaceOnUse" width="12" height="12"><rect width="12" height="12" fill="#1a1208"/><path d="M0 12 L6 1 L12 12 Z" fill="#f3ead6"/><path d="M3 12 L6 6.5 L9 12 Z" fill="#b3261e"/></pattern>' +
+    '<pattern id="stCurls" patternUnits="userSpaceOnUse" width="16" height="16"><path d="M3 8 a5 5 0 1 1 5 5 M11 2 a4 4 0 1 1 4 4" stroke="#3a2a20" stroke-width="2" fill="none"/></pattern>' +
     '<clipPath id="stAmbClip"><path d="' + AMB_BODY + '"/></clipPath>' +
     '<linearGradient id="stGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1a8"/><stop offset=".45" stop-color="#f6c90e"/><stop offset="1" stop-color="#b8860b"/></linearGradient>' +
     '<linearGradient id="stGoldWide" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff1a8"/><stop offset=".35" stop-color="#f6c90e"/><stop offset=".7" stop-color="#d9a514"/><stop offset="1" stop-color="#a87a0a"/></linearGradient>' +
@@ -3483,9 +3562,9 @@ const ST_TABS = ST_TAB_NAMES.para;
 // the middle tab is the ambulance for paramedics and the theatre for periop
 function stSlotTab(slot) { const t = ST_SLOTS[slot].tab; return t === "theatre" ? "amb" : t; }
 const ST_CROP = {
-  hat: "-12 -78 224 196", eyes: "22 34 156 104", top: "12 176 176 160", legs: "24 300 152 148", feet: "26 384 148 60", laces: "26 384 148 60",
+  hat: "-12 -78 224 196", hair: "-14 -72 228 300", eyes: "22 34 156 104", top: "12 176 176 160", legs: "24 300 152 148", feet: "26 384 148 60", laces: "26 384 148 60",
   neck: "34 180 132 136", hand: "56 150 182 290", back: "-36 140 272 310",
-  mask: "22 70 156 130", gloves: "-4 248 208 100", taonga: "44 192 112 112"
+  mask: "22 70 156 130", gloves: "-4 248 208 100", taonga: "44 192 112 112", music: "-10 160 230 230"
 };
 const ST_AMB_BOX = "156 12 248 216";
 let stTab = "para", stTry = null, stReturn = null;

@@ -1,6 +1,6 @@
 // Saves the app on the device so it opens without internet.
 // Bump VERSION whenever any file changes so phones pick up the new copy.
-const VERSION = "name-that-path-v25";
+const VERSION = "name-that-path-v26";
 const CORE = ["./", "./index.html", "./lobby.mp3", "./celebrate.mp4", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
