@@ -2,6 +2,7 @@
 <html lang="en-NZ">
 <head>
 <meta charset="utf-8">
+<meta name="color-scheme" content="light dark">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#4a2c82">
 <link rel="manifest" href="manifest.webmanifest">
@@ -1111,6 +1112,8 @@ main.wrap:has(#menu[hidden]) .st-top { display: none; }
 .st-role { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 999px; background: var(--surface); border: 1.5px solid var(--line); }
 .st-role button { padding: 8px 6px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); font-weight: 700; }
 .st-role button[aria-checked="true"] { background: var(--ink); color: var(--surface); }
+/* the pictures keep their own colours: stop phone browsers from force-darkening them */
+.st-stage, .st-top .sc-scene, .st-item .st-pv, .st-buy .sb-pv { color-scheme: only light; }
 </style>
 </head>
 <body>
@@ -2913,7 +2916,7 @@ const ST_ITEMS = [
   { id: "clipboard", slot: "hand", name: "Clipboard", price: 60, svg: '<rect x="156" y="262" width="44" height="58" rx="4" fill="#b07a45"/><rect x="161" y="270" width="34" height="46" fill="#fff"/><rect x="168" y="258" width="20" height="10" rx="3" fill="#b9bfc6"/><path d="M166 280 H190 M166 288 H190 M166 296 H184 M166 304 H190" stroke="#9aa0aa" stroke-width="2"/><path d="M168 280 l3 3 5 -6" stroke="#1f7a4d" stroke-width="2.5" fill="none"/>' },
   { id: "shears", slot: "hand", name: "Trauma shears", price: 70, svg: '<g transform="rotate(-35 167 306)"><path d="M164 300 L168 248 L174 250 L172 300 Z" fill="#c7ccd2" stroke="#8a9099" stroke-width="1.5"/><path d="M160 302 L150 252 L156 250 L168 300 Z" fill="#dde1e5" stroke="#8a9099" stroke-width="1.5"/><ellipse cx="160" cy="316" rx="9" ry="13" fill="none" stroke="#2f7fd8" stroke-width="6"/><ellipse cx="178" cy="314" rx="9" ry="13" fill="none" stroke="#2f7fd8" stroke-width="6"/></g>' },
   { id: "bat", slot: "hand", name: "Cricket bat", price: 180, svg: '<g transform="rotate(-18 167 306)"><rect x="162" y="282" width="10" height="44" rx="4" fill="#2b2b33"/><path d="M162 288 H172 M162 296 H172 M162 304 H172 M162 312 H172" stroke="#44444f" stroke-width="2"/><rect x="155" y="324" width="24" height="108" rx="6" fill="#ecd39b" stroke="#c9a868" stroke-width="2"/><path d="M167 330 V424" stroke="#d9bb7c" stroke-width="3"/><rect x="155" y="336" width="24" height="8" fill="#e03a2f" opacity=".75"/></g>', behind: false },
-  { id: "surfboard", slot: "hand", name: "Surfboard", price: 300, behind: true, svg: '<ellipse cx="196" cy="298" rx="22" ry="130" fill="#fdfdfb" stroke="#bfc6cc" stroke-width="3"/><path d="M196 170 V426" stroke="#e3a52c" stroke-width="3"/><path d="M175 270 Q196 262 217 270 V300 Q196 292 175 300 Z" fill="#17a2b8"/><path d="M178 320 Q196 314 214 320 V332 Q196 326 178 332 Z" fill="#ff5fa2"/>' },
+  { id: "surfboard", slot: "hand", name: "Surfboard", price: 300, behind: true, svg: '<path d="M198 148 C215 190 223 252 221 322 C219 392 211 426 198 432 C185 426 177 392 175 322 C173 252 181 190 198 148 Z" fill="#fbfbf7" stroke="#8fa3b3" stroke-width="2.5"/><g clip-path="url(#stSurfClip)"><rect x="170" y="148" width="60" height="40" fill="#ffd23f"/><rect x="170" y="186" width="60" height="6" fill="#ff8f3d"/><rect x="170" y="300" width="60" height="26" fill="#17a2b8"/><rect x="170" y="330" width="60" height="7" fill="#ff5fa2"/></g><path d="M198 152 V428" stroke="#b07a45" stroke-width="1.6"/><path d="M184 214 Q182 260 184 300" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/>' },
   { id: "forceps", slot: "hand", name: "Forceps", price: 60, svg: '<g transform="rotate(-30 167 306)"><path d="M163 300 L160 236 L164 236 L168 300 Z M171 300 L176 236 L180 236 L175 300 Z" fill="#c7ccd2" stroke="#8a9099" stroke-width="1.2"/><circle cx="160" cy="318" r="8" fill="none" stroke="#b9bfc6" stroke-width="4"/><circle cx="178" cy="318" r="8" fill="none" stroke="#b9bfc6" stroke-width="4"/></g>' },
   { id: "tray", slot: "hand", name: "Instrument tray", price: 120, svg: '<path d="M132 296 H206 L200 312 H138 Z" fill="#c7ccd2" stroke="#8a9099" stroke-width="2"/><path d="M142 296 L150 276 M156 296 L160 272 M170 296 L176 278 M186 296 L194 282" stroke="#9aa1ab" stroke-width="3" stroke-linecap="round"/><rect x="134" y="290" width="70" height="7" rx="2" fill="#5a9fd8"/>' },
   /* gloves: only change the hands */
@@ -3421,6 +3424,7 @@ function stDefsSvg(headSrc) {
     '<clipPath id="stRcapClip"><path d="M34 56 Q32 -12 100 -14 Q168 -12 166 56 Q100 40 34 56 Z"/></clipPath>' +
     '<clipPath id="stRmaskClip"><path d="M50 124 Q100 112 150 124 L146 166 Q100 186 54 166 Z"/></clipPath>' +
     '<clipPath id="stHawClip"><path d="' + TORSO + '"/></clipPath>' +
+    '<clipPath id="stSurfClip"><path d="M198 148 C215 190 223 252 221 322 C219 392 211 426 198 432 C185 426 177 392 175 322 C173 252 181 190 198 148 Z"/></clipPath>' +
     '<clipPath id="stUJClip"><rect width="30" height="18"/></clipPath>' +
     '<clipPath id="stFlagClip"><rect width="60" height="36"/></clipPath>' +
     '<linearGradient id="stPounamu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fd3a8"/><stop offset=".45" stop-color="#2f8a55"/><stop offset="1" stop-color="#17482b"/></linearGradient>' +
