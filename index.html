@@ -1102,14 +1102,25 @@ main.wrap:has(#menu[hidden]) .st-top { display: none; }
   .st-bob, .st-lb, .st-glow, .st-snow, .st-tail, .st-cape { animation: none !important; }
   .credit-pop.show { animation: none; opacity: 1; transform: translate(-50%, 0); }
 }
+.st-ask { padding: 14px 14px 12px; background: color-mix(in srgb, var(--haem) 10%, var(--surface)); border-bottom: 1.5px solid var(--line); }
+.st-ask p { margin: 0 0 10px; font-family: var(--font-display); font-weight: 700; font-size: 1.08rem; }
+.st-ask-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.st-ask-btns button { padding: 11px 8px; font-weight: 700; }
+.st-role { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 999px; background: var(--surface); border: 1.5px solid var(--line); }
+.st-role button { padding: 8px 6px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); font-weight: 700; }
+.st-role button[aria-checked="true"] { background: var(--ink); color: var(--surface); }
 </style>
 </head>
 <body>
 <main class="wrap">
   <div class="st-top" id="stTop" hidden>
+    <div class="st-ask" id="stAsk" hidden>
+      <p>Which course are you in?</p>
+      <div class="st-ask-btns"><button type="button" data-role="para">Paramedicine</button><button type="button" data-role="periop">Perioperative</button></div>
+    </div>
     <button type="button" class="sc-scene" id="stHomeScene" aria-label="Open your station"></button>
     <div class="sc-bar">
-      <button type="button" class="sc-open" id="stOpen"><span class="sc-title">Your station</span><span class="sc-note" id="stHomeNote"></span></button>
+      <button type="button" class="sc-open" id="stOpen"><span class="sc-title" id="stTopTitle">Your station</span><span class="sc-note" id="stHomeNote"></span></button>
       <span class="coin-pill"><svg class="coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#f6c90e" stroke="#b8860b" stroke-width="1.5"/><circle cx="12" cy="12" r="7.6" fill="none" stroke="#fff3b0" stroke-width="1"/><path d="M6.3 12.6h3l1.4-3.2 2.4 6.2 1.5-3h3.1" fill="none" stroke="#7a5806" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><b id="stHomeCredits">0</b></span>
       <button type="button" class="sc-hide" id="stHide" aria-controls="stHomeScene" aria-expanded="true">Hide</button>
     </div>
@@ -1504,7 +1515,11 @@ main.wrap:has(#menu[hidden]) .st-top { display: none; }
       <button type="button" class="back-btn" id="stBack">← Home</button>
       <span class="coin-pill"><svg class="coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#f6c90e" stroke="#b8860b" stroke-width="1.5"/><circle cx="12" cy="12" r="7.6" fill="none" stroke="#fff3b0" stroke-width="1"/><path d="M6.3 12.6h3l1.4-3.2 2.4 6.2 1.5-3h3.1" fill="none" stroke="#7a5806" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><b id="stCredits">0</b> credits</span>
     </div>
-    <h2 class="st-title">Your station</h2>
+    <div class="st-role" role="radiogroup" aria-label="Your course">
+      <button type="button" role="radio" data-role="para" aria-checked="true">Paramedic</button>
+      <button type="button" role="radio" data-role="periop" aria-checked="false">Periop</button>
+    </div>
+    <h2 class="st-title" id="stTitle">Your station</h2>
     <div class="st-stage" id="stStage"></div>
     <div class="st-buy" id="stBuy" hidden aria-live="polite">
       <span class="sb-pv" id="stBuyPv" aria-hidden="true"></span>
@@ -1530,7 +1545,7 @@ main.wrap:has(#menu[hidden]) .st-top { display: none; }
         <li>Beat the clock and Hot Seat: 1 for each term</li>
         <li>Flashcards: 1 for each card you know first time</li>
       </ul>
-      <p>Tap anything to try it on before you buy. Credits and gear are saved on this device, like the rest of your progress.</p>
+      <p>Paramedic and periop each keep their own outfit, and your credits and gear work in both. Tap anything to try it on before you buy. Credits and gear are saved on this device, like the rest of your progress.</p>
     </details>
   </section>
 
@@ -2792,12 +2807,14 @@ function laceMarks(cols, y0) {
 
 /* Items. slot: where it goes. price 0 = everyone has it. need: true if the slot can't be empty. */
 const ST_SLOTS = {
-  hat: { label: "Hats", tab: "para" }, eyes: { label: "Glasses", tab: "para" }, top: { label: "Tops", tab: "para", need: true },
+  hat: { label: "Hats", tab: "para" }, eyes: { label: "Glasses", tab: "para" }, mask: { label: "Masks", tab: "para" }, top: { label: "Tops", tab: "para", need: true },
   legs: { label: "Pants", tab: "para", need: true }, feet: { label: "Shoes", tab: "para", need: true }, laces: { label: "Laces", tab: "para", need: true },
-  neck: { label: "Neck", tab: "para" }, hand: { label: "In hand", tab: "para" }, back: { label: "On the back", tab: "para" },
+  neck: { label: "Neck", tab: "para" }, hand: { label: "In hand", tab: "para" }, gloves: { label: "Gloves", tab: "para" }, back: { label: "On the back", tab: "para" },
   livery: { label: "Paint", tab: "amb", need: true }, lights: { label: "Light bar", tab: "amb", need: true }, wheels: { label: "Wheels", tab: "amb", need: true },
   decal: { label: "Stickers", tab: "amb" }, roof: { label: "On the roof", tab: "amb" }, glow: { label: "Underglow", tab: "amb" },
-  bg: { label: "Where you're parked", tab: "scene", need: true }, buddy: { label: "Station buddy", tab: "scene" }
+  tlight: { label: "Theatre light", tab: "theatre", need: true }, ttable: { label: "Operating table", tab: "theatre", need: true }, tmon: { label: "Monitor", tab: "theatre", need: true },
+  tpatient: { label: "On the table", tab: "theatre" }, twall: { label: "On the walls", tab: "theatre" },
+  bg: { label: "Where you're parked", periopLabel: "Theatre walls", tab: "scene", need: true }, buddy: { label: "Station buddy", periopLabel: "Theatre buddy", tab: "scene" }
 };
 
 const ST_ITEMS = [
@@ -2813,15 +2830,38 @@ const ST_ITEMS = [
   { id: "helmet", slot: "hat", name: "Rescue helmet", price: 220, svg: '<path d="M32 56 Q30 -16 100 -18 Q170 -16 168 56 Z" fill="#e03a2f"/><path d="M100 -18 Q96 20 100 54" stroke="#b02a22" stroke-width="10" fill="none"/><path d="M26 54 H174 Q178 64 168 66 H32 Q22 64 26 54 Z" fill="#b02a22"/><rect x="58" y="18" width="22" height="8" rx="2" fill="#e6f05a"/><rect x="120" y="18" width="22" height="8" rx="2" fill="#e6f05a"/><path d="M48 8 Q60 -8 78 -12" stroke="#ff8a80" stroke-width="5" fill="none" stroke-linecap="round" opacity=".7"/>' },
   { id: "cowboy", slot: "hat", name: "Cowboy hat", price: 200, svg: '<path d="M58 40 Q56 -30 82 -26 Q100 -16 118 -26 Q144 -30 142 40 Z" fill="#a0673a"/><path d="M58 22 H142 V36 H58 Z" fill="#5b3a20"/><path d="M4 30 Q20 54 100 54 Q180 54 196 30 Q190 58 160 64 Q100 74 40 64 Q10 58 4 30 Z" fill="#8a552c"/>' },
   { id: "crown", slot: "hat", name: "Crown", price: 400, svg: '<path d="M46 40 L42 -14 L70 10 L84 -30 L100 4 L116 -30 L130 10 L158 -14 L154 40 Z" fill="url(#stGold)" stroke="#b07d0c" stroke-width="3" stroke-linejoin="round"/><rect x="44" y="28" width="112" height="14" rx="4" fill="#d9a514"/><circle cx="72" cy="35" r="5" fill="#e8423f"/><circle cx="100" cy="35" r="6" fill="#2f7fd8"/><circle cx="128" cy="35" r="5" fill="#3fae4f"/><circle cx="84" cy="-30" r="5" fill="#fff6c2"/><circle cx="116" cy="-30" r="5" fill="#fff6c2"/>' },
+  { id: "theatrecap", slot: "hat", name: "Theatre cap", price: 0, svg: '<path d="M34 56 Q32 -12 100 -14 Q168 -12 166 56 Q100 40 34 56 Z" fill="#8ec1e8"/><path d="M34 56 Q100 40 166 56" stroke="#6aa3d4" stroke-width="5" fill="none"/><path d="M164 40 Q182 44 184 60 M164 44 Q178 54 172 66" stroke="#8ec1e8" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M60 10 Q70 0 86 -4" stroke="#b9dbf4" stroke-width="4" fill="none" stroke-linecap="round"/>' },
+  { id: "heartcap", slot: "hat", name: "Heart scrub cap", price: 80, svg: () => {
+      let h = "";
+      [[56, 30], [84, 8], [116, 4], [144, 26], [100, 32], [70, -2], [130, -6]].forEach(([x, y]) => { h += '<path transform="translate(' + x + ' ' + y + ') scale(.32)" d="M0 14 C-22 0 -26 -14 -14 -20 C-7 -23 -2 -19 0 -14 C2 -19 7 -23 14 -20 C26 -14 22 0 0 14 Z" fill="#ff4f93"/>'; });
+      return '<path d="M34 56 Q32 -12 100 -14 Q168 -12 166 56 Q100 40 34 56 Z" fill="#ffd9e8"/>' + h + '<path d="M34 56 Q100 40 166 56" stroke="#f3a3c4" stroke-width="5" fill="none"/><path d="M164 40 Q182 44 184 60 M164 44 Q178 54 172 66" stroke="#ffd9e8" stroke-width="5" fill="none" stroke-linecap="round"/>';
+    } },
+  { id: "rainbowcap", slot: "hat", name: "Rainbow scrub cap", price: 100, svg: () => {
+      let st = '<clipPath id="stRcapClip"><path d="M34 56 Q32 -12 100 -14 Q168 -12 166 56 Q100 40 34 56 Z"/></clipPath><g clip-path="url(#stRcapClip)">';
+      RAINBOW6.forEach((c, i) => { st += '<rect x="30" y="' + (-16 + i * 12) + '" width="140" height="12" fill="' + c + '"/>'; });
+      return st + '</g><path d="M34 56 Q100 40 166 56" stroke="#5a2f9c" stroke-width="5" fill="none"/><path d="M164 40 Q182 44 184 60 M164 44 Q178 54 172 66" stroke="#8a4bd0" stroke-width="5" fill="none" stroke-linecap="round"/>';
+    } },
   /* glasses */
   { id: "sunnies", slot: "eyes", name: "Sunnies", price: 80, svg: '<rect x="46" y="76" width="48" height="30" rx="9" fill="#141418"/><rect x="106" y="75" width="48" height="30" rx="9" fill="#141418"/><path d="M94 86 Q100 80 106 86" stroke="#141418" stroke-width="5" fill="none"/><path d="M46 84 L30 80 M154 84 L170 80" stroke="#141418" stroke-width="5"/><path d="M54 82 L66 82 M114 81 L126 81" stroke="#fff" stroke-width="3" opacity=".5" stroke-linecap="round"/>' },
   { id: "aviators", slot: "eyes", name: "Aviators", price: 150, svg: '<path d="M46 78 H94 Q96 104 74 108 Q48 108 46 78 Z" fill="url(#stLens)" stroke="#c99a16" stroke-width="3"/><path d="M106 78 H154 Q152 108 126 108 Q104 104 106 78 Z" fill="url(#stLens)" stroke="#c99a16" stroke-width="3"/><path d="M94 80 Q100 74 106 80 M94 78 H106" stroke="#c99a16" stroke-width="3" fill="none"/><path d="M46 80 L30 78 M154 80 L170 78" stroke="#c99a16" stroke-width="3"/>' },
   { id: "hearts", slot: "eyes", name: "Heart glasses", price: 120, svg: '<path transform="translate(70 96) scale(1.25)" d="M0 14 C-22 0 -26 -14 -14 -20 C-7 -23 -2 -19 0 -14 C2 -19 7 -23 14 -20 C26 -14 22 0 0 14 Z" fill="#ff4f93" stroke="#c4205f" stroke-width="2"/><path transform="translate(130 95) scale(1.25)" d="M0 14 C-22 0 -26 -14 -14 -20 C-7 -23 -2 -19 0 -14 C2 -19 7 -23 14 -20 C26 -14 22 0 0 14 Z" fill="#ff4f93" stroke="#c4205f" stroke-width="2"/><path d="M94 84 Q100 78 106 84" stroke="#c4205f" stroke-width="4" fill="none"/><path d="M42 84 L28 80 M158 84 L172 80" stroke="#c4205f" stroke-width="4"/>' },
   { id: "patch", slot: "eyes", name: "Eye patch", price: 90, svg: '<path d="M86 80 Q120 58 166 50 M54 96 Q42 100 34 108" stroke="#141418" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M50 82 Q70 72 92 80 Q96 100 82 110 Q66 116 54 106 Q46 96 50 82 Z" fill="#141418"/><path d="M58 86 Q68 82 78 84" stroke="#3a3a44" stroke-width="3" fill="none" stroke-linecap="round"/>' },
+  { id: "loupes", slot: "eyes", name: "Surgical loupes", price: 200, svg: '<rect x="48" y="78" width="44" height="26" rx="8" fill="none" stroke="#141418" stroke-width="5"/><rect x="108" y="77" width="44" height="26" rx="8" fill="none" stroke="#141418" stroke-width="5"/><path d="M92 86 Q100 80 108 86 M48 84 L30 80 M152 84 L170 80" stroke="#141418" stroke-width="5" fill="none"/><rect x="60" y="80" width="20" height="26" rx="5" fill="#3a3d45"/><rect x="120" y="79" width="20" height="26" rx="5" fill="#3a3d45"/><circle cx="70" cy="99" r="7" fill="#7fd3ff" stroke="#1d1d22" stroke-width="2"/><circle cx="130" cy="98" r="7" fill="#7fd3ff" stroke="#1d1d22" stroke-width="2"/>' },
   { id: "safety", slot: "eyes", name: "Safety specs", price: 60, svg: '<path d="M40 76 Q100 66 160 76 Q162 100 140 106 Q118 108 104 96 Q100 92 96 96 Q82 108 60 106 Q38 100 40 76 Z" fill="#f7e86a" fill-opacity=".42" stroke="#d9b400" stroke-width="3"/><path d="M50 82 L62 80" stroke="#fff" stroke-width="3" stroke-linecap="round"/>' },
+  /* masks */
+  { id: "surgmask", slot: "mask", name: "Surgical mask", price: 0, svg: '<path d="M50 124 Q100 112 150 124 L146 166 Q100 186 54 166 Z" fill="#a9d1ef"/><path d="M54 136 Q100 126 146 136 M54 148 Q100 140 146 148 M56 160 Q100 154 144 160" stroke="#86b8de" stroke-width="2.5" fill="none"/><path d="M50 126 Q30 112 32 96 M150 126 Q170 112 168 96 M54 164 Q34 150 30 128 M146 164 Q166 150 170 128" stroke="#e8eef3" stroke-width="2.5" fill="none"/>' },
+  { id: "n95", slot: "mask", name: "N95 mask", price: 40, svg: '<path d="M54 128 Q100 100 146 128 Q150 160 100 182 Q50 160 54 128 Z" fill="#f4f4f0" stroke="#d6d6cf" stroke-width="2"/><path d="M100 108 Q98 150 100 182" stroke="#d6d6cf" stroke-width="2" fill="none"/><path d="M56 128 Q30 112 32 92 M144 128 Q170 112 168 92" stroke="#2f7fd8" stroke-width="3" fill="none"/>' },
+  { id: "rainbowmask", slot: "mask", name: "Rainbow mask", price: 70, svg: () => {
+      let st = '<clipPath id="stRmaskClip"><path d="M50 124 Q100 112 150 124 L146 166 Q100 186 54 166 Z"/></clipPath><g clip-path="url(#stRmaskClip)">';
+      RAINBOW6.forEach((c, i) => { st += '<rect x="44" y="' + (112 + i * 12) + '" width="112" height="12" fill="' + c + '"/>'; });
+      return st + '</g><path d="M50 126 Q30 112 32 96 M150 126 Q170 112 168 96 M54 164 Q34 150 30 128 M146 164 Q166 150 170 128" stroke="#e8eef3" stroke-width="2.5" fill="none"/>';
+    } },
   /* tops */
   { id: "tee", slot: "top", name: "Black tee", price: 0, svg: stSleeves("#1f1f24") + stTorso("#1f1f24", CREW) },
   { id: "polo", slot: "top", name: "Student polo", price: 40, svg: stSleeves("#24406b") + stTorso("#24406b", '<path d="M80 198 L100 228 L120 198 L112 196 L100 214 L88 196 Z" fill="#1a3052"/><path d="M76 197 L90 214 L100 202 Z M124 197 L110 214 L100 202 Z" fill="#2e5288"/><circle cx="100" cy="222" r="2.5" fill="#fff"/><rect x="118" y="238" width="22" height="12" rx="2" fill="#fff" opacity=".9"/>') },
+  { id: "theatrescrubs", slot: "top", name: "Theatre scrubs", price: 0, svg: stSleeves("#3f72b4") + stTorso("#3f72b4", vNeck() + '<path d="M80 199 L100 236 L120 199" stroke="#2f5c97" stroke-width="4" fill="none"/><rect x="118" y="248" width="24" height="20" rx="3" fill="#3767a5"/><path d="M124 246 V256" stroke="#e03a2f" stroke-width="3"/>') },
+  { id: "gown", slot: "top", name: "Surgical gown", price: 150, svg: stSleeves("#8ec1e8", true, 34) + '<path d="M38 284 L34 296 M162 284 L166 296" stroke="#e8eef3" stroke-width="12"/>' + '<path d="M70 198 Q100 206 130 198 L156 212 Q164 220 162 236 L160 350 Q100 360 40 350 L38 236 Q36 220 44 212 Z" fill="#8ec1e8"/><path d="M74 198 Q100 214 126 198" stroke="#6aa3d4" stroke-width="6" fill="none"/><path d="M60 300 Q100 306 140 300" stroke="#6aa3d4" stroke-width="3" fill="none"/><path d="M70 230 L66 340 M130 230 L134 340" stroke="#7fb3dc" stroke-width="2" fill="none"/>' },
+  { id: "leadapron", slot: "top", name: "Lead apron", price: 200, svg: stSleeves("#3f72b4") + stTorso("#3f72b4", vNeck()) + '<path d="M58 206 L142 206 L150 232 L146 330 Q100 340 54 330 L50 232 Z" fill="#7b4bc9"/><path d="M74 198 Q100 212 126 198 L126 212 Q100 222 74 212 Z" fill="#6a3bb4"/><rect x="70" y="262" width="60" height="5" rx="2" fill="#5e2fa6"/><path d="M58 206 L50 232 M142 206 L150 232" stroke="#5e2fa6" stroke-width="3"/><circle cx="66" cy="226" r="5" fill="#ffd23f"/>' },
   { id: "uniform", slot: "top", name: "Paramedic shirt", price: 150, svg: stSleeves("#1e4d3a") + stTorso("#1e4d3a", '<path d="M82 198 L100 222 L118 198" stroke="#163b2c" stroke-width="5" fill="none"/><path d="M100 222 V322" stroke="#163b2c" stroke-width="3"/><rect x="43" y="258" width="114" height="10" fill="#cfd6d9"/><rect x="43" y="256" width="114" height="3" fill="#d8f02c"/><rect x="43" y="267" width="114" height="3" fill="#d8f02c"/><rect x="52" y="208" width="28" height="9" rx="2" transform="rotate(18 66 212)" fill="#10261c"/><rect x="120" y="208" width="28" height="9" rx="2" transform="rotate(-18 134 212)" fill="#10261c"/><path d="M58 210 L74 215 M126 215 L142 210" stroke="#f2f2f2" stroke-width="2.5"/><rect x="58" y="230" width="28" height="12" rx="2" fill="#fff"/><path d="M62 236 H82" stroke="#1e4d3a" stroke-width="2"/><rect x="116" y="228" width="26" height="22" rx="3" fill="#18402f"/>') },
   { id: "hivis", slot: "top", name: "Hi-vis jacket", price: 250, svg: stSleeves("#d8f02c", true, 32) + '<path d="M44 280 L38 284 M156 280 L162 284" stroke="#cfd6d9" stroke-width="10"/>' + stTorso("#d8f02c", '<path d="M50 210 L74 198 Q100 208 126 198 L150 210 L156 240 Q100 250 44 240 Z" fill="#1e4d3a"/><path d="M82 198 L100 218 L118 198" stroke="#163b2c" stroke-width="6" fill="none"/><rect x="43" y="268" width="114" height="11" fill="#cfd6d9"/><rect x="45" y="298" width="111" height="11" fill="#cfd6d9"/><path d="M100 218 V326" stroke="#9aaa1d" stroke-width="3"/>') },
   { id: "scrubs", slot: "top", name: "Scrubs", price: 120, svg: stSleeves("#2a9d9f") + stTorso("#2a9d9f", vNeck() + '<path d="M80 199 L100 236 L120 199" stroke="#1f7b7d" stroke-width="4" fill="none"/><rect x="58" y="250" width="26" height="22" rx="3" fill="#25898b"/><path d="M64 248 V258 M70 248 V258" stroke="#1d1d1d" stroke-width="3"/>') },
@@ -2839,6 +2879,7 @@ const ST_ITEMS = [
   { id: "tux", slot: "top", name: "Tuxedo", price: 400, svg: stSleeves("#17171c", true, 32) + '<path d="M38 286 L36 292 M162 286 L164 292" stroke="#fff" stroke-width="10"/>' + stTorso("#17171c", '<path d="M80 199 L100 300 L120 199 Z" fill="#fff"/><path d="M80 199 L100 300 L86 200 Z" fill="#2a2a33"/><path d="M80 199 L72 214 L96 286 Z M120 199 L128 214 L104 286 Z" fill="#26262e"/><path d="M86 204 L100 212 L86 220 Z M114 204 L100 212 L114 220 Z" fill="#d7263d"/><circle cx="100" cy="212" r="4" fill="#a81d30"/><circle cx="100" cy="240" r="2.5" fill="#17171c"/><circle cx="100" cy="258" r="2.5" fill="#17171c"/>') },
   /* pants */
   { id: "trousers", slot: "legs", name: "Black trousers", price: 0, svg: '<path d="M56 312 H144 L141 412 H104 L100 352 L96 412 H59 Z" fill="#26262c"/><rect x="56" y="312" width="88" height="10" fill="#18181c"/>' },
+  { id: "scrubpants", slot: "legs", name: "Scrub pants", price: 0, svg: '<path d="M56 312 H144 L141 412 H104 L100 352 L96 412 H59 Z" fill="#3f72b4"/><path d="M100 314 V328" stroke="#2f5c97" stroke-width="3"/><path d="M90 316 Q100 324 110 316" stroke="#f4f4f0" stroke-width="3" fill="none"/>' },
   { id: "cargo", slot: "legs", name: "Uniform cargos", price: 100, svg: '<path d="M56 312 H144 L141 412 H104 L100 352 L96 412 H59 Z" fill="#1e4d3a"/><rect x="56" y="312" width="88" height="10" fill="#163b2c"/><rect x="60" y="356" width="24" height="26" rx="3" fill="#18402f"/><rect x="116" y="356" width="24" height="26" rx="3" fill="#18402f"/><rect x="58" y="396" width="38" height="6" fill="#cfd6d9"/><rect x="104" y="396" width="38" height="6" fill="#cfd6d9"/>' },
   { id: "jeans", slot: "legs", name: "Jeans", price: 80, svg: '<path d="M56 312 H144 L141 412 H104 L100 352 L96 412 H59 Z" fill="#3a5f9e"/><rect x="56" y="312" width="88" height="10" fill="#2f4f86"/><path d="M78 412 V360 M122 412 V360" stroke="#5a7fbe" stroke-width="2" stroke-dasharray="4 4"/><rect x="96" y="314" width="8" height="6" fill="#d9a514"/>' },
   { id: "boardies", slot: "legs", name: "Boardies", price: 150, svg: () => '<path d="M60 360 H97 L96 412 H62 Z M103 360 H140 L138 412 H104 Z" fill="' + SKIN + '"/><path d="M56 312 H144 L143 366 H103 L100 348 L97 366 H57 Z" fill="#17a2b8"/><path d="M60 330 Q80 320 98 336 Q116 350 140 334" stroke="#ffd23f" stroke-width="6" fill="none"/><path d="M58 352 Q74 344 92 356 M108 356 Q124 346 142 354" stroke="#ff5fa2" stroke-width="5" fill="none"/><rect x="56" y="312" width="88" height="8" fill="#12808f"/>' },
@@ -2847,6 +2888,9 @@ const ST_ITEMS = [
   { id: "sneakers", slot: "feet", name: "Sneakers", price: 100, laces: true, lacesY: 406, svg: bootShape("#f4f4f6", 400) + '<path d="M48 424 Q70 414 96 420 M104 420 Q130 414 152 424" stroke="#2f7fd8" stroke-width="5" fill="none" stroke-linecap="round"/>' + soles("#e03a2f") },
   { id: "gumboots", slot: "feet", name: "Gumboots", price: 90, svg: '<path d="M58 362 H98 V432 H48 Q38 432 41 423 Q44 414 58 410 Z M142 362 H102 V432 H152 Q162 432 159 423 Q156 414 142 410 Z" fill="#1b1d1f"/><rect x="56" y="360" width="44" height="9" rx="2" fill="#3a3d40"/><rect x="100" y="360" width="44" height="9" rx="2" fill="#3a3d40"/>' + soles("#0d0e0f") },
   { id: "jandals", slot: "feet", name: "Jandals", price: 70, svg: () => '<rect x="62" y="406" width="34" height="20" fill="' + SKIN + '"/><rect x="104" y="406" width="34" height="20" fill="' + SKIN + '"/><ellipse cx="72" cy="428" rx="24" ry="7" fill="' + SKIN + '"/><ellipse cx="128" cy="428" rx="24" ry="7" fill="' + SKIN + '"/><rect x="42" y="432" width="58" height="6" rx="3" fill="#2f7fd8"/><rect x="100" y="432" width="58" height="6" rx="3" fill="#2f7fd8"/><path d="M58 426 L76 418 L94 426 M106 426 L124 418 L142 426" stroke="#e03a2f" stroke-width="4" fill="none" stroke-linejoin="round"/>' },
+  { id: "clogs", slot: "feet", name: "Theatre clogs", price: 0, svg: '<path d="M58 402 H98 V432 H46 Q35 432 38 420 Q42 402 58 402 Z M142 402 H102 V432 H154 Q165 432 162 420 Q158 402 142 402 Z" fill="#2d3b55"/><g fill="#1b2638"><circle cx="54" cy="414" r="2.6"/><circle cx="64" cy="410" r="2.6"/><circle cx="74" cy="412" r="2.6"/><circle cx="146" cy="414" r="2.6"/><circle cx="136" cy="410" r="2.6"/><circle cx="126" cy="412" r="2.6"/></g>' + soles("#1b2638") },
+  { id: "rainbowclogs", slot: "feet", name: "Rainbow clogs", price: 120, svg: '<path d="M58 402 H98 V432 H46 Q35 432 38 420 Q42 402 58 402 Z M142 402 H102 V432 H154 Q165 432 162 420 Q158 402 142 402 Z" fill="url(#stRainbowH)"/><g fill="rgba(0,0,0,.25)"><circle cx="54" cy="414" r="2.6"/><circle cx="64" cy="410" r="2.6"/><circle cx="74" cy="412" r="2.6"/><circle cx="146" cy="414" r="2.6"/><circle cx="136" cy="410" r="2.6"/><circle cx="126" cy="412" r="2.6"/></g>' + soles("#f4f4f6") },
+  { id: "shoecovers", slot: "feet", name: "Shoe covers", price: 30, svg: '<path d="M56 398 Q78 392 100 398 L100 434 H44 Q30 434 34 420 Q38 400 56 398 Z M144 398 Q122 392 100 398 L100 434 H156 Q170 434 166 420 Q162 400 144 398 Z" fill="#8ec1e8"/><path d="M58 404 Q78 398 98 404 M102 404 Q122 398 142 404" stroke="#6aa3d4" stroke-width="3" fill="none"/><path d="M100 398 V434" stroke="#6aa3d4" stroke-width="2"/>' },
   { id: "goldboots", slot: "feet", name: "Gold boots", price: 350, laces: true, svg: bootShape("url(#stGold)") + soles("#8a6508") },
   /* laces */
   { id: "blacklaces", slot: "laces", name: "Black laces", price: 0, svg: (f) => laceMarks(["#0e0e10"], f && f.lacesY) },
@@ -2866,6 +2910,12 @@ const ST_ITEMS = [
   { id: "shears", slot: "hand", name: "Trauma shears", price: 70, svg: '<g transform="rotate(-35 167 306)"><path d="M164 300 L168 248 L174 250 L172 300 Z" fill="#c7ccd2" stroke="#8a9099" stroke-width="1.5"/><path d="M160 302 L150 252 L156 250 L168 300 Z" fill="#dde1e5" stroke="#8a9099" stroke-width="1.5"/><ellipse cx="160" cy="316" rx="9" ry="13" fill="none" stroke="#2f7fd8" stroke-width="6"/><ellipse cx="178" cy="314" rx="9" ry="13" fill="none" stroke="#2f7fd8" stroke-width="6"/></g>' },
   { id: "bat", slot: "hand", name: "Cricket bat", price: 180, svg: '<g transform="rotate(-18 167 306)"><rect x="162" y="282" width="10" height="44" rx="4" fill="#2b2b33"/><path d="M162 288 H172 M162 296 H172 M162 304 H172 M162 312 H172" stroke="#44444f" stroke-width="2"/><rect x="155" y="324" width="24" height="108" rx="6" fill="#ecd39b" stroke="#c9a868" stroke-width="2"/><path d="M167 330 V424" stroke="#d9bb7c" stroke-width="3"/><rect x="155" y="336" width="24" height="8" fill="#e03a2f" opacity=".75"/></g>', behind: false },
   { id: "surfboard", slot: "hand", name: "Surfboard", price: 300, behind: true, svg: '<ellipse cx="196" cy="298" rx="22" ry="130" fill="#fdfdfb" stroke="#bfc6cc" stroke-width="3"/><path d="M196 170 V426" stroke="#e3a52c" stroke-width="3"/><path d="M175 270 Q196 262 217 270 V300 Q196 292 175 300 Z" fill="#17a2b8"/><path d="M178 320 Q196 314 214 320 V332 Q196 326 178 332 Z" fill="#ff5fa2"/>' },
+  { id: "forceps", slot: "hand", name: "Forceps", price: 60, svg: '<g transform="rotate(-30 167 306)"><path d="M163 300 L160 236 L164 236 L168 300 Z M171 300 L176 236 L180 236 L175 300 Z" fill="#c7ccd2" stroke="#8a9099" stroke-width="1.2"/><circle cx="160" cy="318" r="8" fill="none" stroke="#b9bfc6" stroke-width="4"/><circle cx="178" cy="318" r="8" fill="none" stroke="#b9bfc6" stroke-width="4"/></g>' },
+  { id: "tray", slot: "hand", name: "Instrument tray", price: 120, svg: '<path d="M132 296 H206 L200 312 H138 Z" fill="#c7ccd2" stroke="#8a9099" stroke-width="2"/><path d="M142 296 L150 276 M156 296 L160 272 M170 296 L176 278 M186 296 L194 282" stroke="#9aa1ab" stroke-width="3" stroke-linecap="round"/><rect x="134" y="290" width="70" height="7" rx="2" fill="#5a9fd8"/>' },
+  /* gloves: only change the hands */
+  { id: "bluegloves", slot: "gloves", name: "Blue gloves", price: 30, hand: "#5b8fd8" },
+  { id: "purplegloves", slot: "gloves", name: "Purple gloves", price: 40, hand: "#8a62d9" },
+  { id: "rainbowgloves", slot: "gloves", name: "Rainbow gloves", price: 80, hand: "url(#stRainbowR)" },
   /* on the back */
   { id: "cape", slot: "back", name: "Superhero cape", price: 300, svg: '<g class="st-cape"><path d="M60 204 L140 204 L178 420 Q100 440 22 420 Z" fill="#e03a2f"/><path d="M60 204 L140 204 L160 300 Q100 320 40 300 Z" fill="#c42e25" opacity=".45"/></g>' },
   { id: "wings", slot: "back", name: "Angel wings", price: 350, svg: () => {
@@ -2877,37 +2927,57 @@ const ST_ITEMS = [
 
 /* ambulance and scene items */
 ST_ITEMS.push(
-  { id: "classic", slot: "livery", name: "Classic white", price: 0 },
-  { id: "battenburg", slot: "livery", name: "Battenburg", price: 200 },
-  { id: "racing", slot: "livery", name: "Racing stripes", price: 150 },
-  { id: "pink", slot: "livery", name: "Pink polka dot", price: 150 },
-  { id: "flames", slot: "livery", name: "Hot rod flames", price: 300 },
-  { id: "rainbow", slot: "livery", name: "Rainbow", price: 400 },
-  { id: "galaxy", slot: "livery", name: "Galaxy", price: 450 },
-  { id: "gold", slot: "livery", name: "Solid gold", price: 900 },
-  { id: "stdlights", slot: "lights", name: "Red and blue", price: 0 },
-  { id: "rainbowlights", slot: "lights", name: "Rainbow bar", price: 250 },
-  { id: "goldlights", slot: "lights", name: "Gold bar", price: 200 },
-  { id: "stdwheels", slot: "wheels", name: "Standard", price: 0 },
-  { id: "chrome", slot: "wheels", name: "Chrome rims", price: 120 },
-  { id: "rainbowwheels", slot: "wheels", name: "Rainbow rims", price: 200 },
-  { id: "goldwheels", slot: "wheels", name: "Gold rims", price: 250 },
-  { id: "heart", slot: "decal", name: "Rainbow heart", price: 80 },
-  { id: "stars", slot: "decal", name: "Sparkles", price: 60 },
-  { id: "onboard", slot: "decal", name: "Pathbaby on board", price: 60 },
-  { id: "googly", slot: "decal", name: "Googly eyes", price: 100 },
-  { id: "rack", slot: "roof", name: "Surfboard rack", price: 250 },
-  { id: "antlers", slot: "roof", name: "Antlers and red nose", price: 150 },
-  { id: "balloons", slot: "roof", name: "Balloons", price: 120 },
-  { id: "duck", slot: "roof", name: "Giant rubber duck", price: 300 },
-  { id: "pinkglow", slot: "glow", name: "Pink glow", price: 150 },
-  { id: "greenglow", slot: "glow", name: "Green glow", price: 150 },
-  { id: "rainbowglow", slot: "glow", name: "Rainbow glow", price: 300 },
-  { id: "garage", slot: "bg", name: "Station garage", price: 0 },
-  { id: "beach", slot: "bg", name: "Beach", price: 200 },
-  { id: "city", slot: "bg", name: "City at night", price: 250 },
-  { id: "snow", slot: "bg", name: "Snowy mountains", price: 200 },
-  { id: "space", slot: "bg", name: "Outer space", price: 500 },
+  { id: "classic", slot: "livery", role: "para", name: "Classic white", price: 0 },
+  { id: "battenburg", slot: "livery", role: "para", name: "Battenburg", price: 200 },
+  { id: "racing", slot: "livery", role: "para", name: "Racing stripes", price: 150 },
+  { id: "pink", slot: "livery", role: "para", name: "Pink polka dot", price: 150 },
+  { id: "flames", slot: "livery", role: "para", name: "Hot rod flames", price: 300 },
+  { id: "rainbow", slot: "livery", role: "para", name: "Rainbow", price: 400 },
+  { id: "galaxy", slot: "livery", role: "para", name: "Galaxy", price: 450 },
+  { id: "gold", slot: "livery", role: "para", name: "Solid gold", price: 900 },
+  { id: "stdlights", slot: "lights", role: "para", name: "Red and blue", price: 0 },
+  { id: "rainbowlights", slot: "lights", role: "para", name: "Rainbow bar", price: 250 },
+  { id: "goldlights", slot: "lights", role: "para", name: "Gold bar", price: 200 },
+  { id: "stdwheels", slot: "wheels", role: "para", name: "Standard", price: 0 },
+  { id: "chrome", slot: "wheels", role: "para", name: "Chrome rims", price: 120 },
+  { id: "rainbowwheels", slot: "wheels", role: "para", name: "Rainbow rims", price: 200 },
+  { id: "goldwheels", slot: "wheels", role: "para", name: "Gold rims", price: 250 },
+  { id: "heart", slot: "decal", role: "para", name: "Rainbow heart", price: 80 },
+  { id: "stars", slot: "decal", role: "para", name: "Sparkles", price: 60 },
+  { id: "onboard", slot: "decal", role: "para", name: "Pathbaby on board", price: 60 },
+  { id: "googly", slot: "decal", role: "para", name: "Googly eyes", price: 100 },
+  { id: "rack", slot: "roof", role: "para", name: "Surfboard rack", price: 250 },
+  { id: "antlers", slot: "roof", role: "para", name: "Antlers and red nose", price: 150 },
+  { id: "balloons", slot: "roof", role: "para", name: "Balloons", price: 120 },
+  { id: "duck", slot: "roof", role: "para", name: "Giant rubber duck", price: 300 },
+  { id: "pinkglow", slot: "glow", role: "para", name: "Pink glow", price: 150 },
+  { id: "greenglow", slot: "glow", role: "para", name: "Green glow", price: 150 },
+  { id: "rainbowglow", slot: "glow", role: "para", name: "Rainbow glow", price: 300 },
+  { id: "garage", slot: "bg", role: "para", name: "Station garage", price: 0 },
+  { id: "beach", slot: "bg", role: "para", name: "Beach", price: 200 },
+  { id: "city", slot: "bg", role: "para", name: "City at night", price: 250 },
+  { id: "snow", slot: "bg", role: "para", name: "Snowy mountains", price: 200 },
+  { id: "space", slot: "bg", role: "para", name: "Outer space", price: 500 },
+  { id: "theatregreen", slot: "bg", role: "periop", name: "Theatre green", price: 0 },
+  { id: "theatreblue", slot: "bg", role: "periop", name: "Theatre blue", price: 100 },
+  { id: "pinkwalls", slot: "bg", role: "periop", name: "Pastel pink", price: 150 },
+  { id: "sea", slot: "bg", role: "periop", name: "Under the sea", price: 300 },
+  { id: "starry", slot: "bg", role: "periop", name: "Starry night", price: 400 },
+  { id: "stdlight", slot: "tlight", role: "periop", name: "Standard light", price: 0 },
+  { id: "rainbowlight", slot: "tlight", role: "periop", name: "Rainbow light", price: 200 },
+  { id: "goldlight", slot: "tlight", role: "periop", name: "Gold light", price: 250 },
+  { id: "disco", slot: "tlight", role: "periop", name: "Disco ball", price: 350 },
+  { id: "stdtable", slot: "ttable", role: "periop", name: "Standard table", price: 0 },
+  { id: "pinktable", slot: "ttable", role: "periop", name: "Pink padding", price: 150 },
+  { id: "goldtable", slot: "ttable", role: "periop", name: "Gold table", price: 400 },
+  { id: "stdmon", slot: "tmon", role: "periop", name: "Standard monitor", price: 0 },
+  { id: "rainbowmon", slot: "tmon", role: "periop", name: "Rainbow trace", price: 120 },
+  { id: "babymon", slot: "tmon", role: "periop", name: "Pathbaby screensaver", price: 150 },
+  { id: "manikin", slot: "tpatient", role: "periop", name: "Training manikin", price: 80 },
+  { id: "teddy", slot: "tpatient", role: "periop", name: "Teddy bear", price: 150 },
+  { id: "chicken", slot: "tpatient", role: "periop", name: "Rubber chicken", price: 100 },
+  { id: "fairylights", slot: "twall", role: "periop", name: "Fairy lights", price: 120 },
+  { id: "bunting", slot: "twall", role: "periop", name: "Bunting", price: 100 },
   { id: "dog", slot: "buddy", name: "Station dog", price: 300 },
   { id: "kiwi", slot: "buddy", name: "Kiwi", price: 250 },
   { id: "cat", slot: "buddy", name: "Station cat", price: 300 }
@@ -2915,6 +2985,7 @@ ST_ITEMS.push(
 const ST_BY_ID = {};
 ST_ITEMS.forEach(it => { ST_BY_ID[it.id] = it; });
 const ST_DEFAULT = { top: "tee", legs: "trousers", feet: "boots", laces: "blacklaces", livery: "classic", lights: "stdlights", wheels: "stdwheels", bg: "garage" };
+const ST_DEFAULT_PERIOP = { role: "periop", hat: "theatrecap", top: "theatrescrubs", legs: "scrubpants", feet: "clogs", laces: "blacklaces", tlight: "stdlight", ttable: "stdtable", tmon: "stdmon", bg: "theatregreen" };
 
 function stItemSvg(id, ctx) {
   const it = ST_BY_ID[id];
@@ -2937,9 +3008,12 @@ function stChar(eq) {
   s += stItemSvg(eq.top || "tee");
   s += stItemSvg(eq.neck);
   if (hand && !hand.behind) s += stItemSvg(eq.hand);
-  s += '<circle cx="33" cy="305" r="14" fill="' + SKIN + '"/><circle cx="167" cy="305" r="14" fill="' + SKIN + '"/>';
-  s += '<path d="M160 300 q6 -4 12 0 M26 300 q6 -4 12 0" stroke="' + SKIN_D + '" stroke-width="2" fill="none"/>';
+  const glove = eq.gloves && ST_BY_ID[eq.gloves] && ST_BY_ID[eq.gloves].hand;
+  const handCol = glove || SKIN;
+  s += '<circle cx="33" cy="305" r="14" fill="' + handCol + '"/><circle cx="167" cy="305" r="14" fill="' + handCol + '"/>';
+  s += glove ? '<path d="M24 292 L42 292 M158 292 L176 292" stroke="' + glove + '" stroke-width="7" stroke-linecap="round"/>' : '<path d="M160 300 q6 -4 12 0 M26 300 q6 -4 12 0" stroke="' + SKIN_D + '" stroke-width="2" fill="none"/>';
   s += '<use href="#stHead" x="15" y="0"/>';
+  s += stItemSvg(eq.mask);
   s += stItemSvg(eq.eyes);
   s += stItemSvg(eq.hat);
   return s;
@@ -3023,8 +3097,74 @@ function stAmb(eq) {
   return s;
 }
 
+/* the operating theatre, drawn into the same space as the ambulance */
+function stTheatre(eq) {
+  let s = "";
+  const lt = eq.tlight || "stdlight";
+  // wall extras
+  if (eq.twall === "fairylights") {
+    s += '<path d="M150 22 Q210 42 270 22 Q330 42 400 22" stroke="#555" stroke-width="1.2" fill="none"/>';
+    for (let i = 0; i < 16; i++) { const x = 156 + i * 15, y = 22 + Math.abs(Math.sin((x - 150) / 120 * Math.PI)) * 16; s += '<circle class="st-lb ' + (i % 2 ? "a" : "b") + '" cx="' + x + '" cy="' + (y + 3) + '" r="3" fill="' + RAINBOW6[i % 6] + '"/>'; }
+  }
+  if (eq.twall === "bunting") {
+    s += '<path d="M150 16 Q275 40 400 16" stroke="#666" stroke-width="1.2" fill="none"/>';
+    for (let i = 0; i < 11; i++) { const x = 156 + i * 22, y = 16 + Math.sin((x - 150) / 250 * Math.PI) * 12; s += '<path d="M' + (x - 8) + ' ' + (y + 1) + ' L' + (x + 8) + ' ' + (y + 1) + ' L' + x + ' ' + (y + 17) + ' Z" fill="' + RAINBOW6[i % 6] + '"/>'; }
+  }
+  // monitor on a stand
+  s += '<rect x="377" y="124" width="5" height="88" fill="#9aa1ab"/><path d="M362 214 H396" stroke="#6f7680" stroke-width="5" stroke-linecap="round"/><circle cx="364" cy="219" r="3.5" fill="#33363c"/><circle cx="394" cy="219" r="3.5" fill="#33363c"/>';
+  s += '<rect x="356" y="90" width="42" height="36" rx="4" fill="#cfd5dc" stroke="#8a9099" stroke-width="2"/>';
+  if (eq.tmon === "babymon") s += '<rect x="360" y="94" width="34" height="27" rx="2" fill="#ffd9e8"/><circle cx="377" cy="107" r="9" fill="#f9c9a8"/><circle cx="374" cy="105" r="1.5" fill="#222"/><circle cx="380" cy="105" r="1.5" fill="#222"/><ellipse cx="377" cy="111" rx="3" ry="2" fill="#7fc8f8"/><path d="M377 98 q3 -3 1 -5" stroke="#8a552c" stroke-width="1.5" fill="none"/>';
+  else {
+    s += '<rect x="360" y="94" width="34" height="27" rx="2" fill="#0f141b"/>';
+    const tr = '<path class="st-trace" d="M361 110 H368 L370 106 L372 110 H374 L376 98 L378 116 L380 110 H386 L388 107 L390 110 H393" fill="none" stroke-width="1.8" stroke-linejoin="round"';
+    s += eq.tmon === "rainbowmon" ? tr + ' stroke="url(#stRainbowH)"/>' : tr + ' stroke="#3dff7a"/>';
+    s += '<text x="391" y="100" text-anchor="end" font-family="Arial, sans-serif" font-size="5" font-weight="700" fill="#3dff7a">72</text><text x="391" y="119" text-anchor="end" font-family="Arial, sans-serif" font-size="4.5" font-weight="700" fill="#5ad7ff">98%</text>';
+  }
+  // operating table
+  const tFrame = eq.ttable === "goldtable" ? "url(#stGold)" : "#9aa3ad";
+  const tPad = eq.ttable === "pinktable" ? "#ff8fbf" : eq.ttable === "goldtable" ? "#3a2a6a" : "#2b3140";
+  s += '<path d="M256 222 L266 206 H298 L308 222 Z" fill="' + tFrame + '" stroke="rgba(0,0,0,.2)" stroke-width="1.5"/><rect x="273" y="168" width="18" height="40" fill="' + tFrame + '" stroke="rgba(0,0,0,.2)" stroke-width="1.5"/>';
+  s += '<rect x="194" y="160" width="176" height="10" rx="3" fill="' + tFrame + '" stroke="rgba(0,0,0,.25)" stroke-width="1.5"/>';
+  s += '<rect x="196" y="150" width="172" height="12" rx="6" fill="' + tPad + '"/>';
+  // whoever is on the table
+  if (eq.tpatient === "teddy") s += '<g><circle cx="212" cy="136" r="13" fill="#b07a45"/><circle cx="203" cy="125" r="5" fill="#b07a45"/><circle cx="221" cy="125" r="5" fill="#b07a45"/><ellipse cx="212" cy="140" rx="6" ry="4.5" fill="#e3c29b"/><circle cx="212" cy="138" r="2" fill="#222"/><path d="M206 132 l3 0 M215 132 l3 0" stroke="#222" stroke-width="1.8" stroke-linecap="round"/><path d="M226 150 Q236 128 300 132 Q350 134 356 150 Z" fill="#5aa9e6"/><path d="M240 150 Q270 138 300 140" stroke="#3f8fd0" stroke-width="2" fill="none"/></g>';
+  if (eq.tpatient === "manikin") s += '<g><circle cx="212" cy="138" r="12" fill="#c9ccd1"/><path d="M207 135 h3 M214 135 h3" stroke="#8a9099" stroke-width="2" stroke-linecap="round"/><path d="M209 143 q3 2 6 0" stroke="#8a9099" stroke-width="1.6" fill="none"/><path d="M224 150 Q234 130 300 134 Q350 136 358 150 Z" fill="#2e9b75"/><path d="M240 150 Q270 140 300 142" stroke="#257d5e" stroke-width="2" fill="none"/></g>';
+  if (eq.tpatient === "chicken") s += '<g><ellipse cx="282" cy="142" rx="66" ry="7" fill="#ffd23f" stroke="#e8b80a" stroke-width="1.5"/><circle cx="214" cy="138" r="9" fill="#ffd23f" stroke="#e8b80a" stroke-width="1.5"/><path d="M208 130 q2 -8 5 -2 q2 -8 5 -1 q3 -6 4 2" fill="#e8121f"/><path d="M205 139 L196 141 L205 143 Z" fill="#f39a1e"/><path d="M211 136 l3 3 M214 136 l-3 3" stroke="#222" stroke-width="1.4"/><path d="M344 140 l12 -6 M344 144 l12 6" stroke="#f39a1e" stroke-width="2.5" stroke-linecap="round"/></g>';
+  // theatre light on a ceiling arm
+  const hous = lt === "goldlight" ? "url(#stGold)" : "#dfe4ea";
+  if (lt === "disco") {
+    s += '<path d="M282 0 V40" stroke="#9aa1ab" stroke-width="3"/><circle cx="282" cy="60" r="20" fill="url(#stChrome)" stroke="#8a9099" stroke-width="1.5"/><path d="M262 60 H302 M266 50 H298 M266 70 H298 M282 40 V80 M272 42 Q266 60 272 78 M292 42 Q298 60 292 78" stroke="#8a9099" stroke-width="1" fill="none"/>';
+    s += '<g class="st-lb a"><path d="M282 80 L230 150 L250 150 Z" fill="#ff5fa2" opacity=".25"/><path d="M282 80 L330 150 L346 150 Z" fill="#38c6f4" opacity=".25"/></g><g class="st-lb b"><path d="M282 80 L280 150 L300 150 Z" fill="#ffd23f" opacity=".25"/><path d="M282 80 L210 140 L224 148 Z" fill="#3dff7a" opacity=".25"/></g>';
+  } else {
+    const face = lt === "rainbowlight" ? "url(#stRainbowH)" : "#fffbe0";
+    s += '<path d="M282 80 L232 150 H332 Z" fill="' + (lt === "rainbowlight" ? "url(#stRainbowH)" : "#fff7c2") + '" opacity="' + (lt === "rainbowlight" ? ".22" : ".35") + '"/>';
+    s += '<path d="M282 0 V30 Q282 36 288 38 L300 40" stroke="#9aa1ab" stroke-width="4" fill="none"/><circle cx="282" cy="30" r="4" fill="#8a9099"/><path d="M296 40 V52" stroke="#9aa1ab" stroke-width="4"/>';
+    s += '<path d="M248 76 Q250 50 290 50 Q326 50 330 76 Z" fill="' + hous + '" stroke="#8a9099" stroke-width="2"/><ellipse cx="289" cy="77" rx="41" ry="7" fill="' + face + '" stroke="#b9c0c8" stroke-width="2"/>';
+    s += '<g fill="#fff" opacity=".9"><circle cx="270" cy="77" r="3"/><circle cx="289" cy="78" r="3"/><circle cx="308" cy="77" r="3"/></g>';
+  }
+  return s;
+}
+
 function stBg(id) {
-  if (id === "beach") return '<rect width="400" height="240" fill="url(#stBeachSky)"/><circle cx="96" cy="64" r="26" fill="#fff3b0"/><rect y="150" width="400" height="44" fill="#2f9fd8"/><path d="M0 160 Q20 156 40 160 T80 160 T120 160 T160 160 T200 160 T240 160 T280 160 T320 160 T360 160 T400 160" stroke="#bfe8ff" stroke-width="2" fill="none"/><path d="M0 190 Q100 178 200 186 Q300 194 400 184 V240 H0 Z" fill="#f2d39b"/><path d="M0 222 H400" stroke="#e6c27f" stroke-width="2"/>';
+  const wall = (w, lower, floor) => '<rect width="400" height="240" fill="' + w + '"/><rect y="150" width="400" height="72" fill="' + lower + '"/><path d="M0 150 H400" stroke="rgba(0,0,0,.12)" stroke-width="2"/><rect y="222" width="400" height="18" fill="' + floor + '"/><path d="M0 223 H400" stroke="rgba(0,0,0,.18)" stroke-width="2"/>';
+  const clock = '<circle cx="128" cy="48" r="13" fill="#fff" stroke="#8a9099" stroke-width="2.5"/><path d="M128 48 V39 M128 48 L134 51" stroke="#333" stroke-width="2" stroke-linecap="round"/>';
+  const doorSign = '<rect x="112" y="78" width="32" height="12" rx="2" fill="#e03a2f"/><text x="128" y="87" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" font-weight="900" fill="#fff">THEATRE</text>';
+  if (id === "theatreblue") return wall("#b9d4ee", "#a5c4e2", "#c4ccd4") + clock + doorSign;
+  if (id === "pinkwalls") return wall("#f8d3e3", "#f2bfd5", "#d9c9d1") + clock + doorSign;
+  if (id === "sea") {
+    let s = '<rect width="400" height="240" fill="url(#stSea)"/><rect y="222" width="400" height="18" fill="#e9d6a8"/>';
+    [[30, 60, 1], [70, 150, -1], [200, 40, 1], [340, 150, -1]].forEach(([x, y, d]) => { s += '<g transform="translate(' + x + ' ' + y + ') scale(' + d + ' 1)"><ellipse rx="12" ry="7" fill="#ff8f3d"/><path d="M10 0 L20 -7 V7 Z" fill="#ff8f3d"/><circle cx="-6" cy="-2" r="1.6" fill="#222"/><path d="M-2 -6 V6" stroke="#fff" stroke-width="2"/></g>'; });
+    [[110, 120], [116, 100], [124, 84], [360, 60], [366, 40]].forEach(([x, y], i) => { s += '<circle class="st-snow" style="animation-delay:-' + i + 's" cx="' + x + '" cy="' + y + '" r="' + (3 + i % 2) + '" fill="none" stroke="#dff6ff" stroke-width="1.5"/>'; });
+    return s + '<path d="M14 222 Q8 196 18 176 Q26 196 20 222 M40 222 Q46 200 38 186" stroke="#2e9b55" stroke-width="5" fill="none" stroke-linecap="round"/>';
+  }
+  if (id === "starry") {
+    let s = wall("#1c2250", "#171c42", "#2a2f4f");
+    for (let i = 0; i < 34; i++) s += '<circle cx="' + ((i * 89) % 400) + '" cy="' + ((i * 37) % 145) + '" r="' + (i % 4 ? 1 : 1.8) + '" fill="#fff" opacity="' + (i % 3 ? 0.6 : 1) + '"/>';
+    return s + '<path d="M120 40 a14 14 0 1 0 12 -16 a11 11 0 1 1 -12 16 Z" fill="#f4f1d8"/>';
+  }
+  if (id === "theatregreen") return wall("#b5dccb", "#9fcdb9", "#c2ccd0") + clock + doorSign;
+  if (id === "beach")
+  return '<rect width="400" height="240" fill="url(#stBeachSky)"/><circle cx="96" cy="64" r="26" fill="#fff3b0"/><rect y="150" width="400" height="44" fill="#2f9fd8"/><path d="M0 160 Q20 156 40 160 T80 160 T120 160 T160 160 T200 160 T240 160 T280 160 T320 160 T360 160 T400 160" stroke="#bfe8ff" stroke-width="2" fill="none"/><path d="M0 190 Q100 178 200 186 Q300 194 400 184 V240 H0 Z" fill="#f2d39b"/><path d="M0 222 H400" stroke="#e6c27f" stroke-width="2"/>';
   if (id === "city") {
     let s = '<rect width="400" height="240" fill="url(#stNight)"/>';
     [[30, 20], [70, 44], [120, 16], [180, 30], [240, 12], [300, 40], [360, 22], [210, 58], [96, 70]].forEach(([x, y]) => { s += '<circle cx="' + x + '" cy="' + y + '" r="1.4" fill="#fff"/>'; });
@@ -3070,7 +3210,7 @@ function stScene(eq, opts) {
   const vb = opts.box || "0 0 400 240";
   let s = '<svg viewBox="' + vb + '" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"' + (opts.label ? ' role="img" aria-label="' + opts.label + '"' : ' aria-hidden="true"') + '>';
   if (!opts.noBg) s += stBg(eq.bg || "garage");
-  if (!opts.noAmb) s += stAmb(eq);
+  if (!opts.noAmb) s += eq.role === "periop" ? stTheatre(eq) : stAmb(eq);
   if (!opts.noBuddy) s += stBuddy(eq.buddy);
   if (!opts.noChar) s += '<g transform="translate(22 32) scale(0.43)"><g class="st-bob">' + stChar(eq) + '</g></g>';
   return s + "</svg>";
@@ -3096,6 +3236,7 @@ function stDefsSvg(headSrc) {
     '<linearGradient id="stBeachSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc8ff"/><stop offset="1" stop-color="#ffe2b0"/></linearGradient>' +
     '<linearGradient id="stNight" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#161a38"/><stop offset="1" stop-color="#3d2c66"/></linearGradient>' +
     '<linearGradient id="stSnowSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9d2f5"/><stop offset="1" stop-color="#e8f3fb"/></linearGradient>' +
+    '<linearGradient id="stSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5ec4e8"/><stop offset="1" stop-color="#1d5f9e"/></linearGradient>' +
     '<linearGradient id="stSpace" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#07061a"/><stop offset="1" stop-color="#2a1a4d"/></linearGradient>' +
     '<filter id="stBlur" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="5"/></filter>' +
     '</defs></svg>';
@@ -3121,11 +3262,29 @@ const EARN = {
 };
 const STREAK_PAY = [[3, 30], [7, 60], [14, 100], [30, 150], [60, 200], [100, 300]];
 
-let wallet = { c: 0, e: 0, own: [], eq: {}, bp: 0 };
+let wallet = { c: 0, e: 0, own: [], eqs: {}, role: null, bp: 0 };
 try { const w = JSON.parse(load(STORE_WALLET) || "null"); if (w && typeof w === "object") wallet = Object.assign(wallet, w); } catch (e) {}
 if (!Array.isArray(wallet.own)) wallet.own = [];
-wallet.eq = Object.assign({}, ST_DEFAULT, wallet.eq || {});
-Object.keys(wallet.eq).forEach(slot => { const id = wallet.eq[slot]; if (id && !ST_BY_ID[id]) wallet.eq[slot] = ST_DEFAULT[slot] || null; });
+// Each course keeps its own outfit and scene. Credits and anything bought are shared.
+if (!wallet.eqs || typeof wallet.eqs !== "object") wallet.eqs = {};
+if (wallet.eq && !wallet.eqs.para) wallet.eqs.para = wallet.eq;   // from the first version, before periop
+delete wallet.eq;
+const ST_ROLE_DEFAULT = { para: ST_DEFAULT, periop: ST_DEFAULT_PERIOP };
+function stFixEq(r) {
+  const d = ST_ROLE_DEFAULT[r];
+  const eq = Object.assign({}, d, wallet.eqs[r] || {});
+  eq.role = r;
+  Object.keys(eq).forEach(slot => {
+    if (slot === "role") return;
+    const it = eq[slot] && ST_BY_ID[eq[slot]];
+    if (eq[slot] && (!it || (it.role && it.role !== r))) eq[slot] = d[slot] || null;
+  });
+  wallet.eqs[r] = eq;
+}
+stFixEq("para"); stFixEq("periop");
+function stRole() { return wallet.role === "periop" ? "periop" : "para"; }
+function EQ() { return wallet.eqs[stRole()]; }
+function stFits(it) { return !it.role || it.role === stRole(); }
 function saveWallet() { store(STORE_WALLET, JSON.stringify(wallet)); }
 function owns(id) { const it = ST_BY_ID[id]; return !!it && (it.price === 0 || wallet.own.indexOf(id) >= 0); }
 function fmtCredits(n) { return Number(n).toLocaleString("en-NZ"); }
@@ -3196,7 +3355,12 @@ let stWelcome = 0;
 })();
 
 /* ---------- station screen ---------- */
-const ST_TABS = { para: "Paramedic", amb: "Ambulance", scene: "Scene" };
+// theatre gear is listed first for periop, and last for paramedics
+const ST_PERIOP_GEAR = ["theatrecap", "heartcap", "rainbowcap", "loupes", "surgmask", "n95", "rainbowmask", "theatrescrubs", "gown", "leadapron", "scrubpants", "clogs", "rainbowclogs", "shoecovers", "forceps", "tray", "bluegloves", "purplegloves", "rainbowgloves"];
+const ST_TAB_NAMES = { para: { para: "Paramedic", amb: "Ambulance", scene: "Scene" }, periop: { para: "Periop", amb: "Theatre", scene: "Scene" } };
+const ST_TABS = ST_TAB_NAMES.para;
+// the middle tab is the ambulance for paramedics and the theatre for periop
+function stSlotTab(slot) { const t = ST_SLOTS[slot].tab; return t === "theatre" ? "amb" : t; }
 const ST_CROP = {
   hat: "-12 -78 224 196", eyes: "22 34 156 104", top: "12 176 176 160", legs: "24 300 152 148", feet: "26 384 148 60", laces: "26 384 148 60",
   neck: "34 180 132 136", hand: "56 150 182 290", back: "-36 140 272 310"
@@ -3205,14 +3369,14 @@ const ST_AMB_BOX = "156 12 248 216";
 let stTab = "para", stTry = null, stReturn = null;
 
 function stEqWith(id) {
-  const eq = Object.assign({}, wallet.eq);
+  const eq = Object.assign({}, EQ());
   if (id) { const it = ST_BY_ID[id]; eq[it.slot] = id; }
   return eq;
 }
 function stNone(slot) { return "none:" + slot; }
 function stPreview(id, slot) {
-  const eq = id ? stEqWith(id) : Object.assign({}, wallet.eq, { [slot]: null });
-  const tab = ST_SLOTS[slot].tab;
+  const eq = id ? stEqWith(id) : Object.assign({}, EQ(), { [slot]: null });
+  const tab = stSlotTab(slot);
   if (tab === "para") {
     // laces only show on shoes that have them
     if (slot === "laces") { const f = ST_BY_ID[eq.feet]; if (!f || !f.laces) eq.feet = "boots"; }
@@ -3224,13 +3388,13 @@ function stPreview(id, slot) {
 }
 
 function paintStage() {
-  const eq = stTry ? stEqWith(stTry) : wallet.eq;
-  document.getElementById("stStage").innerHTML = stScene(eq, { label: "Your paramedic and ambulance" });
+  const eq = stTry ? stEqWith(stTry) : EQ();
+  document.getElementById("stStage").innerHTML = stScene(eq, { label: stRole() === "periop" ? "Your periop tech in theatre" : "Your paramedic and ambulance" });
   const bar = document.getElementById("stBuy");
   document.getElementById("station").classList.toggle("buying", !!stTry);
   if (!stTry) { bar.hidden = true; return; }
   const it = ST_BY_ID[stTry];
-  const tab = ST_SLOTS[it.slot].tab;
+  const tab = stSlotTab(it.slot);
   const box = tab === "para" ? "0 2 140 232" : tab === "amb" ? "150 10 254 222" : it.slot === "buddy" ? "70 110 200 125" : "0 0 400 240";
   const pv = document.getElementById("stBuyPv");
   const bx = box.split(" ").map(Number);
@@ -3243,10 +3407,27 @@ function paintStage() {
   const btn = document.getElementById("stBuyBtn");
   btn.disabled = short > 0;
   btn.textContent = short > 0 ? fmtCredits(short) + " more credits needed" : "Buy and wear";
-  const laceNote = it.slot === "laces" && !(ST_BY_ID[wallet.eq.feet] || {}).laces;
+  const laceNote = it.slot === "laces" && !(ST_BY_ID[EQ().feet] || {}).laces;
   document.getElementById("stBuyNote").textContent = laceNote ? "Laces show on boots and sneakers." : short > 0 ? "Trying it on. Keep learning to earn the rest." : "Trying it on.";
 }
 
+function paintRole() {
+  const r = stRole();
+  document.querySelectorAll(".st-role button").forEach(b => b.setAttribute("aria-checked", b.dataset.role === r ? "true" : "false"));
+  document.querySelectorAll(".st-tab").forEach(b => { b.textContent = ST_TAB_NAMES[r][b.dataset.tab]; });
+  const t = r === "periop" ? "Your theatre" : "Your station";
+  document.getElementById("stTitle").textContent = t;
+  document.getElementById("stTopTitle").textContent = t;
+}
+function setRole(r, quiet) {
+  wallet.role = r === "periop" ? "periop" : "para";
+  saveWallet();
+  stTry = null;
+  paintRole();
+  if (!document.getElementById("station").hidden) { paintStage(); paintShop(); }
+  paintStationHome();
+  if (!quiet) toast(r === "periop" ? "Switched to periop. Your paramedic outfit is saved." : "Switched to paramedic. Your periop outfit is saved.");
+}
 function paintShop() {
   document.querySelectorAll(".st-tab").forEach(b => {
     const on = b.dataset.tab === stTab;
@@ -3255,18 +3436,19 @@ function paintShop() {
   });
   const box = document.getElementById("stShop");
   box.innerHTML = "";
-  Object.keys(ST_SLOTS).filter(slot => ST_SLOTS[slot].tab === stTab).forEach(slot => {
+  Object.keys(ST_SLOTS).filter(slot => stSlotTab(slot) === stTab && ST_ITEMS.some(it => it.slot === slot && stFits(it))).forEach(slot => {
     const S = ST_SLOTS[slot];
     const h = document.createElement("h3");
     h.className = "sec-label st-slot";
-    h.textContent = S.label;
+    h.textContent = stRole() === "periop" && S.periopLabel ? S.periopLabel : S.label;
     const grid = document.createElement("div");
     grid.className = "st-grid";
-    const ids = (S.need ? [] : [stNone(slot)]).concat(ST_ITEMS.filter(it => it.slot === slot).map(it => it.id));
+    const rank = it => (ST_PERIOP_GEAR.indexOf(it.id) >= 0) === (stRole() === "periop") ? 0 : 1;
+    const ids = (S.need ? [] : [stNone(slot)]).concat(ST_ITEMS.filter(it => it.slot === slot && stFits(it)).sort((a, b) => rank(a) - rank(b)).map(it => it.id));
     ids.forEach(id => {
       const none = id.indexOf("none:") === 0;
       const it = none ? null : ST_BY_ID[id];
-      const wearing = none ? !wallet.eq[slot] : wallet.eq[slot] === id;
+      const wearing = none ? !EQ()[slot] : EQ()[slot] === id;
       const own = none || owns(id);
       const b = document.createElement("button");
       b.type = "button";
@@ -3280,7 +3462,7 @@ function paintShop() {
       nm.textContent = none ? "None" : it.name;
       const tag = document.createElement("span");
       tag.className = "st-tag";
-      if (wearing) tag.textContent = slot === "bg" ? "Here now" : slot === "buddy" || S.tab === "amb" ? "On" : "Wearing";
+      if (wearing) tag.textContent = slot === "bg" ? "Here now" : slot === "buddy" || stSlotTab(slot) === "amb" ? "On" : "Wearing";
       else if (own) tag.textContent = none ? "Take off" : "Owned";
       else { tag.innerHTML = COIN_SVG; tag.append(" " + fmtCredits(it.price)); }
       b.append(pv, nm, tag);
@@ -3294,8 +3476,8 @@ function paintShop() {
 }
 
 function stPick(id, slot) {
-  if (id.indexOf("none:") === 0) { wallet.eq[slot] = null; stTry = null; saveWallet(); }
-  else if (owns(id)) { wallet.eq[slot] = id; stTry = null; saveWallet(); }
+  if (id.indexOf("none:") === 0) { EQ()[slot] = null; stTry = null; saveWallet(); }
+  else if (owns(id)) { EQ()[slot] = id; stTry = null; saveWallet(); }
   else { stTry = stTry === id ? null : id; }
   paintStage(); paintShop(); paintStationHome();
 }
@@ -3305,7 +3487,7 @@ function stBuy() {
   if (!it || wallet.c < it.price || owns(it.id)) return;
   wallet.c -= it.price;
   wallet.own.push(it.id);
-  wallet.eq[it.slot] = it.id;
+  EQ()[it.slot] = it.id;
   stTry = null;
   saveWallet();
   paintCredits(); paintStage(); paintShop(); paintStationHome();
@@ -3323,7 +3505,7 @@ function showStation() {
   hideHotSeat(); hideFlashcards();
   stTry = null;
   document.getElementById("station").hidden = false;
-  paintCredits(); paintStage(); paintShop();
+  paintRole(); paintCredits(); paintStage(); paintShop();
   window.scrollTo(0, 0);
 }
 function hideStation() {
@@ -3336,9 +3518,10 @@ function hideStation() {
 
 // Small version on the home screen, with the next thing worth saving for.
 function stGoal() {
-  const left = ST_ITEMS.filter(it => it.price > 0 && !owns(it.id)).sort((a, b) => a.price - b.price);
+  const left = ST_ITEMS.filter(it => it.price > 0 && stFits(it) && !owns(it.id)).sort((a, b) => a.price - b.price);
   if (!left.length) return null;
-  return left.find(it => it.id === "rainbowlaces") || left.find(it => it.price > wallet.c) || left[left.length - 1];
+  const first = stRole() === "periop" ? "rainbowcap" : "rainbowlaces";
+  return left.find(it => it.id === first) || left.find(it => it.price > wallet.c) || left[left.length - 1];
 }
 const STORE_ST_HIDE = "pathSpell.stationHidden.v1";
 let stHidden = load(STORE_ST_HIDE) === "1";
@@ -3347,19 +3530,21 @@ function paintStationHome() {
   const box = document.getElementById("stHomeScene");
   if (!box) return;
   top.hidden = els.menu.hidden;
+  document.getElementById("stAsk").hidden = !!wallet.role;
+  paintRole();
   top.classList.toggle("collapsed", stHidden);
   const hb = document.getElementById("stHide");
   hb.textContent = stHidden ? "Show" : "Hide";
   hb.setAttribute("aria-expanded", stHidden ? "false" : "true");
   hb.setAttribute("aria-label", stHidden ? "Show your station" : "Hide your station");
   box.hidden = stHidden;
-  if (!stHidden) box.innerHTML = stScene(wallet.eq, { box: "0 26 400 200" });
+  if (!stHidden) box.innerHTML = stScene(EQ(), { box: "0 26 400 200" });
   else box.innerHTML = "";
   paintCredits();
   const note = document.getElementById("stHomeNote");
   const g = stGoal();
-  const canBuy = ST_ITEMS.some(it => it.price > 0 && !owns(it.id) && it.price <= wallet.c);
-  if (!wallet.e) note.textContent = "Earn credits as you learn, then spend them on gear. Start with rainbow laces.";
+  const canBuy = ST_ITEMS.some(it => it.price > 0 && stFits(it) && !owns(it.id) && it.price <= wallet.c);
+  if (!wallet.e) note.textContent = "Earn credits as you learn, then spend them on gear. Start with " + (stRole() === "periop" ? "a rainbow scrub cap." : "rainbow laces.");
   else if (!g) note.textContent = "You've got the lot. Legend.";
   else if (canBuy && g.price <= wallet.c) note.textContent = "You can afford the " + g.name.toLowerCase() + " now.";
   else if (canBuy) note.textContent = "You've got enough for something new. Have a look.";
@@ -3368,6 +3553,11 @@ function paintStationHome() {
 
 document.getElementById("stDefs").outerHTML = stDefsSvg(ST_HEAD);
 document.getElementById("stHomeScene").addEventListener("click", () => go("station"));
+document.querySelectorAll("#stAsk button").forEach(b => b.addEventListener("click", () => {
+  setRole(b.dataset.role, true);
+  toast("Sorted. You can switch any time in " + (b.dataset.role === "periop" ? "your theatre." : "your station."));
+}));
+document.querySelectorAll(".st-role button").forEach(b => b.addEventListener("click", () => { if (b.dataset.role !== stRole()) setRole(b.dataset.role); }));
 document.getElementById("stOpen").addEventListener("click", () => go("station"));
 document.getElementById("stHide").addEventListener("click", () => {
   stHidden = !stHidden;
