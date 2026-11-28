@@ -1097,9 +1097,11 @@ main.wrap:has(#menu[hidden]) .st-top { display: none; }
 @keyframes stWag { from { transform: rotate(-8deg); } to { transform: rotate(10deg); } }
 .st-cape { transform-box: fill-box; transform-origin: 50% 0%; animation: stCape 2.6s ease-in-out infinite; }
 @keyframes stCape { 0%, 100% { transform: skewX(0deg); } 50% { transform: skewX(-4deg); } }
+.st-flag { transform-box: fill-box; transform-origin: 0% 50%; animation: stWave 2.2s ease-in-out infinite; }
+@keyframes stWave { 0%, 100% { transform: skewY(0deg) scaleX(1); } 50% { transform: skewY(-3deg) scaleX(.96); } }
 .st-item svg * { animation: none !important; }
 @media (prefers-reduced-motion: reduce) {
-  .st-bob, .st-lb, .st-glow, .st-snow, .st-tail, .st-cape { animation: none !important; }
+  .st-bob, .st-lb, .st-glow, .st-snow, .st-tail, .st-cape, .st-flag { animation: none !important; }
   .credit-pop.show { animation: none; opacity: 1; transform: translate(-50%, 0); }
 }
 .st-ask { padding: 14px 14px 12px; background: color-mix(in srgb, var(--haem) 10%, var(--surface)); border-bottom: 1.5px solid var(--line); }
@@ -2809,11 +2811,12 @@ function laceMarks(cols, y0) {
 const ST_SLOTS = {
   hat: { label: "Hats", tab: "para" }, eyes: { label: "Glasses", tab: "para" }, mask: { label: "Masks", tab: "para" }, top: { label: "Tops", tab: "para", need: true },
   legs: { label: "Pants", tab: "para", need: true }, feet: { label: "Shoes", tab: "para", need: true }, laces: { label: "Laces", tab: "para", need: true },
-  neck: { label: "Neck", tab: "para" }, hand: { label: "In hand", tab: "para" }, gloves: { label: "Gloves", tab: "para" }, back: { label: "On the back", tab: "para" },
+  neck: { label: "Neck", tab: "para" }, hand: { label: "In hand", tab: "para" }, gloves: { label: "Gloves", tab: "para" }, taonga: { label: "Taonga", tab: "para" }, back: { label: "On the back", tab: "para" },
   livery: { label: "Paint", tab: "amb", need: true }, lights: { label: "Light bar", tab: "amb", need: true }, wheels: { label: "Wheels", tab: "amb", need: true },
   decal: { label: "Stickers", tab: "amb" }, roof: { label: "On the roof", tab: "amb" }, glow: { label: "Underglow", tab: "amb" },
   tlight: { label: "Theatre light", tab: "theatre", need: true }, ttable: { label: "Operating table", tab: "theatre", need: true }, tmon: { label: "Monitor", tab: "theatre", need: true },
   tpatient: { label: "On the table", tab: "theatre" }, twall: { label: "On the walls", tab: "theatre" },
+  flag: { label: "Flags", tab: "amb" },
   bg: { label: "Where you're parked", periopLabel: "Theatre walls", tab: "scene", need: true }, buddy: { label: "Station buddy", periopLabel: "Theatre buddy", tab: "scene" }
 };
 
@@ -2821,7 +2824,7 @@ const ST_ITEMS = [
   /* hats */
   { id: "cap", slot: "hat", name: "Crew cap", price: 60, svg: '<path d="M37 50 Q38 -6 99 -9 Q160 -6 163 50 Z" fill="#1e4d3a"/><path d="M99 -9 V44" stroke="#163b2c" stroke-width="3"/><circle cx="99" cy="-7" r="5" fill="#163b2c"/><path d="M33 47 Q99 30 167 47 Q174 60 152 62 Q99 50 48 62 Q26 60 33 47 Z" fill="#163b2c"/>' },
   { id: "beanie", slot: "hat", name: "Rainbow beanie", price: 90, svg: () => {
-      let s = '<clipPath id="stBeanieClip"><path d="M35 58 Q34 -14 99 -16 Q166 -14 165 58 Z"/></clipPath><g clip-path="url(#stBeanieClip)">';
+      let s = '<g clip-path="url(#stBeanieClip)">';
       RAINBOW6.forEach((c, i) => { s += '<rect x="30" y="' + (-18 + i * 13) + '" width="140" height="13" fill="' + c + '"/>'; });
       return s + '</g><rect x="31" y="40" width="138" height="22" rx="9" fill="#2b2b33"/><path d="M42 44 V58 M54 44 V58 M66 44 V58 M78 44 V58 M90 44 V58 M102 44 V58 M114 44 V58 M126 44 V58 M138 44 V58 M150 44 V58" stroke="#44444f" stroke-width="3"/><circle cx="99" cy="-22" r="15" fill="#fff"/><circle cx="93" cy="-26" r="5" fill="#f0f0f0"/>'; } },
   { id: "party", slot: "hat", name: "Party hat", price: 80, svg: '<g transform="rotate(-10 100 10)"><path d="M66 18 L100 -64 L134 18 Z" fill="#ff5fa2"/><path d="M78 -10 L122 -10 M86 -32 L114 -32 M72 6 L128 6" stroke="#ffd23f" stroke-width="6"/><circle cx="100" cy="-66" r="11" fill="#38c6f4"/><path d="M66 18 Q100 26 134 18" stroke="#c43c7c" stroke-width="4" fill="none"/></g>' },
@@ -2837,7 +2840,7 @@ const ST_ITEMS = [
       return '<path d="M34 56 Q32 -12 100 -14 Q168 -12 166 56 Q100 40 34 56 Z" fill="#ffd9e8"/>' + h + '<path d="M34 56 Q100 40 166 56" stroke="#f3a3c4" stroke-width="5" fill="none"/><path d="M164 40 Q182 44 184 60 M164 44 Q178 54 172 66" stroke="#ffd9e8" stroke-width="5" fill="none" stroke-linecap="round"/>';
     } },
   { id: "rainbowcap", slot: "hat", name: "Rainbow scrub cap", price: 100, svg: () => {
-      let st = '<clipPath id="stRcapClip"><path d="M34 56 Q32 -12 100 -14 Q168 -12 166 56 Q100 40 34 56 Z"/></clipPath><g clip-path="url(#stRcapClip)">';
+      let st = '<g clip-path="url(#stRcapClip)">';
       RAINBOW6.forEach((c, i) => { st += '<rect x="30" y="' + (-16 + i * 12) + '" width="140" height="12" fill="' + c + '"/>'; });
       return st + '</g><path d="M34 56 Q100 40 166 56" stroke="#5a2f9c" stroke-width="5" fill="none"/><path d="M164 40 Q182 44 184 60 M164 44 Q178 54 172 66" stroke="#8a4bd0" stroke-width="5" fill="none" stroke-linecap="round"/>';
     } },
@@ -2852,7 +2855,7 @@ const ST_ITEMS = [
   { id: "surgmask", slot: "mask", name: "Surgical mask", price: 0, svg: '<path d="M50 124 Q100 112 150 124 L146 166 Q100 186 54 166 Z" fill="#a9d1ef"/><path d="M54 136 Q100 126 146 136 M54 148 Q100 140 146 148 M56 160 Q100 154 144 160" stroke="#86b8de" stroke-width="2.5" fill="none"/><path d="M50 126 Q30 112 32 96 M150 126 Q170 112 168 96 M54 164 Q34 150 30 128 M146 164 Q166 150 170 128" stroke="#e8eef3" stroke-width="2.5" fill="none"/>' },
   { id: "n95", slot: "mask", name: "N95 mask", price: 40, svg: '<path d="M54 128 Q100 100 146 128 Q150 160 100 182 Q50 160 54 128 Z" fill="#f4f4f0" stroke="#d6d6cf" stroke-width="2"/><path d="M100 108 Q98 150 100 182" stroke="#d6d6cf" stroke-width="2" fill="none"/><path d="M56 128 Q30 112 32 92 M144 128 Q170 112 168 92" stroke="#2f7fd8" stroke-width="3" fill="none"/>' },
   { id: "rainbowmask", slot: "mask", name: "Rainbow mask", price: 70, svg: () => {
-      let st = '<clipPath id="stRmaskClip"><path d="M50 124 Q100 112 150 124 L146 166 Q100 186 54 166 Z"/></clipPath><g clip-path="url(#stRmaskClip)">';
+      let st = '<g clip-path="url(#stRmaskClip)">';
       RAINBOW6.forEach((c, i) => { st += '<rect x="44" y="' + (112 + i * 12) + '" width="112" height="12" fill="' + c + '"/>'; });
       return st + '</g><path d="M50 126 Q30 112 32 96 M150 126 Q170 112 168 96 M54 164 Q34 150 30 128 M146 164 Q166 150 170 128" stroke="#e8eef3" stroke-width="2.5" fill="none"/>';
     } },
@@ -2872,7 +2875,7 @@ const ST_ITEMS = [
         dots += '<g transform="translate(' + x + ' ' + y + ') rotate(' + (i * 40) + ')"><ellipse rx="10" ry="4" fill="#fff6d6"/><ellipse rx="4" ry="10" fill="#fff6d6"/><circle r="3" fill="#e8423f"/></g>';
         dots += '<path transform="translate(' + (x + 14) + ' ' + (y - 8) + ') rotate(' + (i * 25) + ')" d="M0 0 Q10 -8 20 0 Q10 8 0 0 Z" fill="#2e9b55"/>';
       });
-      return stSleeves("#f08a24") + stTorso("#f08a24", '<clipPath id="stHawClip"><path d="' + TORSO + '"/></clipPath><g clip-path="url(#stHawClip)">' + dots + '</g>' + vNeck() + '<path d="M80 199 L100 236 L94 199 Z M120 199 L100 236 L106 199 Z" fill="#d46f12"/><path d="M100 236 V322" stroke="#d46f12" stroke-width="3"/>');
+      return stSleeves("#f08a24") + stTorso("#f08a24", '<g clip-path="url(#stHawClip)">' + dots + '</g>' + vNeck() + '<path d="M80 199 L100 236 L94 199 Z M120 199 L100 236 L106 199 Z" fill="#d46f12"/><path d="M100 236 V322" stroke="#d46f12" stroke-width="3"/>');
     } },
   { id: "xmas", slot: "top", name: "Christmas jumper", price: 180, svg: stSleeves("#c8253a", true, 32) + stTorso("#c8253a", '<path d="M42 262 L54 252 L66 262 L78 252 L90 262 L102 252 L114 262 L126 252 L138 262 L150 252 L158 260" stroke="#fff" stroke-width="5" fill="none"/><path d="M42 300 L54 290 L66 300 L78 290 L90 300 L102 290 L114 300 L126 290 L138 300 L150 290 L158 298" stroke="#2e9b55" stroke-width="5" fill="none"/><g stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M100 220 V240 M90 230 H110 M93 223 L107 237 M107 223 L93 237"/></g><path d="M78 199 Q100 212 122 199" stroke="#fff" stroke-width="6" fill="none"/><path d="M38 286 L36 292 M162 286 L164 292" stroke="#fff" stroke-width="10"/>') },
   { id: "hero", slot: "top", name: "Superhero suit", price: 450, svg: stSleeves("#2557d6", true, 32) + '<path d="M38 286 L34 296 M162 286 L166 296" stroke="#e03a2f" stroke-width="14"/>' + stTorso("#2557d6", '<path d="M70 236 L130 236 L126 280 Q100 298 74 280 Z" fill="#ffd23f" stroke="#e03a2f" stroke-width="4"/><path d="M78 260 H90 L95 248 L102 274 L108 254 L112 260 H122" stroke="#e03a2f" stroke-width="5" fill="none" stroke-linejoin="round" stroke-linecap="round"/><rect x="44" y="306" width="112" height="14" fill="#e03a2f"/><rect x="92" y="304" width="16" height="18" rx="3" fill="#ffd23f"/>') },
@@ -2982,6 +2985,110 @@ ST_ITEMS.push(
   { id: "kiwi", slot: "buddy", name: "Kiwi", price: 250 },
   { id: "cat", slot: "buddy", name: "Station cat", price: 300 }
 );
+
+/* ---------- taonga, korowai and flags ---------- */
+function stStar(cx, cy, r, fill, n, inner, rot) {
+  n = n || 5; inner = inner || 0.42;
+  let d = "";
+  for (let i = 0; i < n * 2; i++) {
+    const a = (rot || -90) * Math.PI / 180 + i * Math.PI / n, rr = i % 2 ? r * inner : r;
+    d += (i ? "L" : "M") + (cx + rr * Math.cos(a)).toFixed(2) + " " + (cy + rr * Math.sin(a)).toFixed(2);
+  }
+  return '<path d="' + d + 'Z" fill="' + fill + '"/>';
+}
+const PNM = "url(#stPounamu)";
+const CORD = '<path d="M82 202 Q86 236 100 250 Q114 236 118 202" stroke="#3b2416" stroke-width="2.5" fill="none"/>';
+
+/* korowai: the back hangs behind the body, the front drapes over the shoulders and arms */
+const KOROWAI_BACK = '<path d="M54 204 L146 204 L184 398 Q100 414 16 398 Z" fill="url(#stKorowai)"/><path d="M18 386 Q100 402 182 386 L184 398 Q100 414 16 398 Z" fill="url(#stTaniko)"/><path d="M20 398 L20 412 M30 400 L30 414 M42 402 L42 416 M54 403 L54 417 M146 403 L146 417 M158 402 L158 416 M170 400 L170 414 M180 398 L180 412" stroke="#1a1208" stroke-width="2.4" stroke-linecap="round"/>';
+const KOROWAI_FRONT = '<path d="M76 200 Q60 200 46 210 Q30 222 26 250 L22 330 L80 334 Z" fill="url(#stKorowai)"/><path d="M124 200 Q140 200 154 210 Q170 222 174 250 L178 330 L120 334 Z" fill="url(#stKorowai)"/>' +
+  '<path d="M22 318 L80 322 L80 334 L22 330 Z M178 318 L120 322 L120 334 L178 330 Z" fill="url(#stTaniko)"/>' +
+  '<path d="M76 200 L80 334 M124 200 L120 334" stroke="#1a1208" stroke-width="2" fill="none"/>' +
+  '<path d="M30 332 V344 M40 333 V345 M50 333 V346 M62 334 V346 M72 334 V345 M128 334 V345 M138 334 V346 M150 333 V346 M160 333 V345 M170 332 V344" stroke="#1a1208" stroke-width="2.2" stroke-linecap="round"/>' +
+  '<path d="M74 206 Q100 220 126 206" stroke="#7a1f14" stroke-width="3" fill="none"/>';
+
+ST_ITEMS.push(
+  { id: "korowai", slot: "back", name: "Korowai", price: 500, svg: KOROWAI_BACK, front: KOROWAI_FRONT },
+  { id: "heimatau", slot: "taonga", name: "Pounamu hei matau", price: 200, svg: CORD + '<path d="M100 248 Q86 250 86 266 Q86 286 104 288 Q116 288 118 276 L112 274 Q110 282 103 281 Q94 280 95 266 Q96 256 104 255 Z" fill="' + PNM + '" stroke="#1d5a35" stroke-width="1.5"/><circle cx="100" cy="252" r="2.2" fill="#3b2416"/><path d="M90 262 Q90 272 96 278" stroke="#c9f0d6" stroke-width="1.5" fill="none" opacity=".7"/>' },
+  { id: "toki", slot: "taonga", name: "Pounamu toki", price: 200, svg: CORD + '<path d="M94 248 H106 L110 290 Q100 296 90 290 Z" fill="' + PNM + '" stroke="#1d5a35" stroke-width="1.5"/><circle cx="100" cy="254" r="2.2" fill="#3b2416"/><path d="M96 262 L95 286" stroke="#c9f0d6" stroke-width="1.5" opacity=".7"/>' },
+  { id: "koru", slot: "taonga", name: "Pounamu koru", price: 200, svg: CORD + '<path d="M100 250 C118 252 122 274 108 282 C96 289 86 278 92 268 C96 262 106 264 105 271 C104 275 99 274 100 271" fill="none" stroke="' + PNM + '" stroke-width="7" stroke-linecap="round"/><path d="M100 250 C118 252 122 274 108 282 C96 289 86 278 92 268" fill="none" stroke="#c9f0d6" stroke-width="1.4" opacity=".6"/>' },
+  { id: "pikorua", slot: "taonga", name: "Pounamu pikorua", price: 200, svg: CORD + '<path d="M100 250 C116 256 116 270 100 272 C84 274 84 290 100 294 C116 290 116 274 100 272 C84 270 84 256 100 250 Z" fill="none" stroke="' + PNM + '" stroke-width="6" stroke-linejoin="round"/><path d="M96 256 C90 262 92 268 98 270" stroke="#c9f0d6" stroke-width="1.4" fill="none" opacity=".6"/>' }
+);
+
+/* flags, each drawn in a 60 x 36 box */
+const UJ = '<g clip-path="url(#stUJClip)"><rect width="30" height="18" fill="#012169"/><path d="M0 0 L30 18 M30 0 L0 18" stroke="#fff" stroke-width="3.6"/><path d="M0 0 L30 18 M30 0 L0 18" stroke="#C8102E" stroke-width="1.2"/><path d="M15 0 V18 M0 9 H30" stroke="#fff" stroke-width="6"/><path d="M15 0 V18 M0 9 H30" stroke="#C8102E" stroke-width="3.6"/></g>';
+function ensign(field, fly) { return '<rect width="60" height="36" fill="' + field + '"/>' + UJ + (fly || ""); }
+function stripesH(cols) { const h = 36 / cols.length; return cols.map((c, i) => '<rect y="' + (i * h).toFixed(2) + '" width="60" height="' + (h + 0.2).toFixed(2) + '" fill="' + c + '"/>').join(""); }
+function stripesV(cols) { const w = 60 / cols.length; return cols.map((c, i) => '<rect x="' + (i * w).toFixed(2) + '" width="' + (w + 0.2).toFixed(2) + '" height="36" fill="' + c + '"/>').join(""); }
+function fernFrond() {
+  // a silver fern: a curved stem with leaflets that shrink towards the tip
+  let s = '<path d="M14 33 Q20 12 50 5" stroke="#fff" stroke-width="1.6" fill="none"/>';
+  for (let i = 1; i < 15; i++) {
+    const t = i / 15, x = (1 - t) * (1 - t) * 14 + 2 * (1 - t) * t * 20 + t * t * 50, y = (1 - t) * (1 - t) * 33 + 2 * (1 - t) * t * 12 + t * t * 5;
+    const dx = 2 * (1 - t) * 6 + 2 * t * 30, dy = 2 * (1 - t) * -21 + 2 * t * -7, ang = Math.atan2(dy, dx) * 180 / Math.PI, len = 6.5 * (1 - t * 0.7);
+    s += '<ellipse cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" rx="' + len.toFixed(1) + '" ry="1.3" fill="#fff" transform="rotate(' + (ang - 55).toFixed(0) + ' ' + x.toFixed(1) + ' ' + y.toFixed(1) + ') translate(' + (len * 0.8).toFixed(1) + ' 0)"/>';
+    s += '<ellipse cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" rx="' + len.toFixed(1) + '" ry="1.3" fill="#fff" transform="rotate(' + (ang + 55).toFixed(0) + ' ' + x.toFixed(1) + ' ' + y.toFixed(1) + ') translate(' + (len * 0.8).toFixed(1) + ' 0)"/>';
+  }
+  return s;
+}
+const MAPLE = '<path transform="translate(30 19) scale(0.62)" d="M0 -18 L4 -10 L9 -12 L7 -3 L14 -8 L12 -3 L18 -2 L11 4 L13 7 L3 6 L2 15 L-2 15 L-3 6 L-13 7 L-11 4 L-18 -2 L-12 -3 L-14 -8 L-7 -3 L-9 -12 L-4 -10 Z" fill="#d80621"/>';
+const ST_FLAGS = {
+  rainbow: () => stripesH(RAINBOW6),
+  nz: () => ensign("#012169", [[45, 8, 2.6], [38.5, 16, 2.6], [51.5, 14, 2.2], [45, 28, 3]].map(([x, y, r]) => stStar(x, y, r + 0.9, "#fff") + stStar(x, y, r, "#C8102E")).join("")),
+  tinorangatiratanga: () => '<rect width="60" height="18" fill="#000"/><rect y="18" width="60" height="18" fill="#d81e05"/><path d="M60 18 H28 C16 18 10 10 16 5 C21 1 29 4 28 10 C27 14 22 14 21 11" stroke="#fff" stroke-width="3.2" fill="none" stroke-linecap="round"/>',
+  unitedtribes: () => {
+    let s = '<rect width="60" height="36" fill="#fff"/><path d="M30 0 V36 M0 18 H60" stroke="#C8102E" stroke-width="5.4"/><rect width="27.3" height="15.3" fill="#00247d"/><path d="M13.65 0 V15.3 M0 7.65 H27.3" stroke="#000" stroke-width="4.4"/><path d="M13.65 0 V15.3 M0 7.65 H27.3" stroke="#C8102E" stroke-width="2.6"/>';
+    [[6, 3.4], [21.3, 3.4], [6, 11.6], [21.3, 11.6]].forEach(([x, y]) => { s += stStar(x, y, 2.6, "#fff", 8, 0.45); });
+    return s;
+  },
+  kiwi: () => '<rect width="60" height="36" fill="#012169"/><g transform="translate(9 9) scale(.9)" fill="#fff"><ellipse cx="14" cy="14" rx="13" ry="9"/><circle cx="2" cy="9" r="5"/><path d="M-1 10 Q-12 16 -16 19" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M10 22 L9 28 M18 22 L19 28" stroke="#fff" stroke-width="2"/></g>' + [[45, 8, 2.4], [39, 16, 2.4], [51.5, 14, 2], [45, 27, 2.8]].map(([x, y, r]) => stStar(x, y, r + 0.8, "#fff") + stStar(x, y, r, "#C8102E")).join(""),
+  silverfern: () => '<rect width="60" height="36" fill="#000"/>' + fernFrond(),
+  palestine: () => stripesH(["#000", "#fff", "#149954"]) + '<path d="M0 0 L22 18 L0 36 Z" fill="#e4312b"/>',
+  samoa: () => '<rect width="60" height="36" fill="#ce1126"/><rect width="30" height="18" fill="#002b7f"/>' + stStar(15, 3.8, 2.3, "#fff") + stStar(9.5, 8.6, 2.3, "#fff") + stStar(20.5, 7.6, 2.1, "#fff") + stStar(15, 14, 2.6, "#fff") + stStar(18.3, 10.6, 1.2, "#fff"),
+  tonga: () => '<rect width="60" height="36" fill="#c10000"/><rect width="26" height="16" fill="#fff"/><path d="M13 3 V13 M8 8 H18" stroke="#c10000" stroke-width="3.6"/>',
+  fiji: () => ensign("#68bfe5", '<path d="M38 8 H52 V20 Q52 28 45 31 Q38 28 38 20 Z" fill="#fff" stroke="#888" stroke-width=".6"/><path d="M45 12 V31 M38 17 H52" stroke="#ce1126" stroke-width="2"/><rect x="38" y="8" width="14" height="4" fill="#ce1126"/><path d="M41 11 h6 l1 -2" stroke="#ffd100" stroke-width="1.2" fill="none"/><circle cx="41.5" cy="14.5" r="1.1" fill="#ffd100"/><path d="M48 22 l2 4" stroke="#3a8a3a" stroke-width="1.3"/>'),
+  cookislands: () => { let s = ""; for (let i = 0; i < 15; i++) { const a = i / 15 * 2 * Math.PI - Math.PI / 2; s += stStar(45 + 9 * Math.cos(a), 18 + 9 * Math.sin(a), 1.4, "#fff"); } return ensign("#012169", s); },
+  niue: () => '<rect width="60" height="36" fill="#fed100"/>' + UJ + '<circle cx="15" cy="9" r="3" fill="#012169"/>' + stStar(15, 9, 2.1, "#fed100") + stStar(15, 3, 1.3, "#fed100") + stStar(15, 15, 1.3, "#fed100") + stStar(7, 9, 1.3, "#fed100") + stStar(23, 9, 1.3, "#fed100"),
+  tokelau: () => '<rect width="60" height="36" fill="#00247d"/><path d="M8 26 Q30 33 52 26 Q50 30 46 31 H14 Q10 30 8 26 Z" fill="#fed100"/><path d="M10 25 Q30 30 50 25 L49 26 Q30 31 11 26 Z" fill="#fed100"/>' + stStar(9, 6, 1.8, "#fff") + stStar(5, 11, 1.8, "#fff") + stStar(13, 11, 1.6, "#fff") + stStar(9, 17, 2, "#fff"),
+  tuvalu: () => ensign("#5b97b1", [[44, 6], [54, 8], [38, 14], [50, 14], [56, 20], [42, 22], [48, 26], [36, 30], [54, 30]].map(([x, y]) => stStar(x, y, 1.9, "#ffce00")).join("")),
+  kiribati: () => '<rect width="60" height="22" fill="#ce1126"/><path d="M18 22 A12 12 0 0 1 42 22 Z" fill="#fcd116"/><g stroke="#fcd116" stroke-width="1.4">' + [-80, -60, -40, -20, 0, 20, 40, 60, 80].map(a => { const r = a * Math.PI / 180; return '<path d="M' + (30 + 13 * Math.sin(r)).toFixed(1) + ' ' + (22 - 13 * Math.cos(r)).toFixed(1) + ' L' + (30 + 17 * Math.sin(r)).toFixed(1) + ' ' + (22 - 17 * Math.cos(r)).toFixed(1) + '"/>'; }).join("") + '</g><path d="M18 6 Q24 2 30 6 Q36 2 42 6 Q36 5 30 9 Q24 5 18 6 Z" fill="#fcd116"/>' + [22, 26.5, 31].map((y, i) => '<rect y="' + y + '" width="60" height="' + (i < 2 ? 4.5 : 5) + '" fill="#003f87"/><path d="M0 ' + (y + 4.5) + ' Q7.5 ' + (y + 3) + ' 15 ' + (y + 4.5) + ' T30 ' + (y + 4.5) + ' T45 ' + (y + 4.5) + ' T60 ' + (y + 4.5) + '" stroke="#fff" stroke-width="1.6" fill="none"/>').join(""),
+  png: () => '<path d="M0 0 H60 V36 Z" fill="#ce1126"/><path d="M0 0 V36 H60 Z" fill="#000"/><path d="M38 12 Q44 6 52 8 Q48 10 50 13 Q46 12 44 16 Q42 13 38 12 Z M44 16 Q48 22 54 22" fill="#fcd116" stroke="#fcd116" stroke-width="1"/>' + stStar(12, 15, 1.9, "#fff") + stStar(7, 21, 1.9, "#fff") + stStar(17, 21, 1.7, "#fff") + stStar(12, 29, 2.1, "#fff") + stStar(14.5, 24, 1, "#fff"),
+  australia: () => ensign("#012169", stStar(15, 27, 4.4, "#fff", 7, 0.45) + stStar(45, 30, 2.6, "#fff", 7, 0.45) + stStar(38, 17, 2.6, "#fff", 7, 0.45) + stStar(45, 6, 2.6, "#fff", 7, 0.45) + stStar(52, 14, 2.6, "#fff", 7, 0.45) + stStar(48.5, 20, 1.4, "#fff")),
+  canada: () => stripesV(["#d80621", "#fff", "#fff", "#d80621"]) + MAPLE,
+  norway: () => '<rect width="60" height="36" fill="#ba0c2f"/><path d="M21.8 0 V36 M0 18 H60" stroke="#fff" stroke-width="10.9"/><path d="M21.8 0 V36 M0 18 H60" stroke="#00205b" stroke-width="5.4"/>',
+  uk: () => '<g transform="scale(2)">' + UJ + '</g>',
+  ireland: () => stripesV(["#169b62", "#fff", "#ff883e"]),
+  scotland: () => '<rect width="60" height="36" fill="#005eb8"/><path d="M0 0 L60 36 M60 0 L0 36" stroke="#fff" stroke-width="7"/>',
+  usa: () => { let s = stripesH(["#b22234", "#fff", "#b22234", "#fff", "#b22234", "#fff", "#b22234", "#fff", "#b22234", "#fff", "#b22234", "#fff", "#b22234"]) + '<rect width="24" height="19.4" fill="#3c3b6e"/>'; for (let r = 0; r < 5; r++) for (let c = 0; c < 6; c++) s += '<circle cx="' + (2.2 + c * 3.9 + (r % 2) * 1.9) + '" cy="' + (2.2 + r * 3.8) + '" r=".9" fill="#fff"/>'; return s; },
+  india: () => stripesH(["#ff9933", "#fff", "#138808"]) + '<circle cx="30" cy="18" r="4.6" fill="none" stroke="#000080" stroke-width="1"/><circle cx="30" cy="18" r="1" fill="#000080"/><path d="M30 13.4 V22.6 M25.4 18 H34.6 M26.7 14.7 L33.3 21.3 M33.3 14.7 L26.7 21.3" stroke="#000080" stroke-width=".5"/>',
+  china: () => '<rect width="60" height="36" fill="#ee1c25"/>' + stStar(10, 9, 5.4, "#ffff00") + stStar(20, 3.6, 1.8, "#ffff00", 5, 0.42, -60) + stStar(24, 7.2, 1.8, "#ffff00", 5, 0.42, -75) + stStar(24, 12.6, 1.8, "#ffff00", 5, 0.42, -100) + stStar(20, 16.2, 1.8, "#ffff00", 5, 0.42, -120),
+  philippines: () => '<rect width="60" height="18" fill="#0038a8"/><rect y="18" width="60" height="18" fill="#ce1126"/><path d="M0 0 L31 18 L0 36 Z" fill="#fff"/><circle cx="10.5" cy="18" r="3.4" fill="#fcd116"/><g stroke="#fcd116" stroke-width="1.1">' + [0, 45, 90, 135, 180, 225, 270, 315].map(a => { const r = a * Math.PI / 180; return '<path d="M' + (10.5 + 4.2 * Math.cos(r)).toFixed(1) + ' ' + (18 + 4.2 * Math.sin(r)).toFixed(1) + ' L' + (10.5 + 6.6 * Math.cos(r)).toFixed(1) + ' ' + (18 + 6.6 * Math.sin(r)).toFixed(1) + '"/>'; }).join("") + '</g>' + stStar(3.2, 4, 1.6, "#fcd116") + stStar(3.2, 32, 1.6, "#fcd116") + stStar(25.5, 18, 1.6, "#fcd116"),
+  southafrica: () => '<rect width="60" height="18" fill="#e03c31"/><rect y="18" width="60" height="18" fill="#001489"/><path d="M0 0 L22 18 L0 36 M22 18 H60" stroke="#fff" stroke-width="12" fill="none"/><path d="M0 0 L22 18 L0 36 M22 18 H60" stroke="#007749" stroke-width="7.2" fill="none"/><path d="M0 5.4 L15.6 18 L0 30.6 Z" fill="#ffb81c"/><path d="M0 8.6 L11.6 18 L0 27.4 Z" fill="#000"/>',
+  japan: () => '<rect width="60" height="36" fill="#fff"/><circle cx="30" cy="18" r="10.8" fill="#bc002d"/>'
+};
+const ST_FLAG_LIST = [
+  ["rainbow", "Rainbow flag"], ["tinorangatiratanga", "Tino Rangatiratanga"], ["unitedtribes", "United Tribes of NZ"], ["nz", "New Zealand"], ["silverfern", "Silver fern"], ["kiwi", "Kiwi flag"],
+  ["samoa", "Samoa"], ["tonga", "Tonga"], ["fiji", "Fiji"], ["cookislands", "Cook Islands"], ["niue", "Niue"], ["tokelau", "Tokelau"], ["tuvalu", "Tuvalu"], ["kiribati", "Kiribati"], ["png", "Papua New Guinea"],
+  ["palestine", "Palestine"], ["australia", "Australia"], ["canada", "Canada"], ["norway", "Norway"], ["uk", "United Kingdom"], ["ireland", "Ireland"], ["scotland", "Scotland"],
+  ["usa", "United States"], ["india", "India"], ["china", "China"], ["philippines", "Philippines"], ["southafrica", "South Africa"], ["japan", "Japan"]
+];
+ST_FLAG_LIST.forEach(([k, name]) => ST_ITEMS.push({ id: "flag_" + k, slot: "flag", name: name, price: 60, flag: k }));
+function stFlagArt(id) {
+  const it = ST_BY_ID[id];
+  if (!it || !it.flag) return "";
+  return '<g clip-path="url(#stFlagClip)"><rect width="60" height="36" fill="#fff"/>' + ST_FLAGS[it.flag]() + '</g><rect width="60" height="36" fill="none" stroke="rgba(0,0,0,.25)" stroke-width=".8"/>';
+}
+// on a pole at the back of the ambulance, waving
+function stFlagOnAmb(eq) {
+  if (!eq.flag) return "";
+  return '<path d="M178 90 V22" stroke="#7a7f88" stroke-width="2.4"/><circle cx="178" cy="21" r="2.4" fill="#d9a514"/><g transform="translate(179 23) scale(.7)"><g class="st-flag">' + stFlagArt(eq.flag) + '</g></g>';
+}
+// hung on the theatre wall
+function stFlagOnWall(eq) {
+  if (!eq.flag) return "";
+  return '<g transform="translate(150 96) scale(.58)"><path d="M-2 -6 H62" stroke="#7a7f88" stroke-width="3"/><path d="M4 -6 L0 0 M56 -6 L60 0" stroke="#7a7f88" stroke-width="1.5"/>' + stFlagArt(eq.flag) + '</g>';
+}
+
 const ST_BY_ID = {};
 ST_ITEMS.forEach(it => { ST_BY_ID[it.id] = it; });
 const ST_DEFAULT = { top: "tee", legs: "trousers", feet: "boots", laces: "blacklaces", livery: "classic", lights: "stdlights", wheels: "stdwheels", bg: "garage" };
@@ -3006,7 +3113,10 @@ function stChar(eq) {
   s += '<path d="M77 160 Q78 192 73 216 H127 Q122 192 123 160 Z" fill="url(#stNeck)"/>';
   s += '<path d="M50 226 L34 300 M150 226 L166 300" stroke="' + SKIN + '" stroke-width="24" stroke-linecap="round" fill="none"/>';
   s += stItemSvg(eq.top || "tee");
+  const back = eq.back && ST_BY_ID[eq.back];
+  if (back && back.front) s += back.front;
   s += stItemSvg(eq.neck);
+  s += stItemSvg(eq.taonga);
   if (hand && !hand.behind) s += stItemSvg(eq.hand);
   const glove = eq.gloves && ST_BY_ID[eq.gloves] && ST_BY_ID[eq.gloves].hand;
   const handCol = glove || SKIN;
@@ -3059,6 +3169,7 @@ function stAmb(eq) {
   }
   // roof items that sit behind the box (surfboards on a rack)
   if (eq.roof === "rack") s += '<path d="M190 90 V82 M320 90 V82" stroke="#555" stroke-width="4"/><rect x="180" y="78" width="150" height="5" rx="2" fill="#444"/><path d="M176 72 Q260 60 344 72 Q260 80 176 72 Z" fill="#17a2b8" stroke="#0f7e8f" stroke-width="2"/><path d="M186 64 Q262 52 336 64 Q262 72 186 64 Z" fill="#ff8f3d" stroke="#d96a1b" stroke-width="2"/>';
+  s += stFlagOnAmb(eq);
   // body + paint
   s += '<g clip-path="url(#stAmbClip)">' + stLivery(liv) + '</g>';
   s += '<path d="' + AMB_BODY + '" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="2"/>';
@@ -3110,6 +3221,7 @@ function stTheatre(eq) {
     s += '<path d="M150 16 Q275 40 400 16" stroke="#666" stroke-width="1.2" fill="none"/>';
     for (let i = 0; i < 11; i++) { const x = 156 + i * 22, y = 16 + Math.sin((x - 150) / 250 * Math.PI) * 12; s += '<path d="M' + (x - 8) + ' ' + (y + 1) + ' L' + (x + 8) + ' ' + (y + 1) + ' L' + x + ' ' + (y + 17) + ' Z" fill="' + RAINBOW6[i % 6] + '"/>'; }
   }
+  s += stFlagOnWall(eq);
   // monitor on a stand
   s += '<rect x="377" y="124" width="5" height="88" fill="#9aa1ab"/><path d="M362 214 H396" stroke="#6f7680" stroke-width="5" stroke-linecap="round"/><circle cx="364" cy="219" r="3.5" fill="#33363c"/><circle cx="394" cy="219" r="3.5" fill="#33363c"/>';
   s += '<rect x="356" y="90" width="42" height="36" rx="4" fill="#cfd5dc" stroke="#8a9099" stroke-width="2"/>';
@@ -3225,6 +3337,15 @@ function stDefsSvg(headSrc) {
   return '<svg width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false"><defs>' +
     '<image id="stHead" href="' + headSrc + '" width="170" height="212"/>' +
     '<linearGradient id="stNeck" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9c6646"/><stop offset=".45" stop-color="#c7875f"/><stop offset="1" stop-color="#e09f7c"/></linearGradient>' +
+    '<clipPath id="stBeanieClip"><path d="M35 58 Q34 -14 99 -16 Q166 -14 165 58 Z"/></clipPath>' +
+    '<clipPath id="stRcapClip"><path d="M34 56 Q32 -12 100 -14 Q168 -12 166 56 Q100 40 34 56 Z"/></clipPath>' +
+    '<clipPath id="stRmaskClip"><path d="M50 124 Q100 112 150 124 L146 166 Q100 186 54 166 Z"/></clipPath>' +
+    '<clipPath id="stHawClip"><path d="' + TORSO + '"/></clipPath>' +
+    '<clipPath id="stUJClip"><rect width="30" height="18"/></clipPath>' +
+    '<clipPath id="stFlagClip"><rect width="60" height="36"/></clipPath>' +
+    '<linearGradient id="stPounamu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fd3a8"/><stop offset=".45" stop-color="#2f8a55"/><stop offset="1" stop-color="#17482b"/></linearGradient>' +
+    '<pattern id="stKorowai" patternUnits="userSpaceOnUse" width="10" height="10"><rect width="10" height="10" fill="#efe6d2"/><path d="M2 0.5 v5 M7 5 v5" stroke="#2a1d10" stroke-width="1.5" stroke-linecap="round"/><circle cx="5" cy="2" r=".9" fill="#b38a5a"/><circle cx="9.5" cy="8" r=".9" fill="#b38a5a"/></pattern>' +
+    '<pattern id="stTaniko" patternUnits="userSpaceOnUse" width="12" height="12"><rect width="12" height="12" fill="#1a1208"/><path d="M0 12 L6 1 L12 12 Z" fill="#f3ead6"/><path d="M3 12 L6 6.5 L9 12 Z" fill="#b3261e"/></pattern>' +
     '<clipPath id="stAmbClip"><path d="' + AMB_BODY + '"/></clipPath>' +
     '<linearGradient id="stGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1a8"/><stop offset=".45" stop-color="#f6c90e"/><stop offset="1" stop-color="#b8860b"/></linearGradient>' +
     '<linearGradient id="stGoldWide" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff1a8"/><stop offset=".35" stop-color="#f6c90e"/><stop offset=".7" stop-color="#d9a514"/><stop offset="1" stop-color="#a87a0a"/></linearGradient>' +
@@ -3363,7 +3484,8 @@ const ST_TABS = ST_TAB_NAMES.para;
 function stSlotTab(slot) { const t = ST_SLOTS[slot].tab; return t === "theatre" ? "amb" : t; }
 const ST_CROP = {
   hat: "-12 -78 224 196", eyes: "22 34 156 104", top: "12 176 176 160", legs: "24 300 152 148", feet: "26 384 148 60", laces: "26 384 148 60",
-  neck: "34 180 132 136", hand: "56 150 182 290", back: "-36 140 272 310"
+  neck: "34 180 132 136", hand: "56 150 182 290", back: "-36 140 272 310",
+  mask: "22 70 156 130", gloves: "-4 248 208 100", taonga: "44 192 112 112"
 };
 const ST_AMB_BOX = "156 12 248 216";
 let stTab = "para", stTry = null, stReturn = null;
@@ -3377,6 +3499,7 @@ function stNone(slot) { return "none:" + slot; }
 function stPreview(id, slot) {
   const eq = id ? stEqWith(id) : Object.assign({}, EQ(), { [slot]: null });
   const tab = stSlotTab(slot);
+  if (slot === "flag" && id) return '<svg viewBox="-6 -10 72 56" aria-hidden="true">' + stFlagArt(id) + '</svg>';
   if (tab === "para") {
     // laces only show on shoes that have them
     if (slot === "laces") { const f = ST_BY_ID[eq.feet]; if (!f || !f.laces) eq.feet = "boots"; }
